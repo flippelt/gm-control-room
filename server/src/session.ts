@@ -4,36 +4,51 @@ import type {
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
+import { isTreatmentAllowed } from '@gmcr/shared'
+import { sampleCampaign } from './data/sampleCampaign.js'
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>
 type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents>
 
 /**
  * Mantém o estado autoritativo da sessão e cuida do broadcast.
- * Na Fase 0 o estado é mínimo (mensagem + contador de pings); as próximas
- * fases ampliam o `SessionState` em @gmcr/shared.
+ * Fase 1: campanha + cena ativa, com validação do gating de tratamento.
  */
 export function createSession(io: IO) {
   const state: SessionState = {
-    message: 'Aguardando o mestre...',
-    pings: 0,
+    campaign: sampleCampaign,
+    activeSceneId: sampleCampaign.scenes[0]?.id ?? null,
   }
 
   const broadcast = () => io.emit('state', state)
 
+  function setActiveScene(sceneId: string | null) {
+    if (sceneId === null) {
+      state.activeSceneId = null
+      broadcast()
+      return
+    }
+
+    const scene = state.campaign.scenes.find((s) => s.id === sceneId)
+    if (!scene) return // id inexistente: ignora
+
+    // Respeita o gating: não ativa um tratamento proibido para o gênero/época.
+    if (!isTreatmentAllowed(scene.treatment.kind, state.campaign)) {
+      console.warn(
+        `[session] cena "${scene.id}" rejeitada: tratamento ` +
+          `"${scene.treatment.kind}" nao permitido para a campanha.`,
+      )
+      return
+    }
+
+    state.activeSceneId = sceneId
+    broadcast()
+  }
+
   function handleConnection(socket: IOSocket) {
-    // Snapshot completo para quem acabou de conectar (evita ficar fora de sincronia).
+    // Snapshot completo para quem acabou de conectar.
     socket.emit('state', state)
-
-    socket.on('setMessage', (message) => {
-      state.message = String(message).slice(0, 500)
-      broadcast()
-    })
-
-    socket.on('ping', () => {
-      state.pings += 1
-      broadcast()
-    })
+    socket.on('setActiveScene', setActiveScene)
   }
 
   return { handleConnection }

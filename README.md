@@ -46,7 +46,8 @@ jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
 ## Roadmap
 
 - [x] **Fase 0** — esqueleto do monorepo + hello sync em tempo real
-- [ ] **Fase 1** — núcleo de cena + display (modelo de conteúdo, snapshot, QR)
+- [x] **Fase 1** — núcleo de cena + display (campanha/cena com gênero/época,
+      seletor de cenas, snapshot, gating do CRT por anacronismo)
 - [ ] **Fase 2** — visual + iluminação (imagens/handouts, cenas CRT, overlays)
 - [ ] **Fase 3** — áudio (mixer multi-camada)
 - [ ] **Fase 4** — Spotify (OAuth loopback + Web API) + deep links

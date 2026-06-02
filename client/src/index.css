@@ -109,3 +109,119 @@ button:hover {
 .hint a {
   color: #8b8bff;
 }
+
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.card__head h2 {
+  margin: 0;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #34343c;
+  color: #b8b8c0;
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+.btn-ghost:hover {
+  background: #1d1d22;
+}
+
+/* ===== Seletor de cenas ===== */
+.scenes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.scene-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.scene-btn:hover:not(:disabled) {
+  border-color: #4a4a6a;
+  background: #15151b;
+}
+
+.scene-btn--active {
+  border-color: #8b8bff;
+  box-shadow: 0 0 0 1px #8b8bff inset;
+}
+
+.scene-btn--blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.scene-btn__name {
+  font-weight: 600;
+}
+
+.scene-btn__kind {
+  font-size: 0.72rem;
+  color: #7a7a86;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== Telas de cena (tela dos jogadores) ===== */
+.scene {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.scene--idle {
+  background: #050505;
+  color: #3a3a42;
+  font-family: monospace;
+  letter-spacing: 0.1em;
+}
+
+.scene--color {
+  transition: background 1.2s ease;
+}
+
+.scene__label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.scene--text {
+  background: #0b0a08;
+  color: #e8e2d0;
+  padding: 8vh 10vw;
+  align-items: flex-start;
+  /* Tipografia de época (serifada, "datilografada"). */
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(1.1rem, 2.6vw, 2rem);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.scene--image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background: #000;
+}
