@@ -50,7 +50,8 @@ jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
       seletor de cenas, snapshot, gating do CRT por anacronismo)
 - [x] **Fase 2** — visual + iluminação (assets servidos em `/assets`, imagens/
       handouts, overlays de cor/alerta/vinheta, transição entre cenas)
-- [ ] **Fase 3** — áudio (mixer multi-camada)
+- [x] **Fase 3** — áudio (mixer multi-camada na tela dos jogadores, fade/loop/
+      volume por camada, gesto de "ativar áudio")
 - [ ] **Fase 4** — Spotify (OAuth loopback + Web API) + deep links
 - [ ] **Fase 5** — ferramentas de jogo (dados, tracker)
 - [ ] **Fase 6** — polimento (campanha JSON, persistência, docs)

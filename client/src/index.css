@@ -323,3 +323,74 @@ input[type='range'] {
   align-items: center;
   gap: 6px;
 }
+
+/* ===== Mixer de áudio (painel) ===== */
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.layer__toggle {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  font-size: 1rem;
+  padding: 0;
+}
+
+.layer__toggle--on {
+  background: #2d2d8a;
+  border-color: #8b8bff;
+}
+
+.layer__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.layer__name {
+  font-size: 0.9rem;
+}
+
+.layer__vol {
+  flex-shrink: 0;
+  width: 3.5ch;
+  text-align: right;
+  font-size: 0.8rem;
+  color: #8a8a94;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== Gate de ativação de áudio (tela dos jogadores) ===== */
+.audio-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #e7e7ea;
+  border: none;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.audio-gate__icon {
+  font-size: 3rem;
+}

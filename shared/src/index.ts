@@ -36,12 +36,28 @@ export interface Scene {
   treatment: DisplayTreatment
 }
 
+/** Camada de áudio do mixer (trilha/ambiência), tocada na tela dos jogadores. */
+export interface AudioLayer {
+  id: string
+  label: string
+  /** Caminho do arquivo (servido em /assets/...). */
+  src: string
+  /** Toca em loop. */
+  loop: boolean
+  /** Volume alvo (0..1). */
+  volume: number
+  /** Se está tocando agora. */
+  playing: boolean
+}
+
 export interface Campaign {
   id: string
   title: string
   genre: Genre
   era: Era
   scenes: Scene[]
+  /** Catálogo de camadas de áudio disponíveis na campanha. */
+  audio: AudioLayer[]
 }
 
 // ===================== Gating de adequação (regra do usuário) =====================
@@ -117,6 +133,8 @@ export interface SessionState {
   activeSceneId: string | null
   /** Camada de iluminação/clima sobreposta. */
   lighting: Lighting
+  /** Estado atual das camadas de áudio (semeado da campanha). */
+  audio: AudioLayer[]
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -131,4 +149,6 @@ export interface ClientToServerEvents {
   setActiveScene: (sceneId: string | null) => void
   /** Atualiza parcialmente a camada de iluminação/clima. */
   setLighting: (patch: Partial<Lighting>) => void
+  /** Atualiza play/pause e/ou volume de uma camada de áudio. */
+  setAudioLayer: (id: string, patch: { playing?: boolean; volume?: number }) => void
 }

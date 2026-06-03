@@ -22,6 +22,7 @@ export function Control() {
   const campaign = useSession((s) => s.campaign)
   const activeSceneId = useSession((s) => s.activeSceneId)
   const lighting = useSession((s) => s.lighting)
+  const audio = useSession((s) => s.audio)
   const connected = useSession((s) => s.connected)
 
   return (
@@ -79,6 +80,49 @@ export function Control() {
                 )
               })}
             </div>
+          </section>
+
+          <section className="card">
+            <h2>Áudio / trilha</h2>
+            {audio.length === 0 ? (
+              <p className="muted">Nenhuma camada de áudio nesta campanha.</p>
+            ) : (
+              <div className="layers">
+                {audio.map((layer) => (
+                  <div key={layer.id} className="layer">
+                    <button
+                      className={
+                        'layer__toggle' + (layer.playing ? ' layer__toggle--on' : '')
+                      }
+                      onClick={() =>
+                        socket.emit('setAudioLayer', layer.id, { playing: !layer.playing })
+                      }
+                    >
+                      {layer.playing ? '⏸' : '▶'}
+                    </button>
+                    <div className="layer__body">
+                      <span className="layer__name">{layer.label}</span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={Math.round(layer.volume * 100)}
+                        onChange={(e) =>
+                          socket.emit('setAudioLayer', layer.id, {
+                            volume: Number(e.target.value) / 100,
+                          })
+                        }
+                      />
+                    </div>
+                    <span className="layer__vol">{Math.round(layer.volume * 100)}%</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="muted">
+              O som toca na <strong>tela dos jogadores</strong>; ela pedirá um toque
+              para ativar o áudio na primeira vez.
+            </p>
           </section>
 
           <section className="card">

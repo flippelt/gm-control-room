@@ -20,9 +20,21 @@ export function createSession(io: IO) {
     campaign: sampleCampaign,
     activeSceneId: sampleCampaign.scenes[0]?.id ?? null,
     lighting: { ...DEFAULT_LIGHTING },
+    // Semeia o estado de áudio a partir do catálogo da campanha (cópia).
+    audio: sampleCampaign.audio.map((layer) => ({ ...layer })),
   }
 
   const broadcast = () => io.emit('state', state)
+
+  function setAudioLayer(id: string, patch: { playing?: boolean; volume?: number }) {
+    const layer = state.audio.find((l) => l.id === id)
+    if (!layer) return
+    if (typeof patch.playing === 'boolean') layer.playing = patch.playing
+    if (typeof patch.volume === 'number') {
+      layer.volume = Math.min(1, Math.max(0, patch.volume))
+    }
+    broadcast()
+  }
 
   function setLighting(patch: Partial<Lighting>) {
     state.lighting = { ...state.lighting, ...patch }
@@ -59,6 +71,7 @@ export function createSession(io: IO) {
     socket.emit('state', state)
     socket.on('setActiveScene', setActiveScene)
     socket.on('setLighting', setLighting)
+    socket.on('setAudioLayer', setAudioLayer)
   }
 
   return { handleConnection }

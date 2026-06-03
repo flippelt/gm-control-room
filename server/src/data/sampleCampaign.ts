@@ -52,4 +52,22 @@ export const sampleCampaign: Campaign = {
       },
     },
   ],
+  audio: [
+    {
+      id: 'drone',
+      label: 'Drone grave',
+      src: '/assets/audio/drone.wav',
+      loop: true,
+      volume: 0.5,
+      playing: false,
+    },
+    {
+      id: 'heartbeat',
+      label: 'Batimento cardíaco',
+      src: '/assets/audio/heartbeat.wav',
+      loop: true,
+      volume: 0.6,
+      playing: false,
+    },
+  ],
 }
