@@ -6,7 +6,8 @@ import type {
   SessionState,
 } from '@gmcr/shared'
 import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/shared'
-import { sampleCampaign } from './data/sampleCampaign.js'
+import { loadCampaign } from './data/loadCampaign.js'
+import { loadPersisted, savePersisted } from './persist.js'
 import * as tools from './tools.js'
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>
@@ -17,17 +18,22 @@ type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents>
  * Fase 1: campanha + cena ativa, com validação do gating de tratamento.
  */
 export function createSession(io: IO) {
+  const campaign = loadCampaign()
+  const saved = loadPersisted(campaign.id)
   const state: SessionState = {
-    campaign: sampleCampaign,
-    activeSceneId: sampleCampaign.scenes[0]?.id ?? null,
-    lighting: { ...DEFAULT_LIGHTING },
-    // Semeia o estado de áudio a partir do catálogo da campanha (cópia).
-    audio: sampleCampaign.audio.map((layer) => ({ ...layer })),
+    campaign,
+    activeSceneId: saved?.activeSceneId ?? campaign.scenes[0]?.id ?? null,
+    lighting: saved?.lighting ?? { ...DEFAULT_LIGHTING },
+    // Semeia o áudio do catálogo da campanha (cópia), ou retoma o persistido.
+    audio: saved?.audio ?? campaign.audio.map((layer) => ({ ...layer })),
     lastRoll: null,
-    tracker: { ...DEFAULT_TRACKER, combatants: [] },
+    tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
   }
 
-  const broadcast = () => io.emit('state', state)
+  const broadcast = () => {
+    io.emit('state', state)
+    savePersisted(state)
+  }
 
   function setAudioLayer(id: string, patch: { playing?: boolean; volume?: number }) {
     const layer = state.audio.find((l) => l.id === id)

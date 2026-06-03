@@ -43,6 +43,33 @@ npm start          # serve tudo na porta 4000 (mesma origem)
 Ao subir, o servidor imprime a **URL da LAN + um QR code** para a tela dos
 jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
 
+## Campanhas
+
+A campanha é um arquivo JSON em `campaigns/` (padrão: `campaigns/arkham-1923.json`).
+Defina outra com a variável `CAMPAIGN_FILE` (caminho relativo à raiz ou absoluto).
+Estrutura:
+
+```jsonc
+{
+  "id": "minha-campanha",
+  "title": "Título",
+  "genre": "cosmic-horror",          // fantasy | cosmic-horror | sci-fi | modern | post-apocalyptic | generic
+  "era": { "startYear": 1923, "label": "Anos 1920" },
+  "scenes": [
+    { "id": "x", "name": "Cena", "treatment": { "kind": "color", "color": "#0a0f1a" } }
+    // treatment.kind: text | color | image | crt
+    // (crt fica indisponível em fantasy e em cosmic-horror de 1900–1950)
+  ],
+  "audio":     [ { "id": "a", "label": "Trilha", "src": "/assets/audio/x.wav", "loop": true, "volume": 0.5, "playing": false } ],
+  "shortcuts": [ { "id": "s", "label": "Spotify", "url": "spotify:", "emoji": "🎵" } ]
+}
+```
+
+Coloque mídias (mapas, retratos, áudios) em `assets/` e referencie por `/assets/...`.
+
+A **sessão é persistida** automaticamente (cena, iluminação, áudio e tracker) em
+`.session.json` e retomada ao reiniciar o servidor, se for a mesma campanha.
+
 ## Spotify (opcional)
 
 O controle do Spotify funciona sem o app de reprodução estar no mesmo aparelho:
@@ -77,4 +104,5 @@ funciona normalmente).
       e grade de atalhos (deep links)
 - [x] **Fase 5** — ferramentas de jogo (rolador de dados animado na TV, tracker
       de iniciativa/combate com turnos, HP e marcadores de status)
-- [ ] **Fase 6** — polimento (campanha JSON, persistência, docs)
+- [x] **Fase 6** — polimento (campanha em JSON + `CAMPAIGN_FILE`, persistência
+      de sessão em `.session.json`, painel responsivo, documentação)

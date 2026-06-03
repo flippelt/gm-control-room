@@ -42,6 +42,7 @@ export function Control() {
         <p className="muted">Carregando campanha…</p>
       ) : (
         <>
+          <div className="control__cards">
           <section className="card">
             <h2>{campaign.title}</h2>
             <p className="muted">
@@ -201,6 +202,7 @@ export function Control() {
             <h2>Atalhos</h2>
             <Shortcuts shortcuts={campaign.shortcuts} />
           </section>
+          </div>
 
           <p className="hint">
             Abra a{' '}
