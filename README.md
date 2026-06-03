@@ -1,5 +1,7 @@
 # GM Control Room
 
+[![CI](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml/badge.svg)](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml)
+
 Painel de controle de sessão de RPG. O mestre opera de qualquer dispositivo
 (iPad, Android, PC ou Mac) e controla, em tempo real, uma **tela dos jogadores**
 (TV/projetor) — cenas, imagens, clima/iluminação, trilha sonora (incl. Spotify),
@@ -8,7 +10,22 @@ rolagem de dados e tracker de combate. Funciona offline na rede local.
 Motor **agnóstico de sistema**: nada de regras embutidas; tudo é dirigido por
 conteúdo (cenas, mídia, trilhas). Serve LANCER, D&D, Call of Cthulhu, etc.
 
-> 🚧 Em construção. **Fase 0** (esqueleto + sincronia em tempo real) concluída.
+> ✅ **v0.1.0 — todas as fases concluídas.** App funcional de ponta a ponta.
+
+## Recursos
+
+- 🎬 **Cenas** dirigidas por conteúdo (texto, cor, imagem, CRT) com transições
+- 🎭 **Gênero/época** por campanha, com **bloqueio do CRT** onde seria anacrônico
+  (fantasia e horror cósmico de 1900–1950)
+- 🖼️ **Visual**: mapas, handouts e retratos servidos em `/assets`
+- 🌗 **Iluminação/clima**: lavagem de cor, alerta pulsante, vinheta
+- 🔊 **Mixer de áudio** multi-camada (fade/loop/volume) na tela dos jogadores
+- 🎵 **Spotify** (Web API): dispositivos Connect + transporte
+- 🔗 **Atalhos** (deep links) para apps externos
+- 🎲 **Rolador de dados** com resultado animado na TV
+- ⚔️ **Tracker de iniciativa/combate** (turnos, HP, marcadores de status)
+- 💾 Campanha em **JSON** + **persistência de sessão** entre reinícios
+- 📱 Painel **responsivo** + **QR code** da LAN no boot
 
 ## Arquitetura
 
@@ -112,3 +129,18 @@ funciona normalmente).
       de iniciativa/combate com turnos, HP e marcadores de status)
 - [x] **Fase 6** — polimento (campanha em JSON + `CAMPAIGN_FILE`, persistência
       de sessão em `.session.json`, painel responsivo, documentação)
+
+## Segurança e qualidade
+
+- **helmet** com cabeçalhos de segurança no servidor.
+- **Validação/saneamento** de todas as entradas dos eventos socket (cor CSS
+  segura contra injeção via `style`, clamps numéricos, status saneado, limites
+  de tamanho) + limite de corpo JSON.
+- **Testes** (Vitest): gating do CRT, parser de dados, tracker de combate e
+  validação — `npm test`.
+- **CI** (GitHub Actions): `npm ci` + testes + build a cada push/PR.
+- **Dependabot**: atualizações semanais de dependências e actions.
+
+## Licença
+
+MIT
