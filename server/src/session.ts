@@ -9,6 +9,13 @@ import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/sha
 import { loadCampaign } from './data/loadCampaign.js'
 import { loadPersisted, savePersisted } from './persist.js'
 import * as tools from './tools.js'
+import {
+  capNotation,
+  clamp,
+  isSafeCssColor,
+  sanitizeStatuses,
+  toFiniteInt,
+} from './validate.js'
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>
 type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents>
@@ -36,19 +43,30 @@ export function createSession(io: IO) {
   }
 
   function setAudioLayer(id: string, patch: { playing?: boolean; volume?: number }) {
+    if (typeof id !== 'string') return
     const layer = state.audio.find((l) => l.id === id)
     if (!layer) return
-    if (typeof patch.playing === 'boolean') layer.playing = patch.playing
-    if (typeof patch.volume === 'number') {
-      layer.volume = Math.min(1, Math.max(0, patch.volume))
+    if (typeof patch?.playing === 'boolean') layer.playing = patch.playing
+    if (patch?.volume !== undefined) {
+      const v = Number(patch.volume)
+      if (Number.isFinite(v)) layer.volume = clamp(v, 0, 1)
     }
     broadcast()
   }
 
   function setLighting(patch: Partial<Lighting>) {
-    state.lighting = { ...state.lighting, ...patch }
-    // Mantém a intensidade dentro de 0..1.
-    state.lighting.intensity = Math.min(1, Math.max(0, state.lighting.intensity))
+    if (!patch || typeof patch !== 'object') return
+    if ('colorWash' in patch) {
+      // Aceita só null ou cor CSS segura; ignora valores suspeitos.
+      if (patch.colorWash === null) state.lighting.colorWash = null
+      else if (isSafeCssColor(patch.colorWash)) state.lighting.colorWash = patch.colorWash
+    }
+    if (patch.intensity !== undefined) {
+      const v = Number(patch.intensity)
+      if (Number.isFinite(v)) state.lighting.intensity = clamp(v, 0, 1)
+    }
+    if (typeof patch.alert === 'boolean') state.lighting.alert = patch.alert
+    if (typeof patch.vignette === 'boolean') state.lighting.vignette = patch.vignette
     broadcast()
   }
 
@@ -82,22 +100,35 @@ export function createSession(io: IO) {
     socket.on('setLighting', setLighting)
     socket.on('setAudioLayer', setAudioLayer)
 
-    // --- Ferramentas de jogo ---
+    // --- Ferramentas de jogo (entradas saneadas no limite de confiança) ---
     socket.on('rollDice', (notation) => {
-      const roll = tools.rollDice(notation)
+      const roll = tools.rollDice(capNotation(notation))
       if (!roll) return
       state.lastRoll = roll
       broadcast()
     })
     socket.on('addCombatant', (name, initiative) => {
-      tools.addCombatant(state.tracker, name, initiative)
+      tools.addCombatant(
+        state.tracker,
+        typeof name === 'string' ? name : '',
+        clamp(toFiniteInt(initiative), -1000, 1000),
+      )
       broadcast()
     })
     socket.on('updateCombatant', (id, patch) => {
-      tools.updateCombatant(state.tracker, id, patch)
+      if (typeof id !== 'string' || !patch || typeof patch !== 'object') return
+      const clean: typeof patch = {}
+      if (patch.name !== undefined && typeof patch.name === 'string') clean.name = patch.name
+      if (patch.initiative !== undefined)
+        clean.initiative = clamp(toFiniteInt(patch.initiative), -1000, 1000)
+      if (patch.hp !== undefined) clean.hp = clamp(toFiniteInt(patch.hp), 0, 100000)
+      if (patch.maxHp !== undefined) clean.maxHp = clamp(toFiniteInt(patch.maxHp), 0, 100000)
+      if (patch.statuses !== undefined) clean.statuses = sanitizeStatuses(patch.statuses)
+      tools.updateCombatant(state.tracker, id, clean)
       broadcast()
     })
     socket.on('removeCombatant', (id) => {
+      if (typeof id !== 'string') return
       tools.removeCombatant(state.tracker, id)
       broadcast()
     })

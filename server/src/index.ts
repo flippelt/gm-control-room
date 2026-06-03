@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
 import express from 'express'
+import helmet from 'helmet'
 import { Server } from 'socket.io'
 import qrcode from 'qrcode-terminal'
 import type { ClientToServerEvents, ServerToClientEvents, SpotifyCommand } from '@gmcr/shared'
@@ -19,6 +20,20 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 const PORT = Number(process.env.PORT ?? 4000)
 
 const app = express()
+
+// Cabeçalhos de segurança. CSP desligada porque o app carrega estilos/imagens
+// dinâmicos (capas do Spotify, assets locais); CORP cross-origin permite que a
+// tela dos jogadores em outro dispositivo da LAN carregue os assets.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginEmbedderPolicy: false,
+  }),
+)
+// Limite de corpo defensivo nas rotas que recebem JSON.
+app.use(express.json({ limit: '64kb' }))
+
 const server = http.createServer(app)
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   // Em dev o Vite faz proxy de /socket.io; em prod é mesma origem. CORS aberto
@@ -62,7 +77,7 @@ app.get('/spotify/state', async (_req, res) => {
   res.json(await getState())
 })
 
-app.post('/spotify/command', express.json(), async (req, res) => {
+app.post('/spotify/command', async (req, res) => {
   try {
     await runCommand(req.body as SpotifyCommand)
     res.json({ ok: true })

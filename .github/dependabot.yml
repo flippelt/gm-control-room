@@ -1,0 +1,23 @@
+version: 2
+updates:
+  # npm — agrupa atualizações por workspace para reduzir ruído de PRs.
+  - package-ecosystem: npm
+    directories:
+      - "/"
+      - "/client"
+      - "/server"
+      - "/shared"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+
+  # GitHub Actions usadas no CI.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

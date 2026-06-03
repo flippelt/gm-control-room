@@ -13,9 +13,12 @@
     "dev:server": "npm run dev -w @gmcr/server",
     "dev:client": "npm run dev -w @gmcr/client",
     "build": "npm run build -w @gmcr/client && npm run build -w @gmcr/server",
-    "start": "node server/dist/index.js"
+    "start": "node server/dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "concurrently": "^9.1.0",
+    "vitest": "^2.1.8"
   }
 }

@@ -30,6 +30,12 @@ npm run dev        # sobe server (porta 4000) + client (Vite, 5173) juntos
 - Controle: `http://localhost:5173/control`
 - Tela dos jogadores: `http://localhost:5173/display`
 
+Testes (Vitest — gating, parser de dados, tracker e validação de entrada):
+
+```bash
+npm test
+```
+
 O Vite expõe o dev server na LAN (`host: true`) e faz proxy do WebSocket para o
 servidor Node, então dá para abrir pelo IP da máquina em outros dispositivos.
 
