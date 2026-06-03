@@ -495,3 +495,205 @@ code {
 .shortcut__emoji {
   font-size: 1.6rem;
 }
+
+/* ===== Dados (painel) ===== */
+.dice-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.dice-btn {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  min-width: 52px;
+}
+
+/* ===== Tracker (painel) ===== */
+.cbts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.cbt {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.cbt--active {
+  border-color: #8b8bff;
+  box-shadow: 0 0 0 1px #8b8bff inset;
+}
+
+.cbt__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cbt__init {
+  width: 56px;
+  flex: none;
+  text-align: center;
+  padding: 6px;
+}
+
+.cbt__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.cbt__hp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.cbt__hp button {
+  width: 28px;
+  padding: 4px 0;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+}
+
+.cbt__remove {
+  background: transparent;
+  border: 1px solid #3a2530;
+  color: #d77;
+  padding: 4px 8px;
+}
+
+.cbt__statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.tag {
+  background: #2a1530;
+  border: 1px solid #5a2a5a;
+  color: #e7c7ff;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+}
+
+.cbt__statuses select {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  color: #b8b8c0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+/* ===== Overlay de dados (tela dos jogadores) ===== */
+.dice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  animation: dice-pop 0.5s cubic-bezier(0.2, 1.4, 0.5, 1);
+}
+
+.dice-overlay__total {
+  font-size: clamp(5rem, 22vw, 16rem);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(140, 140, 255, 0.8), 0 6px 24px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+}
+
+.dice-overlay__detail {
+  font-size: clamp(1rem, 3vw, 2rem);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: monospace;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+@keyframes dice-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ===== Painel de iniciativa (tela dos jogadores) ===== */
+.tracker-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 60;
+  min-width: 220px;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+
+.tracker-panel__round {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.tracker-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tp-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  opacity: 0.75;
+}
+
+.tp-item--active {
+  background: rgba(139, 139, 255, 0.25);
+  outline: 1px solid rgba(139, 139, 255, 0.6);
+  opacity: 1;
+}
+
+.tp-item__init {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  min-width: 1.8em;
+  text-align: right;
+  opacity: 0.8;
+}
+
+.tp-item__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.tp-item__statuses {
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  color: #e7c7ff;
+  padding-left: 2.6em;
+}

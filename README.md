@@ -75,5 +75,6 @@ funciona normalmente).
       volume por camada, gesto de "ativar áudio")
 - [x] **Fase 4** — Spotify (OAuth loopback + Web API: dispositivos + transporte)
       e grade de atalhos (deep links)
-- [ ] **Fase 5** — ferramentas de jogo (dados, tracker)
+- [x] **Fase 5** — ferramentas de jogo (rolador de dados animado na TV, tracker
+      de iniciativa/combate com turnos, HP e marcadores de status)
 - [ ] **Fase 6** — polimento (campanha JSON, persistência, docs)

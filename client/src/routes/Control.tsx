@@ -3,6 +3,8 @@ import { socket } from '../lib/socket'
 import { useSession } from '../store'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
+import { DiceRoller } from '../features/tools/DiceRoller'
+import { Tracker } from '../features/tools/Tracker'
 
 const TREATMENT_LABEL: Record<string, string> = {
   text: 'texto',
@@ -178,6 +180,16 @@ export function Control() {
                 Vinheta
               </label>
             </div>
+          </section>
+
+          <section className="card">
+            <h2>Dados</h2>
+            <DiceRoller />
+          </section>
+
+          <section className="card">
+            <h2>Iniciativa / combate</h2>
+            <Tracker />
           </section>
 
           <section className="card">

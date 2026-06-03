@@ -2,12 +2,16 @@ import { useState } from 'react'
 import { useSession, useActiveScene } from '../store'
 import { SceneView } from '../features/display/SceneView'
 import { LightingOverlay } from '../features/display/LightingOverlay'
+import { DiceOverlay } from '../features/display/DiceOverlay'
+import { TrackerPanel } from '../features/display/TrackerPanel'
 import { useAudioEngine } from '../features/audio/useAudioEngine'
 
 export function Display() {
   const campaign = useSession((s) => s.campaign)
   const lighting = useSession((s) => s.lighting)
   const audio = useSession((s) => s.audio)
+  const lastRoll = useSession((s) => s.lastRoll)
+  const tracker = useSession((s) => s.tracker)
   const scene = useActiveScene()
 
   const [audioEnabled, setAudioEnabled] = useState(false)
@@ -32,6 +36,8 @@ export function Display() {
       </div>
 
       <LightingOverlay lighting={lighting} />
+      <TrackerPanel tracker={tracker} />
+      <DiceOverlay roll={lastRoll} />
 
       {needsAudioGesture && (
         <button className="audio-gate" onClick={() => setAudioEnabled(true)}>

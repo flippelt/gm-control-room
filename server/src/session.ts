@@ -5,8 +5,9 @@ import type {
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
-import { DEFAULT_LIGHTING, isTreatmentAllowed } from '@gmcr/shared'
+import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/shared'
 import { sampleCampaign } from './data/sampleCampaign.js'
+import * as tools from './tools.js'
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>
 type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents>
@@ -22,6 +23,8 @@ export function createSession(io: IO) {
     lighting: { ...DEFAULT_LIGHTING },
     // Semeia o estado de áudio a partir do catálogo da campanha (cópia).
     audio: sampleCampaign.audio.map((layer) => ({ ...layer })),
+    lastRoll: null,
+    tracker: { ...DEFAULT_TRACKER, combatants: [] },
   }
 
   const broadcast = () => io.emit('state', state)
@@ -72,6 +75,38 @@ export function createSession(io: IO) {
     socket.on('setActiveScene', setActiveScene)
     socket.on('setLighting', setLighting)
     socket.on('setAudioLayer', setAudioLayer)
+
+    // --- Ferramentas de jogo ---
+    socket.on('rollDice', (notation) => {
+      const roll = tools.rollDice(notation)
+      if (!roll) return
+      state.lastRoll = roll
+      broadcast()
+    })
+    socket.on('addCombatant', (name, initiative) => {
+      tools.addCombatant(state.tracker, name, initiative)
+      broadcast()
+    })
+    socket.on('updateCombatant', (id, patch) => {
+      tools.updateCombatant(state.tracker, id, patch)
+      broadcast()
+    })
+    socket.on('removeCombatant', (id) => {
+      tools.removeCombatant(state.tracker, id)
+      broadcast()
+    })
+    socket.on('nextTurn', () => {
+      tools.nextTurn(state.tracker)
+      broadcast()
+    })
+    socket.on('setCombatActive', (active) => {
+      tools.setCombatActive(state.tracker, active)
+      broadcast()
+    })
+    socket.on('clearCombat', () => {
+      tools.clearCombat(state.tracker)
+      broadcast()
+    })
   }
 
   return { handleConnection }

@@ -176,6 +176,70 @@ export type SpotifyCommand =
   | { action: 'volume'; volumePercent: number }
   | { action: 'transfer'; deviceId: string }
 
+// ===================== Ferramentas de jogo =====================
+
+export interface DiceNotation {
+  count: number
+  sides: number
+  modifier: number
+}
+
+/** Faz o parse de notação "NdM±K" (ex.: 2d6+3, d20, 4d8-1). null se inválida. */
+export function parseDiceNotation(input: string): DiceNotation | null {
+  const m = input.trim().toLowerCase().match(/^(\d*)d(\d+)\s*([+-]\s*\d+)?$/)
+  if (!m) return null
+  const count = m[1] ? parseInt(m[1], 10) : 1
+  const sides = parseInt(m[2], 10)
+  const modifier = m[3] ? parseInt(m[3].replace(/\s/g, ''), 10) : 0
+  if (count < 1 || count > 100 || sides < 2 || sides > 1000) return null
+  return { count, sides, modifier }
+}
+
+export interface DiceRoll {
+  id: string
+  notation: string
+  rolls: number[]
+  modifier: number
+  total: number
+  at: number
+}
+
+export interface Combatant {
+  id: string
+  name: string
+  initiative: number
+  hp?: number
+  maxHp?: number
+  /** Marcadores de status (ex.: "Envenenado"). */
+  statuses: string[]
+}
+
+export interface Tracker {
+  /** Combatentes em ordem de iniciativa (desc). */
+  combatants: Combatant[]
+  /** Índice do combatente do turno atual. */
+  turnIndex: number
+  round: number
+  active: boolean
+}
+
+export const DEFAULT_TRACKER: Tracker = {
+  combatants: [],
+  turnIndex: 0,
+  round: 1,
+  active: false,
+}
+
+/** Sugestões rápidas de status para a UI. */
+export const STATUS_PRESETS = [
+  'Envenenado',
+  'Atordoado',
+  'Caído',
+  'Amedrontado',
+  'Enfeitiçado',
+  'Sangrando',
+] as const
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -187,6 +251,10 @@ export interface SessionState {
   lighting: Lighting
   /** Estado atual das camadas de áudio (semeado da campanha). */
   audio: AudioLayer[]
+  /** Última rolagem de dados (para animar na tela dos jogadores). */
+  lastRoll: DiceRoll | null
+  /** Tracker de iniciativa/combate. */
+  tracker: Tracker
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -203,4 +271,17 @@ export interface ClientToServerEvents {
   setLighting: (patch: Partial<Lighting>) => void
   /** Atualiza play/pause e/ou volume de uma camada de áudio. */
   setAudioLayer: (id: string, patch: { playing?: boolean; volume?: number }) => void
+
+  // --- Ferramentas de jogo ---
+  /** Rola dados (notação NdM±K). O servidor sorteia e faz broadcast. */
+  rollDice: (notation: string) => void
+  addCombatant: (name: string, initiative: number) => void
+  updateCombatant: (
+    id: string,
+    patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses'>>,
+  ) => void
+  removeCombatant: (id: string) => void
+  nextTurn: () => void
+  setCombatActive: (active: boolean) => void
+  clearCombat: () => void
 }
