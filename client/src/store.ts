@@ -1,10 +1,12 @@
 import { create } from 'zustand'
-import type { Campaign, Scene, SessionState } from '@gmcr/shared'
+import type { Campaign, Lighting, Scene, SessionState } from '@gmcr/shared'
+import { DEFAULT_LIGHTING } from '@gmcr/shared'
 import { socket } from './lib/socket'
 
 interface SessionStore {
   campaign: Campaign | null
   activeSceneId: string | null
+  lighting: Lighting
   connected: boolean
 }
 
@@ -12,6 +14,7 @@ interface SessionStore {
 export const useSession = create<SessionStore>(() => ({
   campaign: null,
   activeSceneId: null,
+  lighting: DEFAULT_LIGHTING,
   connected: false,
 }))
 
@@ -21,6 +24,7 @@ socket.on('state', (state: SessionState) =>
   useSession.setState({
     campaign: state.campaign,
     activeSceneId: state.activeSceneId,
+    lighting: state.lighting,
   }),
 )
 

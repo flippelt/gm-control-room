@@ -84,6 +84,30 @@ export function treatmentBlockedReason(
   return 'Tratamento indisponível para este gênero/época.'
 }
 
+// ===================== Iluminação / clima =====================
+
+/**
+ * Camada de clima sobreposta à cena, controlada de forma independente — o
+ * mestre pode jogar tensão por cima de qualquer cena sem trocá-la.
+ */
+export interface Lighting {
+  /** Cor da lavagem em tela cheia (hex/rgb) ou null para nenhuma. */
+  colorWash: string | null
+  /** Intensidade da lavagem (0..1). */
+  intensity: number
+  /** Alerta pulsante (vermelho piscando nas bordas). */
+  alert: boolean
+  /** Vinheta escurecendo as bordas. */
+  vignette: boolean
+}
+
+export const DEFAULT_LIGHTING: Lighting = {
+  colorWash: null,
+  intensity: 0.4,
+  alert: false,
+  vignette: false,
+}
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -91,6 +115,8 @@ export interface SessionState {
   campaign: Campaign
   /** Cena ativa exibida na tela dos jogadores (null = tela ociosa). */
   activeSceneId: string | null
+  /** Camada de iluminação/clima sobreposta. */
+  lighting: Lighting
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -103,4 +129,6 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   /** Define a cena ativa (ou null para limpar). */
   setActiveScene: (sceneId: string | null) => void
+  /** Atualiza parcialmente a camada de iluminação/clima. */
+  setLighting: (patch: Partial<Lighting>) => void
 }

@@ -9,9 +9,19 @@ const TREATMENT_LABEL: Record<string, string> = {
   crt: 'CRT',
 }
 
+const WASH_PRESETS: Array<{ label: string; color: string | null }> = [
+  { label: 'Nenhuma', color: null },
+  { label: 'Tensão', color: '#7a0b0b' },
+  { label: 'Noite', color: '#0a1430' },
+  { label: 'Doentio', color: '#1f3a0b' },
+  { label: 'Fogo', color: '#b3450a' },
+  { label: 'Sobrenatural', color: '#3a0b5a' },
+]
+
 export function Control() {
   const campaign = useSession((s) => s.campaign)
   const activeSceneId = useSession((s) => s.activeSceneId)
+  const lighting = useSession((s) => s.lighting)
   const connected = useSession((s) => s.connected)
 
   return (
@@ -68,6 +78,59 @@ export function Control() {
                   </button>
                 )
               })}
+            </div>
+          </section>
+
+          <section className="card">
+            <h2>Iluminação / clima</h2>
+
+            <p className="field-label">Lavagem de cor</p>
+            <div className="washes">
+              {WASH_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  className={
+                    'wash-btn' +
+                    (lighting.colorWash === preset.color ? ' wash-btn--active' : '')
+                  }
+                  style={preset.color ? { background: preset.color } : undefined}
+                  onClick={() => socket.emit('setLighting', { colorWash: preset.color })}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+
+            <p className="field-label">
+              Intensidade: {Math.round(lighting.intensity * 100)}%
+            </p>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(lighting.intensity * 100)}
+              onChange={(e) =>
+                socket.emit('setLighting', { intensity: Number(e.target.value) / 100 })
+              }
+            />
+
+            <div className="toggles">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={lighting.alert}
+                  onChange={(e) => socket.emit('setLighting', { alert: e.target.checked })}
+                />
+                Alerta (pulso)
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={lighting.vignette}
+                  onChange={(e) => socket.emit('setLighting', { vignette: e.target.checked })}
+                />
+                Vinheta
+              </label>
             </div>
           </section>
 

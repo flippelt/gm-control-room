@@ -35,7 +35,7 @@ export const sampleCampaign: Campaign = {
     {
       id: 'mapa',
       name: 'Mapa de Arkham',
-      treatment: { kind: 'image', src: '/assets/arkham-map.jpg', alt: 'Mapa de Arkham' },
+      treatment: { kind: 'image', src: '/assets/arkham-map.svg', alt: 'Mapa de Arkham' },
     },
     {
       id: 'sangue',

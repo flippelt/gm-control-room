@@ -1,10 +1,11 @@
 import type { Server, Socket } from 'socket.io'
 import type {
   ClientToServerEvents,
+  Lighting,
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
-import { isTreatmentAllowed } from '@gmcr/shared'
+import { DEFAULT_LIGHTING, isTreatmentAllowed } from '@gmcr/shared'
 import { sampleCampaign } from './data/sampleCampaign.js'
 
 type IO = Server<ClientToServerEvents, ServerToClientEvents>
@@ -18,9 +19,17 @@ export function createSession(io: IO) {
   const state: SessionState = {
     campaign: sampleCampaign,
     activeSceneId: sampleCampaign.scenes[0]?.id ?? null,
+    lighting: { ...DEFAULT_LIGHTING },
   }
 
   const broadcast = () => io.emit('state', state)
+
+  function setLighting(patch: Partial<Lighting>) {
+    state.lighting = { ...state.lighting, ...patch }
+    // Mantém a intensidade dentro de 0..1.
+    state.lighting.intensity = Math.min(1, Math.max(0, state.lighting.intensity))
+    broadcast()
+  }
 
   function setActiveScene(sceneId: string | null) {
     if (sceneId === null) {
@@ -49,6 +58,7 @@ export function createSession(io: IO) {
     // Snapshot completo para quem acabou de conectar.
     socket.emit('state', state)
     socket.on('setActiveScene', setActiveScene)
+    socket.on('setLighting', setLighting)
   }
 
   return { handleConnection }

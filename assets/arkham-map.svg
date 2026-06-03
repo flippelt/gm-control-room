@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <radialGradient id="paper" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#e8d8b0"/>
+      <stop offset="70%" stop-color="#d8c596"/>
+      <stop offset="100%" stop-color="#b89a63"/>
+    </radialGradient>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.05 0"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#paper)"/>
+  <rect width="1200" height="800" filter="url(#rough)"/>
+
+  <!-- rio -->
+  <path d="M 0 520 Q 300 470 520 540 T 1000 500 L 1200 520 L 1200 600 Q 900 560 600 620 T 0 600 Z"
+        fill="#9bb0a0" opacity="0.6"/>
+  <text x="180" y="585" font-family="Georgia, serif" font-size="26" fill="#4a3a22" font-style="italic">Rio Miskatonic</text>
+
+  <!-- estradas -->
+  <g stroke="#6b5836" stroke-width="3" fill="none" stroke-dasharray="2 6" opacity="0.7">
+    <path d="M 120 120 L 520 300 L 900 220"/>
+    <path d="M 520 300 L 480 540"/>
+    <path d="M 900 220 L 980 480"/>
+  </g>
+
+  <!-- pontos -->
+  <g font-family="Georgia, serif" fill="#3a2c16">
+    <circle cx="520" cy="300" r="7" fill="#3a2c16"/>
+    <text x="535" y="296" font-size="28">Universidade Miskatonic</text>
+    <circle cx="120" cy="120" r="7" fill="#3a2c16"/>
+    <text x="135" y="116" font-size="24">Estação Ferroviária</text>
+    <circle cx="900" cy="220" r="7" fill="#3a2c16"/>
+    <text x="700" y="200" font-size="24">Cemitério de Arkham</text>
+    <circle cx="980" cy="480" r="7" fill="#7a1010"/>
+    <text x="760" y="476" font-size="24" fill="#7a1010">A Casa na Colina</text>
+  </g>
+
+  <!-- rosa dos ventos -->
+  <g transform="translate(1080,120)" stroke="#4a3a22" fill="#4a3a22">
+    <circle r="42" fill="none" stroke-width="2"/>
+    <path d="M 0 -50 L 8 0 L 0 50 L -8 0 Z"/>
+    <path d="M -50 0 L 0 -8 L 50 0 L 0 8 Z" opacity="0.5"/>
+    <text x="-6" y="-54" font-family="Georgia, serif" font-size="18">N</text>
+  </g>
+
+  <text x="40" y="60" font-family="Georgia, serif" font-size="40" fill="#3a2c16" font-weight="bold">ARKHAM</text>
+  <text x="40" y="760" font-family="Georgia, serif" font-size="18" fill="#5a4a2c" font-style="italic">Condado de Essex, Massachusetts — 1923</text>
+</svg>

@@ -15,6 +15,11 @@ export default defineConfig({
         ws: true,
         changeOrigin: true,
       },
+      // Assets da campanha são servidos pelo Node.
+      '/assets': {
+        target: `http://localhost:${SERVER_PORT}`,
+        changeOrigin: true,
+      },
     },
   },
 })

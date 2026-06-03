@@ -48,7 +48,8 @@ jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
 - [x] **Fase 0** — esqueleto do monorepo + hello sync em tempo real
 - [x] **Fase 1** — núcleo de cena + display (campanha/cena com gênero/época,
       seletor de cenas, snapshot, gating do CRT por anacronismo)
-- [ ] **Fase 2** — visual + iluminação (imagens/handouts, cenas CRT, overlays)
+- [x] **Fase 2** — visual + iluminação (assets servidos em `/assets`, imagens/
+      handouts, overlays de cor/alerta/vinheta, transição entre cenas)
 - [ ] **Fase 3** — áudio (mixer multi-camada)
 - [ ] **Fase 4** — Spotify (OAuth loopback + Web API) + deep links
 - [ ] **Fase 5** — ferramentas de jogo (dados, tracker)

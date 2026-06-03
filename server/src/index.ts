@@ -23,6 +23,12 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
 const session = createSession(io)
 io.on('connection', (socket) => session.handleConnection(socket))
 
+// Assets da campanha (mapas, handouts, retratos, áudios). Coloque arquivos em
+// gm-control-room/assets/ e referencie por /assets/<arquivo> nas cenas.
+// Resolve igual em dev (server/src via tsx) e prod (server/dist): ../../assets.
+const assetsDir = path.resolve(__dirname, '../../assets')
+app.use('/assets', express.static(assetsDir))
+
 // Em produção, o servidor serve o client buildado (mesma origem).
 const clientDist = path.resolve(__dirname, '../../client/dist')
 if (fs.existsSync(clientDist)) {
