@@ -18,7 +18,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0",
-    "vitest": "^2.1.8"
+    "concurrently": "^10.0.3",
+    "vitest": "^4.1.8"
   }
 }
