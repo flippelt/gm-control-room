@@ -114,17 +114,6 @@ Premium**.
 Sem `SPOTIFY_CLIENT_ID`, o painel apenas mostra instruções (o resto do app
 funciona normalmente).
 
-## Segurança e qualidade
-
-- **helmet** com cabeçalhos de segurança no servidor.
-- **Validação/saneamento** de todas as entradas dos eventos socket (cor CSS
-  segura contra injeção via `style`, clamps numéricos, status saneado, limites
-  de tamanho) + limite de corpo JSON.
-- **Testes** (Vitest): gating do CRT, parser de dados, tracker de combate e
-  validação — `npm test`.
-- **CI** (GitHub Actions): `npm ci` + testes + build a cada push/PR.
-- **Dependabot**: atualizações semanais de dependências e actions.
-
 ## Licença
 
 MIT
