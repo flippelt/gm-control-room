@@ -394,3 +394,104 @@ input[type='range'] {
 .audio-gate__icon {
   font-size: 3rem;
 }
+
+/* ===== Spotify ===== */
+.btn-link {
+  display: inline-block;
+  margin-top: 8px;
+  background: #1db954;
+  color: #04210f;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.spotify__now {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 64px;
+}
+
+.spotify__art {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.spotify__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spotify__transport {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.spotify__transport button {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  font-size: 1.1rem;
+  width: 48px;
+}
+
+.spotify__devices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.device {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+.device--active {
+  border-color: #1db954;
+  color: #1db954;
+}
+
+code {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.85em;
+}
+
+/* ===== Atalhos ===== */
+.shortcuts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 10px;
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.shortcut:hover {
+  border-color: #4a4a6a;
+}
+
+.shortcut__emoji {
+  font-size: 1.6rem;
+}

@@ -43,6 +43,27 @@ npm start          # serve tudo na porta 4000 (mesma origem)
 Ao subir, o servidor imprime a **URL da LAN + um QR code** para a tela dos
 jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
 
+## Spotify (opcional)
+
+O controle do Spotify funciona sem o app de reprodução estar no mesmo aparelho:
+o servidor controla, via Web API, **qualquer dispositivo Spotify Connect** que
+você escolher (o Spotify do PC/Mac, um celular, uma caixa). Requer **Spotify
+Premium**.
+
+1. Crie um app em https://developer.spotify.com/dashboard.
+2. Em **Redirect URIs**, adicione exatamente: `http://127.0.0.1:4000/spotify/callback`
+   (loopback é aceito sem HTTPS).
+3. Copie o **Client ID** para um arquivo `.env` na raiz (veja `.env.example`):
+   ```
+   SPOTIFY_CLIENT_ID=seu_client_id
+   SPOTIFY_REDIRECT_URI=http://127.0.0.1:4000/spotify/callback
+   ```
+4. Rode em modo produção (`npm run build && npm start`) — assim tudo fica na
+   porta 4000 e o redirect bate certo. No painel, clique em **Conectar Spotify**.
+
+Sem `SPOTIFY_CLIENT_ID`, o painel apenas mostra instruções (o resto do app
+funciona normalmente).
+
 ## Roadmap
 
 - [x] **Fase 0** — esqueleto do monorepo + hello sync em tempo real
@@ -52,6 +73,7 @@ jogadores. Os dispositivos acessam `http://<IP-do-notebook>:4000`.
       handouts, overlays de cor/alerta/vinheta, transição entre cenas)
 - [x] **Fase 3** — áudio (mixer multi-camada na tela dos jogadores, fade/loop/
       volume por camada, gesto de "ativar áudio")
-- [ ] **Fase 4** — Spotify (OAuth loopback + Web API) + deep links
+- [x] **Fase 4** — Spotify (OAuth loopback + Web API: dispositivos + transporte)
+      e grade de atalhos (deep links)
 - [ ] **Fase 5** — ferramentas de jogo (dados, tracker)
 - [ ] **Fase 6** — polimento (campanha JSON, persistência, docs)

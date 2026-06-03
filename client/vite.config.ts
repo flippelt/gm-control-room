@@ -20,6 +20,11 @@ export default defineConfig({
         target: `http://localhost:${SERVER_PORT}`,
         changeOrigin: true,
       },
+      // Endpoints do Spotify (OAuth + proxy da Web API).
+      '/spotify': {
+        target: `http://localhost:${SERVER_PORT}`,
+        changeOrigin: true,
+      },
     },
   },
 })

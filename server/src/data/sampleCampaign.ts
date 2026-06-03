@@ -70,4 +70,10 @@ export const sampleCampaign: Campaign = {
       playing: false,
     },
   ],
+  shortcuts: [
+    { id: 'spotify', label: 'Spotify', url: 'spotify:', emoji: '🎵' },
+    { id: 'youtube', label: 'YouTube', url: 'https://www.youtube.com', emoji: '📺' },
+    { id: 'maps', label: 'Mapas', url: 'https://maps.google.com', emoji: '🗺️' },
+    { id: 'notes', label: 'Notas', url: 'https://keep.google.com', emoji: '📝' },
+  ],
 }

@@ -1,6 +1,8 @@
 import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
+import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
+import { Shortcuts } from '../features/shortcuts/Shortcuts'
 
 const TREATMENT_LABEL: Record<string, string> = {
   text: 'texto',
@@ -176,6 +178,16 @@ export function Control() {
                 Vinheta
               </label>
             </div>
+          </section>
+
+          <section className="card">
+            <h2>Spotify</h2>
+            <SpotifyPanel />
+          </section>
+
+          <section className="card">
+            <h2>Atalhos</h2>
+            <Shortcuts shortcuts={campaign.shortcuts} />
           </section>
 
           <p className="hint">

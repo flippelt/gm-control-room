@@ -50,6 +50,15 @@ export interface AudioLayer {
   playing: boolean
 }
 
+/** Atalho para abrir um app externo no aparelho de controle (deep link/URL). */
+export interface Shortcut {
+  id: string
+  label: string
+  /** URL scheme (ex.: spotify:) ou link https. */
+  url: string
+  emoji?: string
+}
+
 export interface Campaign {
   id: string
   title: string
@@ -58,6 +67,8 @@ export interface Campaign {
   scenes: Scene[]
   /** Catálogo de camadas de áudio disponíveis na campanha. */
   audio: AudioLayer[]
+  /** Atalhos para apps externos (abrem no aparelho de controle). */
+  shortcuts: Shortcut[]
 }
 
 // ===================== Gating de adequação (regra do usuário) =====================
@@ -123,6 +134,47 @@ export const DEFAULT_LIGHTING: Lighting = {
   alert: false,
   vignette: false,
 }
+
+// ===================== Spotify (controlado via REST no servidor) =====================
+
+export interface SpotifyDevice {
+  id: string
+  name: string
+  type: string
+  isActive: boolean
+  volumePercent: number | null
+}
+
+export interface SpotifyTrack {
+  name: string
+  artists: string
+  albumImage?: string
+}
+
+export interface SpotifyPlayback {
+  isPlaying: boolean
+  device?: string
+  track?: SpotifyTrack
+}
+
+/** Resposta de GET /spotify/state. */
+export interface SpotifyState {
+  /** Há Client ID configurado no servidor? */
+  configured: boolean
+  /** Há tokens válidos (mestre autenticado)? */
+  connected: boolean
+  devices: SpotifyDevice[]
+  playback: SpotifyPlayback | null
+}
+
+/** Corpo de POST /spotify/command. */
+export type SpotifyCommand =
+  | { action: 'play'; deviceId?: string; contextUri?: string }
+  | { action: 'pause' }
+  | { action: 'next' }
+  | { action: 'previous' }
+  | { action: 'volume'; volumePercent: number }
+  | { action: 'transfer'; deviceId: string }
 
 // ===================== Estado e eventos da sessão =====================
 
