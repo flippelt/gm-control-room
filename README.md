@@ -114,22 +114,6 @@ Premium**.
 Sem `SPOTIFY_CLIENT_ID`, o painel apenas mostra instruções (o resto do app
 funciona normalmente).
 
-## Roadmap
-
-- [x] **Fase 0** — esqueleto do monorepo + hello sync em tempo real
-- [x] **Fase 1** — núcleo de cena + display (campanha/cena com gênero/época,
-      seletor de cenas, snapshot, gating do CRT por anacronismo)
-- [x] **Fase 2** — visual + iluminação (assets servidos em `/assets`, imagens/
-      handouts, overlays de cor/alerta/vinheta, transição entre cenas)
-- [x] **Fase 3** — áudio (mixer multi-camada na tela dos jogadores, fade/loop/
-      volume por camada, gesto de "ativar áudio")
-- [x] **Fase 4** — Spotify (OAuth loopback + Web API: dispositivos + transporte)
-      e grade de atalhos (deep links)
-- [x] **Fase 5** — ferramentas de jogo (rolador de dados animado na TV, tracker
-      de iniciativa/combate com turnos, HP e marcadores de status)
-- [x] **Fase 6** — polimento (campanha em JSON + `CAMPAIGN_FILE`, persistência
-      de sessão em `.session.json`, painel responsivo, documentação)
-
 ## Segurança e qualidade
 
 - **helmet** com cabeçalhos de segurança no servidor.
