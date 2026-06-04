@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { Combatant } from '@gmcr/shared'
 import { STATUS_PRESETS } from '@gmcr/shared'
-import type { System, TrackerField } from '@gmcr/srd-core'
+import type { System, TrackerField } from '@flippelt/srd-core'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 import { useActiveSystem } from '../systems/useActiveSystem'

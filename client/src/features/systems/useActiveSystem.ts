@@ -1,5 +1,5 @@
-import type { System } from '@gmcr/srd-core'
-import { getSystem } from '@gmcr/srd-core'
+import type { System } from '@flippelt/srd-core'
+import { getSystem } from '@flippelt/srd-core'
 import { useSession } from '../../store'
 
 /**

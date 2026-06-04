@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { RollResult, System } from '@gmcr/srd-core'
+import type { RollResult, System } from '@flippelt/srd-core'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 import { useActiveSystem } from '../systems/useActiveSystem'
