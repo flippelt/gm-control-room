@@ -4,7 +4,9 @@ import { useSession } from '../store'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
 import { DiceRoller } from '../features/tools/DiceRoller'
+import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
+import { useActiveSystem } from '../features/systems/useActiveSystem'
 
 const TREATMENT_LABEL: Record<string, string> = {
   text: 'texto',
@@ -29,12 +31,22 @@ export function Control() {
   const lighting = useSession((s) => s.lighting)
   const audio = useSession((s) => s.audio)
   const connected = useSession((s) => s.connected)
+  const rollHistory = useSession((s) => s.rollHistory)
+  const system = useActiveSystem()
 
   return (
     <div className="control">
       <header className="control__header">
         <h1>GM Control Room</h1>
         <div className="control__header-right">
+          {system && (
+            <span
+              className="system-badge"
+              title={`${system.name} · ${system.ruleVersion}`}
+            >
+              {system.name}
+            </span>
+          )}
           {campaigns.length > 0 && (
             <select
               className="campaign-select"
@@ -203,6 +215,11 @@ export function Control() {
           <section className="card">
             <h2>Dados</h2>
             <DiceRoller />
+          </section>
+
+          <section className="card">
+            <h2>Histórico de rolagens</h2>
+            <RollHistory rolls={rollHistory.slice(0, 20)} />
           </section>
 
           <section className="card">

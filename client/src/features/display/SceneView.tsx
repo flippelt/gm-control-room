@@ -4,6 +4,7 @@ import type { Campaign, Scene } from '@gmcr/shared'
 import { isCrtAllowed, resolveTextVariant } from '@gmcr/shared'
 import { TypewriterPaper } from './TypewriterPaper'
 import { ScrollUnroll } from './ScrollUnroll'
+import { TerminalText } from './TerminalText'
 
 /**
  * Renderiza a cena ativa na tela dos jogadores conforme o tratamento.
@@ -42,6 +43,7 @@ export function SceneView({
       // A variante deriva da campanha (genre/era) ou de um override no JSON.
       const variant = resolveTextVariant(t.variant, campaign)
       if (variant === 'scroll') return <ScrollUnroll key={scene.id} text={t.text} />
+      if (variant === 'terminal') return <TerminalText key={scene.id} text={t.text} />
       return <TypewriterPaper key={scene.id} text={t.text} soundEnabled={audioEnabled} />
     }
 

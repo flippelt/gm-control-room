@@ -73,6 +73,8 @@ describe('createSession / handleConnection', () => {
     const state = stateCall![1]
     expect(state.campaign.id).toBe('test-camp')
     expect(state.activeSceneId).toBe('intro')
+    // Histórico de rolagens começa vazio.
+    expect(state.rollHistory).toEqual([])
     const campaignsCall = socketEmit.mock.calls.find((c) => c[0] === 'campaigns')
     expect(campaignsCall).toBeDefined()
     expect(campaignsCall![1]).toEqual([
@@ -184,6 +186,19 @@ describe('createSession / handleConnection', () => {
       handlers.customRoll({ notation: 'x', rolls: 'oops', modifier: 0, total: 0 })
       // Nenhum broadcast novo.
       expect(ioEmit).not.toHaveBeenCalled()
+    })
+
+    it('rollHistory acumula as rolagens, mais nova primeiro, limitado em 50', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.rollDice('2d6')
+      handlers.rollDice('1d20')
+      handlers.customRoll({ notation: '1d20+5', rolls: [17], modifier: 5, total: 22 })
+      const s = lastBroadcast()
+      expect(s.rollHistory).toHaveLength(3)
+      // Mais recente (customRoll) é o primeiro elemento.
+      expect(s.rollHistory[0].notation).toBe('1d20+5')
+      // lastRoll mantido em sincronia.
+      expect(s.lastRoll!.notation).toBe('1d20+5')
     })
 
     it('addCombatant insere o combatente saneando a iniciativa', () => {
