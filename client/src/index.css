@@ -76,6 +76,19 @@ select {
   gap: 12px;
 }
 
+.system-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #1a1a2a;
+  border: 1px solid #3a3a5a;
+  border-radius: 999px;
+  color: #b8b8ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 .campaign-select {
   background: #0e0e11;
   border: 1px solid #2c2c34;
@@ -424,6 +437,82 @@ button:hover {
   .scroll__text { animation: none; opacity: 1; }
 }
 
+/* ===== Variante TERMINAL (CRT fósforo verde) ===== */
+.scene--text-terminal {
+  padding: 0;
+  background: #02050a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.terminal {
+  position: relative;
+  width: min(86vw, 1100px);
+  max-height: 88vh;
+  padding: clamp(36px, 6vh, 72px) clamp(44px, 7vw, 96px);
+  background: radial-gradient(ellipse at center, #051f0a 0%, #020b04 80%);
+  color: #6cff8c;
+  border-radius: 6px;
+  box-shadow:
+    0 0 80px rgba(40, 255, 100, 0.18),
+    0 0 0 1px rgba(80, 255, 120, 0.25) inset;
+  overflow: hidden;
+  animation: terminal-power 0.45s ease both;
+}
+
+@keyframes terminal-power {
+  0% { transform: scaleY(0.02); opacity: 0; }
+  60% { transform: scaleY(1.04); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Scanlines horizontais sutis sobrepondo o conteúdo */
+.terminal__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.25) 3px,
+    rgba(0, 0, 0, 0.25) 4px
+  );
+  z-index: 1;
+}
+
+.terminal__screen {
+  position: relative;
+  z-index: 0;
+  margin: 0;
+  font-family: 'Courier New', Consolas, 'Liberation Mono', monospace;
+  font-size: clamp(1.05rem, 2.2vw, 1.7rem);
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-shadow:
+    0 0 4px rgba(108, 255, 140, 0.85),
+    0 0 12px rgba(40, 200, 80, 0.5);
+}
+
+.terminal__caret {
+  display: inline-block;
+  margin-left: 2px;
+  color: #6cff8c;
+  animation: terminal-caret 0.9s steps(2) infinite;
+}
+
+@keyframes terminal-caret {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .terminal { animation: none; }
+  .terminal__caret { animation: none; }
+}
+
 .scene--image img {
   max-width: 100%;
   max-height: 100%;
@@ -598,6 +687,144 @@ input[type='range'] {
 
 .audio-gate__icon {
   font-size: 3rem;
+}
+
+/* ===== Histórico de rolagens (lista compartilhada) ===== */
+.roll-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.roll-history__item {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 6px 10px;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.roll-history__total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #e7e7ea;
+  min-width: 2ch;
+  text-align: right;
+}
+
+.roll-history__notation {
+  color: #8a8a94;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.roll-history__breakdown {
+  color: #8a8a94;
+}
+
+.roll-history__notes {
+  grid-column: 1 / -1;
+  font-style: italic;
+  color: #8b8bff;
+  font-size: 0.76rem;
+  margin-top: 2px;
+}
+
+/* ===== Botão e overlay de histórico (tela dos jogadores) ===== */
+.history-button {
+  position: fixed;
+  bottom: 16px;
+  right: 72px;
+  z-index: 70;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e7e7ea;
+  font-size: 1.1rem;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  opacity: 0.55;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.history-button:hover,
+.history-button--open {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.history-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: history-fade 0.2s ease;
+}
+
+@keyframes history-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.history-overlay__panel {
+  width: min(560px, 100%);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: #15151b;
+  border: 1px solid #2c2c34;
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+
+.history-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid #2c2c34;
+}
+
+.history-overlay__header h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: #e7e7ea;
+}
+
+.history-overlay__close {
+  background: transparent;
+  border: 1px solid #3a3a42;
+  color: #b8b8c0;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 0.9rem;
+}
+
+.history-overlay__panel .roll-history {
+  padding: 14px 18px;
+  max-height: none;
+  overflow-y: auto;
 }
 
 /* ===== Toggle de áudio persistente (tela dos jogadores) ===== */

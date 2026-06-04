@@ -19,6 +19,7 @@ interface SessionStore {
   lighting: Lighting
   audio: AudioLayer[]
   lastRoll: DiceRoll | null
+  rollHistory: DiceRoll[]
   tracker: Tracker
   connected: boolean
 }
@@ -31,6 +32,7 @@ export const useSession = create<SessionStore>(() => ({
   lighting: DEFAULT_LIGHTING,
   audio: [],
   lastRoll: null,
+  rollHistory: [],
   tracker: DEFAULT_TRACKER,
   connected: false,
 }))
@@ -44,6 +46,7 @@ socket.on('state', (state: SessionState) =>
     lighting: state.lighting,
     audio: state.audio,
     lastRoll: state.lastRoll,
+    rollHistory: state.rollHistory ?? [],
     tracker: state.tracker,
   }),
 )

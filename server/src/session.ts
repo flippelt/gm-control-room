@@ -43,7 +43,15 @@ export function createSession(io: IO) {
     // Semeia o áudio do catálogo da campanha (cópia), ou retoma o persistido.
     audio: saved?.audio ?? campaign.audio.map((layer) => ({ ...layer })),
     lastRoll: null,
+    rollHistory: [],
     tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
+  }
+
+  const ROLL_HISTORY_CAP = 50
+
+  function pushRoll(roll: import('@gmcr/shared').DiceRoll) {
+    state.lastRoll = roll
+    state.rollHistory = [roll, ...state.rollHistory].slice(0, ROLL_HISTORY_CAP)
   }
 
   const broadcast = () => {
@@ -161,7 +169,7 @@ export function createSession(io: IO) {
     socket.on('rollDice', (notation) => {
       const roll = tools.rollDice(capNotation(notation))
       if (!roll) return
-      state.lastRoll = roll
+      pushRoll(roll)
       broadcast()
     })
     socket.on('customRoll', (result) => {
@@ -172,7 +180,7 @@ export function createSession(io: IO) {
       const total = clamp(toFiniteInt(result.total), -1000000, 1000000)
       const notation = capNotation(result.notation) || `${rolls.length}d?`
       const notes = sanitizeNotes(result.notes)
-      state.lastRoll = {
+      pushRoll({
         id: crypto.randomUUID(),
         notation,
         rolls,
@@ -180,7 +188,7 @@ export function createSession(io: IO) {
         total,
         at: Date.now(),
         ...(notes ? { notes } : {}),
-      }
+      })
       broadcast()
     })
     socket.on('addCombatant', (name, initiative, extras) => {

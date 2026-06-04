@@ -5,6 +5,7 @@ import { LightingOverlay } from '../features/display/LightingOverlay'
 import { DiceOverlay } from '../features/display/DiceOverlay'
 import { TrackerPanel } from '../features/display/TrackerPanel'
 import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
+import { HistoryButton } from '../features/display/HistoryButton'
 import { useAudioEngine } from '../features/audio/useAudioEngine'
 import { preloadTypewriterAudio } from '../features/audio/typewriterAudio'
 
@@ -13,6 +14,7 @@ export function Display() {
   const lighting = useSession((s) => s.lighting)
   const audio = useSession((s) => s.audio)
   const lastRoll = useSession((s) => s.lastRoll)
+  const rollHistory = useSession((s) => s.rollHistory)
   const tracker = useSession((s) => s.tracker)
   const scene = useActiveScene()
 
@@ -46,6 +48,7 @@ export function Display() {
       <TrackerPanel tracker={tracker} />
       <DiceOverlay roll={lastRoll} />
       <AudioToggle enabled={audioEnabled} onToggle={setAudioEnabled} />
+      <HistoryButton rolls={rollHistory} />
     </>
   )
 }
