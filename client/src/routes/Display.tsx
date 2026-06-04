@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession, useActiveScene } from '../store'
 import { SceneView } from '../features/display/SceneView'
 import { LightingOverlay } from '../features/display/LightingOverlay'
 import { DiceOverlay } from '../features/display/DiceOverlay'
 import { TrackerPanel } from '../features/display/TrackerPanel'
+import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
 import { useAudioEngine } from '../features/audio/useAudioEngine'
+import { preloadTypewriterAudio } from '../features/audio/typewriterAudio'
 
 export function Display() {
   const campaign = useSession((s) => s.campaign)
@@ -14,11 +16,16 @@ export function Display() {
   const tracker = useSession((s) => s.tracker)
   const scene = useActiveScene()
 
-  const [audioEnabled, setAudioEnabled] = useState(false)
+  // Estado inicial respeita a preferência salva; mas só conta como
+  // "destravado" depois que o usuário clica (autoplay policy).
+  const [audioEnabled, setAudioEnabled] = useState(() => readAudioPref())
   useAudioEngine(audio, audioEnabled)
 
-  // Só pede o gesto se há áudio querendo tocar e ainda não foi habilitado.
-  const needsAudioGesture = !audioEnabled && audio.some((l) => l.playing)
+  // Pré-carrega o sample assim que o display monta — não precisa de
+  // gesto pra fetch+decode. Só o resume() precisa de gesto (no toggle).
+  useEffect(() => {
+    preloadTypewriterAudio()
+  }, [])
 
   if (!campaign) {
     return (
@@ -32,19 +39,13 @@ export function Display() {
     <>
       {/* key força remontagem na troca de cena, disparando o fade-in. */}
       <div className="scene-wrap" key={scene?.id ?? 'idle'}>
-        <SceneView scene={scene} campaign={campaign} />
+        <SceneView scene={scene} campaign={campaign} audioEnabled={audioEnabled} />
       </div>
 
       <LightingOverlay lighting={lighting} />
       <TrackerPanel tracker={tracker} />
       <DiceOverlay roll={lastRoll} />
-
-      {needsAudioGesture && (
-        <button className="audio-gate" onClick={() => setAudioEnabled(true)}>
-          <span className="audio-gate__icon">🔊</span>
-          <span>Toque para ativar o som</span>
-        </button>
-      )}
+      <AudioToggle enabled={audioEnabled} onToggle={setAudioEnabled} />
     </>
   )
 }

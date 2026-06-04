@@ -24,6 +24,7 @@ const WASH_PRESETS: Array<{ label: string; color: string | null }> = [
 
 export function Control() {
   const campaign = useSession((s) => s.campaign)
+  const campaigns = useSession((s) => s.campaigns)
   const activeSceneId = useSession((s) => s.activeSceneId)
   const lighting = useSession((s) => s.lighting)
   const audio = useSession((s) => s.audio)
@@ -33,9 +34,25 @@ export function Control() {
     <div className="control">
       <header className="control__header">
         <h1>GM Control Room</h1>
-        <span className={connected ? 'status status--on' : 'status'}>
-          {connected ? '● conectado' : '○ desconectado'}
-        </span>
+        <div className="control__header-right">
+          {campaigns.length > 0 && (
+            <select
+              className="campaign-select"
+              value={campaign?.id ?? ''}
+              onChange={(e) => socket.emit('selectCampaign', e.target.value)}
+              title="Trocar campanha"
+            >
+              {campaigns.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          )}
+          <span className={connected ? 'status status--on' : 'status'}>
+            {connected ? '● conectado' : '○ desconectado'}
+          </span>
+        </div>
       </header>
 
       {!campaign ? (

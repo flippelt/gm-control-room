@@ -1,7 +1,9 @@
-import { CRTScreen, BootSequence, TypeWriter } from 'rpg-prop-kit'
+import { CRTScreen, BootSequence } from 'rpg-prop-kit'
 import 'rpg-prop-kit/styles.css'
 import type { Campaign, Scene } from '@gmcr/shared'
-import { isCrtAllowed } from '@gmcr/shared'
+import { isCrtAllowed, resolveTextVariant } from '@gmcr/shared'
+import { TypewriterPaper } from './TypewriterPaper'
+import { ScrollUnroll } from './ScrollUnroll'
 
 /**
  * Renderiza a cena ativa na tela dos jogadores conforme o tratamento.
@@ -12,9 +14,11 @@ import { isCrtAllowed } from '@gmcr/shared'
 export function SceneView({
   scene,
   campaign,
+  audioEnabled,
 }: {
   scene: Scene | null
   campaign: Campaign
+  audioEnabled: boolean
 }) {
   if (!scene) {
     return (
@@ -34,14 +38,12 @@ export function SceneView({
         </div>
       )
 
-    case 'text':
-      return (
-        <div className="scene scene--text">
-          {/* TypeWriter (efeito de "máquina de escrever") combina com época
-              pré-digital melhor do que um terminal CRT. */}
-          <TypeWriter key={scene.id} text={t.text} speed={32} cursor />
-        </div>
-      )
+    case 'text': {
+      // A variante deriva da campanha (genre/era) ou de um override no JSON.
+      const variant = resolveTextVariant(t.variant, campaign)
+      if (variant === 'scroll') return <ScrollUnroll key={scene.id} text={t.text} />
+      return <TypewriterPaper key={scene.id} text={t.text} soundEnabled={audioEnabled} />
+    }
 
     case 'image':
       return (

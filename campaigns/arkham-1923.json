@@ -9,7 +9,7 @@
       "name": "A carta",
       "treatment": {
         "kind": "text",
-        "text": "Boston, outubro de 1923.\n\nUma carta chega de seu tio-avô, o Prof. Armitage. A caligrafia treme:\n\n\"Venha a Arkham. O que encontrei sob a Universidade nao deveria existir. Confio apenas em voce.\""
+        "text": "Boston, outubro de 1923.\n\nUma carta chega de seu tio-avô, o Prof. Armitage. A caligrafia treme:\n\n\"Venha a Arkham. O que encontrei sob a Universidade não deveria existir. Confio apenas em você.\""
       }
     },
     {
@@ -33,7 +33,7 @@
       "treatment": {
         "kind": "crt",
         "theme": "phosphor",
-        "lines": ["> CONEXAO ESTABELECIDA", "> decodificando sinal..."]
+        "lines": ["> CONEXÃO ESTABELECIDA", "> decodificando sinal..."]
       }
     }
   ],

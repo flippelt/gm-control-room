@@ -1,0 +1,44 @@
+{
+  "id": "floresta-de-roan",
+  "title": "A Floresta de Roan",
+  "genre": "fantasy",
+  "era": { "startYear": 1342, "label": "Idade Média (1342)" },
+  "scenes": [
+    {
+      "id": "carta-do-barao",
+      "name": "Carta do Barão",
+      "treatment": {
+        "kind": "text",
+        "text": "Aos honrados aventureiros,\n\nA Floresta de Roan adoece. As árvores choram seiva escura e os lobos calam-se à noite. Tragam-me a raiz da Velha Bétula, e que a luz dos Antigos vos guie.\n\n— Barão Aldric de Roan"
+      }
+    },
+    {
+      "id": "noite-floresta",
+      "name": "Noite na floresta",
+      "treatment": { "kind": "color", "color": "#06120a", "label": "A floresta respira" }
+    },
+    {
+      "id": "fogueira",
+      "name": "Acampamento",
+      "treatment": { "kind": "color", "color": "#2a0e04", "label": "Acampamento" }
+    },
+    {
+      "id": "presagio",
+      "name": "Presságio do Oráculo",
+      "treatment": {
+        "kind": "text",
+        "text": "Três sombras virão antes da lua cheia.\nA primeira traz fogo.\nA segunda traz silêncio.\nA terceira traz o nome que ninguém ousa dizer."
+      }
+    },
+    {
+      "id": "tensao",
+      "name": "Algo se aproxima",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "Algo se aproxima" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "youtube", "label": "YouTube", "url": "https://www.youtube.com", "emoji": "📺" },
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}

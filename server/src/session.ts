@@ -1,3 +1,6 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { Server, Socket } from 'socket.io'
 import type {
   ClientToServerEvents,
@@ -6,8 +9,10 @@ import type {
   SessionState,
 } from '@gmcr/shared'
 import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/shared'
-import { loadCampaign } from './data/loadCampaign.js'
+import { listCampaigns, loadCampaign, loadCampaignById } from './data/loadCampaign.js'
 import { loadPersisted, savePersisted } from './persist.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import * as tools from './tools.js'
 import {
   capNotation,
@@ -40,6 +45,51 @@ export function createSession(io: IO) {
   const broadcast = () => {
     io.emit('state', state)
     savePersisted(state)
+  }
+
+  function selectCampaign(id: string) {
+    if (typeof id !== 'string') return
+    if (id === state.campaign.id) return
+    let next
+    try {
+      next = loadCampaignById(id)
+    } catch (err) {
+      console.warn(`[session] selectCampaign falhou: ${(err as Error).message}`)
+      return
+    }
+    const persisted = loadPersisted(next.id)
+    state.campaign = next
+    state.activeSceneId = persisted?.activeSceneId ?? next.scenes[0]?.id ?? null
+    state.lighting = persisted?.lighting ?? { ...DEFAULT_LIGHTING }
+    state.audio = persisted?.audio ?? next.audio.map((layer) => ({ ...layer }))
+    state.lastRoll = null
+    state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
+    broadcast()
+  }
+
+  // Auto-reload: quando o JSON da campanha ativa muda no disco, recarrega
+  // em memória e faz broadcast. Edições nos JSONs refletem sem restart.
+  const campaignsDir = path.resolve(__dirname, '../../campaigns')
+  try {
+    fs.watch(campaignsDir, { persistent: false }, (_event, filename) => {
+      if (!filename || !filename.endsWith('.json')) return
+      const id = filename.replace(/\.json$/, '')
+      if (id !== state.campaign.id) return
+      try {
+        const next = loadCampaignById(id)
+        state.campaign = next
+        // Mantém cena/iluminação/tracker; só atualiza o conteúdo da campanha.
+        if (!next.scenes.find((s) => s.id === state.activeSceneId)) {
+          state.activeSceneId = next.scenes[0]?.id ?? null
+        }
+        broadcast()
+        console.log(`[campaign] recarregada (${id})`)
+      } catch (err) {
+        console.warn(`[campaign] reload falhou: ${(err as Error).message}`)
+      }
+    })
+  } catch (err) {
+    console.warn(`[campaign] sem auto-reload: ${(err as Error).message}`)
   }
 
   function setAudioLayer(id: string, patch: { playing?: boolean; volume?: number }) {
@@ -96,9 +146,12 @@ export function createSession(io: IO) {
   function handleConnection(socket: IOSocket) {
     // Snapshot completo para quem acabou de conectar.
     socket.emit('state', state)
+    socket.emit('campaigns', listCampaigns())
     socket.on('setActiveScene', setActiveScene)
     socket.on('setLighting', setLighting)
     socket.on('setAudioLayer', setAudioLayer)
+    socket.on('listCampaigns', () => socket.emit('campaigns', listCampaigns()))
+    socket.on('selectCampaign', selectCampaign)
 
     // --- Ferramentas de jogo (entradas saneadas no limite de confiança) ---
     socket.on('rollDice', (notation) => {

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type {
   AudioLayer,
   Campaign,
+  CampaignSummary,
   DiceRoll,
   Lighting,
   Scene,
@@ -13,6 +14,7 @@ import { socket } from './lib/socket'
 
 interface SessionStore {
   campaign: Campaign | null
+  campaigns: CampaignSummary[]
   activeSceneId: string | null
   lighting: Lighting
   audio: AudioLayer[]
@@ -24,6 +26,7 @@ interface SessionStore {
 /** Estado da sessão espelhado do servidor (a fonte da verdade é o servidor). */
 export const useSession = create<SessionStore>(() => ({
   campaign: null,
+  campaigns: [],
   activeSceneId: null,
   lighting: DEFAULT_LIGHTING,
   audio: [],
@@ -44,6 +47,7 @@ socket.on('state', (state: SessionState) =>
     tracker: state.tracker,
   }),
 )
+socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))
 
 /** Cena ativa derivada (ou null). */
 export function useActiveScene(): Scene | null {

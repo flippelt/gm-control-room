@@ -23,12 +23,34 @@ export interface Era {
 
 export type DisplayTreatmentKind = 'text' | 'color' | 'image' | 'crt'
 
+/**
+ * Estilo visual de uma cena de texto:
+ * - `typewriter`: papel datilografado com revelação caractere a caractere (épocas modernas/pulp).
+ * - `scroll`: pergaminho que desenrola e revela o texto inteiro (fantasia/medieval).
+ * - `auto` (padrão): deriva da campanha (genre + era).
+ */
+export type TextVariant = 'typewriter' | 'scroll' | 'auto'
+
 /** Como a cena é renderizada na tela dos jogadores. */
 export type DisplayTreatment =
-  | { kind: 'text'; text: string }
+  | { kind: 'text'; text: string; variant?: TextVariant }
   | { kind: 'color'; color: string; label?: string }
   | { kind: 'image'; src: string; alt?: string }
   | { kind: 'crt'; theme?: 'phosphor' | 'amber' | 'ice'; lines: string[] }
+
+/**
+ * Resolve a variante de uma cena de texto considerando override explícito e
+ * caindo no derivado por gênero/época da campanha.
+ */
+export function resolveTextVariant(
+  variant: TextVariant | undefined,
+  campaign: Pick<Campaign, 'genre' | 'era'>,
+): Exclude<TextVariant, 'auto'> {
+  if (variant && variant !== 'auto') return variant
+  if (campaign.genre === 'fantasy') return 'scroll'
+  if (campaign.era.startYear < 1500) return 'scroll'
+  return 'typewriter'
+}
 
 export interface Scene {
   id: string
@@ -69,6 +91,14 @@ export interface Campaign {
   audio: AudioLayer[]
   /** Atalhos para apps externos (abrem no aparelho de controle). */
   shortcuts: Shortcut[]
+}
+
+/** Versão enxuta da campanha — usada na lista do seletor (sem cenas/áudio). */
+export interface CampaignSummary {
+  id: string
+  title: string
+  genre: Genre
+  era: Era
 }
 
 // ===================== Gating de adequação (regra do usuário) =====================
@@ -261,6 +291,8 @@ export interface SessionState {
 export interface ServerToClientEvents {
   /** Snapshot/atualização completa do estado da sessão. */
   state: (state: SessionState) => void
+  /** Lista de campanhas disponíveis no servidor. */
+  campaigns: (list: CampaignSummary[]) => void
 }
 
 /** Eventos emitidos pelos clientes (controle) para o servidor. */
@@ -284,4 +316,10 @@ export interface ClientToServerEvents {
   nextTurn: () => void
   setCombatActive: (active: boolean) => void
   clearCombat: () => void
+
+  // --- Gerência de campanha ---
+  /** Solicita a lista atual de campanhas disponíveis. */
+  listCampaigns: () => void
+  /** Troca a campanha ativa. O servidor recarrega e reseta o estado. */
+  selectCampaign: (id: string) => void
 }
