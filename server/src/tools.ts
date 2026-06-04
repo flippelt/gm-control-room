@@ -31,12 +31,18 @@ function reorder(tracker: Tracker): void {
   }
 }
 
-export function addCombatant(tracker: Tracker, name: string, initiative: number): void {
+export function addCombatant(
+  tracker: Tracker,
+  name: string,
+  initiative: number,
+  extras?: Record<string, number | boolean>,
+): void {
   tracker.combatants.push({
     id: crypto.randomUUID(),
     name: name.slice(0, 60) || 'Sem nome',
     initiative,
     statuses: [],
+    ...(extras && Object.keys(extras).length > 0 ? { extra: { ...extras } } : {}),
   })
   reorder(tracker)
 }
@@ -44,7 +50,7 @@ export function addCombatant(tracker: Tracker, name: string, initiative: number)
 export function updateCombatant(
   tracker: Tracker,
   id: string,
-  patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses'>>,
+  patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'extra'>>,
 ): void {
   const c = tracker.combatants.find((x) => x.id === id)
   if (!c) return
@@ -52,6 +58,8 @@ export function updateCombatant(
   if (patch.hp !== undefined) c.hp = patch.hp
   if (patch.maxHp !== undefined) c.maxHp = patch.maxHp
   if (patch.statuses !== undefined) c.statuses = patch.statuses.slice(0, 12)
+  // `extra` é mesclado, não substituído — preserva campos não tocados.
+  if (patch.extra !== undefined) c.extra = { ...(c.extra ?? {}), ...patch.extra }
   if (patch.initiative !== undefined) {
     c.initiative = patch.initiative
     reorder(tracker)

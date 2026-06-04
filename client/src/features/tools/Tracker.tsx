@@ -1,9 +1,65 @@
 import { useState } from 'react'
 import type { Combatant } from '@gmcr/shared'
 import { STATUS_PRESETS } from '@gmcr/shared'
+import type { System, TrackerField } from '@gmcr/srd-core'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 import { useActiveSystem } from '../systems/useActiveSystem'
+
+/** Defaults pra novos combatentes a partir dos trackerFields do sistema. */
+function defaultExtras(system: System | null): Record<string, number | boolean> {
+  if (!system) return {}
+  const out: Record<string, number | boolean> = {}
+  for (const f of system.trackerFields) {
+    if (f.default !== undefined) out[f.key] = f.default
+    else if (f.kind === 'boolean') out[f.key] = false
+    else out[f.key] = f.min ?? 0
+  }
+  return out
+}
+
+function ExtraField({
+  c,
+  field,
+}: {
+  c: Combatant
+  field: TrackerField
+}) {
+  const current = c.extra?.[field.key]
+  const setValue = (value: number | boolean) =>
+    socket.emit('updateCombatant', c.id, { extra: { [field.key]: value } })
+
+  if (field.kind === 'boolean') {
+    const v = typeof current === 'boolean' ? current : false
+    return (
+      <label className="cbt__extra cbt__extra--bool" title={field.description}>
+        <input type="checkbox" checked={v} onChange={(e) => setValue(e.target.checked)} />
+        <span>{field.label}</span>
+      </label>
+    )
+  }
+
+  // Stepper numérico (integer e maxCurrent compartilham UI por enquanto).
+  const v = typeof current === 'number' ? current : (field.default ?? field.min ?? 0)
+  const bump = (delta: number) => {
+    const next = v + delta
+    if (field.min !== undefined && next < field.min) return
+    if (field.max !== undefined && next > field.max) return
+    setValue(next)
+  }
+  return (
+    <span className="cbt__extra cbt__extra--num" title={field.description}>
+      <span className="cbt__extra-label">{field.label}</span>
+      <button type="button" onClick={() => bump(-1)} aria-label={`${field.label} −1`}>
+        −
+      </button>
+      <span className="cbt__extra-value">{v}</span>
+      <button type="button" onClick={() => bump(1)} aria-label={`${field.label} +1`}>
+        +
+      </button>
+    </span>
+  )
+}
 
 function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
   const system = useActiveSystem()
@@ -53,6 +109,14 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
         </button>
       </div>
 
+      {system && system.trackerFields.length > 0 && (
+        <div className="cbt__extras">
+          {system.trackerFields.map((f) => (
+            <ExtraField key={f.key} c={c} field={f} />
+          ))}
+        </div>
+      )}
+
       <div className="cbt__statuses">
         {c.statuses.map((s) => (
           <button key={s} className="tag" onClick={() => removeStatus(s)} title="Remover">
@@ -74,13 +138,20 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
 
 export function Tracker() {
   const tracker = useSession((s) => s.tracker)
+  const system = useActiveSystem()
   const [name, setName] = useState('')
   const [init, setInit] = useState('')
 
   const add = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
-    socket.emit('addCombatant', name, Number(init) || 0)
+    const extras = defaultExtras(system)
+    socket.emit(
+      'addCombatant',
+      name,
+      Number(init) || 0,
+      Object.keys(extras).length > 0 ? extras : undefined,
+    )
     setName('')
     setInit('')
   }

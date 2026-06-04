@@ -37,3 +37,22 @@ export function sanitizeStatuses(value: unknown): string[] {
 export function capNotation(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, 24) : ''
 }
+
+/**
+ * Saneia o mapa de campos custom (`Combatant.extra`). Chaves precisam ser
+ * identificadores curtos (kebab/camelCase), valores apenas number ou boolean.
+ * Limita o total de chaves para evitar inflagem do estado.
+ */
+export function sanitizeExtras(value: unknown): Record<string, number | boolean> | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const out: Record<string, number | boolean> = {}
+  const entries = Object.entries(value as Record<string, unknown>).slice(0, 16)
+  for (const [k, v] of entries) {
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/.test(k)) continue
+    if (typeof v === 'boolean') out[k] = v
+    else if (typeof v === 'number' && Number.isFinite(v)) {
+      out[k] = clamp(Math.trunc(v), -100000, 100000)
+    }
+  }
+  return out
+}

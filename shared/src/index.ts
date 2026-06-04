@@ -248,6 +248,12 @@ export interface Combatant {
   maxHp?: number
   /** Marcadores de status (ex.: "Envenenado"). */
   statuses: string[]
+  /**
+   * Valores de campos específicos do sistema (ex: D&D AC=16, deathSuccesses=1;
+   * Lancer structure=3, stress=2). As chaves vêm de `system.trackerFields[].key`.
+   * Sem sistema ativo, fica vazio.
+   */
+  extra?: Record<string, number | boolean>
 }
 
 export interface Tracker {
@@ -313,10 +319,14 @@ export interface ClientToServerEvents {
   // --- Ferramentas de jogo ---
   /** Rola dados (notação NdM±K). O servidor sorteia e faz broadcast. */
   rollDice: (notation: string) => void
-  addCombatant: (name: string, initiative: number) => void
+  addCombatant: (
+    name: string,
+    initiative: number,
+    extras?: Record<string, number | boolean>,
+  ) => void
   updateCombatant: (
     id: string,
-    patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses'>>,
+    patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'extra'>>,
   ) => void
   removeCombatant: (id: string) => void
   nextTurn: () => void

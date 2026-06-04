@@ -99,4 +99,21 @@ describe('tracker', () => {
     expect(t.round).toBe(1)
     expect(t.turnIndex).toBe(0)
   })
+
+  it('aceita extras no addCombatant e mescla updates no extra', () => {
+    const t = newTracker()
+    addCombatant(t, 'Cleric', 14, { ac: 16, deathSuccesses: 0, deathFailures: 0 })
+    const id = t.combatants[0].id
+    expect(t.combatants[0].extra).toEqual({ ac: 16, deathSuccesses: 0, deathFailures: 0 })
+
+    // Update mescla — atualiza ac e mantém deathSuccesses/Failures.
+    updateCombatant(t, id, { extra: { ac: 18 } })
+    expect(t.combatants[0].extra).toEqual({ ac: 18, deathSuccesses: 0, deathFailures: 0 })
+  })
+
+  it('omite campo extra quando addCombatant é chamado sem extras', () => {
+    const t = newTracker()
+    addCombatant(t, 'NPC', 10)
+    expect(t.combatants[0].extra).toBeUndefined()
+  })
 })
