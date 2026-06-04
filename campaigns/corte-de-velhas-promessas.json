@@ -1,0 +1,44 @@
+{
+  "id": "corte-de-velhas-promessas",
+  "title": "A Corte das Velhas Promessas",
+  "genre": "fantasy",
+  "era": { "startYear": 1240, "label": "Era do Selo" },
+  "system": "daggerheart",
+  "scenes": [
+    {
+      "id": "convite",
+      "name": "Convite real",
+      "treatment": {
+        "kind": "text",
+        "text": "Aventureiros,\n\nA Coroa de Aralieth não esquece quem honra suas promessas. Um pacto firmado há nove gerações foi rompido — e as criaturas que dele se alimentavam estão acordadas.\n\nVenham ao Salão das Velhas Cortes. Recompensa em ouro real, terras na fronteira, ou um nome esquecido devolvido. Escolham vocês."
+      }
+    },
+    {
+      "id": "salao",
+      "name": "Salão das Velhas Cortes",
+      "treatment": { "kind": "color", "color": "#1a1428", "label": "Salão das Velhas Cortes" }
+    },
+    {
+      "id": "mata-cinzenta",
+      "name": "Mata Cinzenta",
+      "treatment": { "kind": "color", "color": "#0a1410", "label": "A Mata Cinzenta" }
+    },
+    {
+      "id": "presagio",
+      "name": "Presságio do Oráculo Cego",
+      "treatment": {
+        "kind": "text",
+        "text": "Três cordas frouxas no arco do Selo.\nA primeira, urdida em sangue.\nA segunda, em palavra esquecida.\nA terceira, em rosto que já foi seu — e que voltará."
+      }
+    },
+    {
+      "id": "combate",
+      "name": "O Pacto Cobra",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "O Pacto Cobra" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}
