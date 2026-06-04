@@ -34,11 +34,14 @@ jobs:
           cache-dependency-path: gm-control-room/package-lock.json
 
       # Build the SRD packages so their `dist/` (types + js) exists before
-      # gm-control-room consumes them via file: protocol.
+      # gm-control-room consumes them via file: protocol. Build `core`
+      # first so downstream packages (daggerheart, candela-obscura, etc)
+      # can resolve `@lippelt/srd-core` types during their DTS build.
       - name: Build SRD packages
         working-directory: gmcr-srd-systems
         run: |
           npm ci
+          npm run build -w packages/core
           npm run build
 
       - run: npm ci
