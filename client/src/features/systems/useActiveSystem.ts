@@ -1,5 +1,5 @@
-import type { System } from '@flippelt/srd-core'
-import { getSystem } from '@flippelt/srd-core'
+import type { System } from '@lippelt/srd-core'
+import { getSystem } from '@lippelt/srd-core'
 import { useSession } from '../../store'
 
 /**
