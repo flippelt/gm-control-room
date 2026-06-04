@@ -1,0 +1,41 @@
+{
+  "id": "contrato-em-cradle",
+  "title": "Contrato em Cradle",
+  "genre": "sci-fi",
+  "era": { "startYear": 5016, "label": "Pós-Falência da Terceira Comissão" },
+  "system": "lancer",
+  "scenes": [
+    {
+      "id": "briefing",
+      "name": "Briefing do Cliente",
+      "treatment": {
+        "kind": "text",
+        "text": "Operativo,\n\nUm contrato chegou de um setor não-marcado. O cliente é um corporativo do Anel Externo. Alvo: instalação subterrânea em Cradle. Pagamento em mantimentos e dois cores de manutenção classe-2.\n\nA frota orbital fingirá ignorar 90 minutos. Use bem."
+      }
+    },
+    {
+      "id": "orbita",
+      "name": "Em órbita",
+      "treatment": { "kind": "color", "color": "#06121e", "label": "Em órbita" }
+    },
+    {
+      "id": "queda",
+      "name": "Descida atmosférica",
+      "treatment": { "kind": "color", "color": "#2a0e04", "label": "Descida atmosférica" }
+    },
+    {
+      "id": "engajamento",
+      "name": "Engajamento",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "Engajamento" }
+    },
+    {
+      "id": "extracao",
+      "name": "Extração",
+      "treatment": { "kind": "color", "color": "#0a1f0e", "label": "Extração" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}
