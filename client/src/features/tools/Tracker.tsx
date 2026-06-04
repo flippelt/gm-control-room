@@ -3,8 +3,18 @@ import type { Combatant } from '@gmcr/shared'
 import { STATUS_PRESETS } from '@gmcr/shared'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
+import { useActiveSystem } from '../systems/useActiveSystem'
 
 function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
+  const system = useActiveSystem()
+  const statusOptions: { value: string; label: string; title?: string }[] = system
+    ? system.conditions.map((cond) => ({
+        value: cond.label,
+        label: cond.label,
+        title: cond.summary,
+      }))
+    : STATUS_PRESETS.map((s) => ({ value: s, label: s }))
+
   const [status, setStatus] = useState('')
 
   const setHp = (delta: number) =>
@@ -51,9 +61,9 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
         ))}
         <select value={status} onChange={(e) => addStatus(e.target.value)}>
           <option value="">+ status…</option>
-          {STATUS_PRESETS.map((s) => (
-            <option key={s} value={s}>
-              {s}
+          {statusOptions.map((o) => (
+            <option key={o.value} value={o.value} title={o.title}>
+              {o.label}
             </option>
           ))}
         </select>

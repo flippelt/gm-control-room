@@ -86,6 +86,12 @@ export interface Campaign {
   title: string
   genre: Genre
   era: Era
+  /**
+   * ID de um sistema RPG registrado (ex: 'dnd5e-2014'). Opcional —
+   * quando ausente, a UI usa defaults genéricos (dice/status). O cliente
+   * resolve via `@gmcr/srd-core` getSystem(id).
+   */
+  system?: string
   scenes: Scene[]
   /** Catálogo de camadas de áudio disponíveis na campanha. */
   audio: AudioLayer[]
