@@ -22,7 +22,16 @@ const { campaign } = vi.hoisted(() => {
   return { campaign }
 })
 
-vi.mock('./data/loadCampaign.js', () => ({ loadCampaign: () => campaign }))
+vi.mock('./data/loadCampaign.js', () => ({
+  loadCampaign: () => campaign,
+  loadCampaignById: (id: string) => {
+    if (id !== campaign.id) throw new Error('campanha não encontrada')
+    return campaign
+  },
+  listCampaigns: () => [
+    { id: campaign.id, title: campaign.title, genre: campaign.genre, era: campaign.era },
+  ],
+}))
 // Sem disco nos testes: nada persistido na entrada, save é um espião inócuo.
 vi.mock('./persist.js', () => ({ loadPersisted: () => null, savePersisted: vi.fn() }))
 
@@ -57,11 +66,18 @@ describe('createSession / handleConnection', () => {
 
   it('envia um snapshot do estado ao conectar, com a primeira cena ativa', () => {
     const { socketEmit } = setup()
-    expect(socketEmit).toHaveBeenCalledTimes(1)
-    const [event, state] = socketEmit.mock.calls[0]
-    expect(event).toBe('state')
+    // Ao conectar, emite "state" + "campaigns" (lista para o seletor).
+    expect(socketEmit).toHaveBeenCalledTimes(2)
+    const stateCall = socketEmit.mock.calls.find((c) => c[0] === 'state')
+    expect(stateCall).toBeDefined()
+    const state = stateCall![1]
     expect(state.campaign.id).toBe('test-camp')
     expect(state.activeSceneId).toBe('intro')
+    const campaignsCall = socketEmit.mock.calls.find((c) => c[0] === 'campaigns')
+    expect(campaignsCall).toBeDefined()
+    expect(campaignsCall![1]).toEqual([
+      { id: 'test-camp', title: 'Campanha de Teste', genre: 'fantasy', era: { startYear: 1300 } },
+    ])
   })
 
   describe('setLighting', () => {
