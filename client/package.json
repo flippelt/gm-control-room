@@ -12,6 +12,8 @@
     "@fontsource/caveat": "^5.2.8",
     "@fontsource/im-fell-english": "^5.2.6",
     "@fontsource/special-elite": "^5.2.8",
+    "@gmcr/srd-core": "file:../../gmcr-srd-systems/packages/core",
+    "@gmcr/srd-dnd5e-2014": "file:../../gmcr-srd-systems/packages/dnd5e-2014",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",

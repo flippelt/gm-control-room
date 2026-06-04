@@ -1,22 +1,52 @@
 import { useState } from 'react'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
+import { useActiveSystem } from '../systems/useActiveSystem'
 
-const PRESETS = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100']
+/** Botões genéricos quando a campanha não declara um `system`. */
+const GENERIC_PRESETS = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100']
+
+/**
+ * Notações "especiais" do sistema (ex: `advantage`, `disadvantage`) que
+ * não são suportadas pelo parser do servidor. Por enquanto desabilitamos
+ * o botão — a mecânica completa de advantage/disadvantage rola via
+ * `system.rules.roll('attack', { advantage: true })` em UI futura.
+ */
+const SPECIAL_NOTATIONS = new Set(['advantage', 'disadvantage'])
 
 export function DiceRoller() {
   const lastRoll = useSession((s) => s.lastRoll)
   const [notation, setNotation] = useState('2d6+3')
+  const system = useActiveSystem()
 
   return (
     <div>
-      <div className="dice-presets">
-        {PRESETS.map((d) => (
-          <button key={d} className="dice-btn" onClick={() => socket.emit('rollDice', d)}>
-            {d}
-          </button>
-        ))}
-      </div>
+      {system ? (
+        <div className="dice-presets" title={`Presets do sistema: ${system.name}`}>
+          {system.dicePresets.map((p) => {
+            const special = SPECIAL_NOTATIONS.has(p.notation)
+            return (
+              <button
+                key={p.id}
+                className="dice-btn"
+                title={p.description ?? p.label}
+                disabled={special}
+                onClick={() => !special && socket.emit('rollDice', p.notation)}
+              >
+                {p.label}
+              </button>
+            )
+          })}
+        </div>
+      ) : (
+        <div className="dice-presets">
+          {GENERIC_PRESETS.map((d) => (
+            <button key={d} className="dice-btn" onClick={() => socket.emit('rollDice', d)}>
+              {d}
+            </button>
+          ))}
+        </div>
+      )}
 
       <form
         className="row"

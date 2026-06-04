@@ -8,12 +8,39 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gm-control-room
     steps:
-      - uses: actions/checkout@v4
+      # Both repos are checked out side-by-side so the `file:` deps in
+      # client/package.json (`file:../../gmcr-srd-systems/packages/*`)
+      # resolve at install time. When @gmcr/srd-* are published to npm,
+      # this can collapse back to a single checkout.
+      - name: Checkout gm-control-room
+        uses: actions/checkout@v4
+        with:
+          path: gm-control-room
+
+      - name: "Checkout gmcr-srd-systems (file: deps)"
+        uses: actions/checkout@v4
+        with:
+          repository: flippelt/gmcr-srd-systems
+          path: gmcr-srd-systems
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: gm-control-room/package-lock.json
+
+      # Build the SRD packages so their `dist/` (types + js) exists before
+      # gm-control-room consumes them via file: protocol.
+      - name: Build SRD packages
+        working-directory: gmcr-srd-systems
+        run: |
+          npm ci
+          npm run build
+
       - run: npm ci
       - run: npm test
       - run: npm run build

@@ -1,0 +1,42 @@
+{
+  "id": "fronteira-de-fenwick",
+  "title": "A Fronteira de Fenwick",
+  "genre": "fantasy",
+  "era": { "startYear": 1387, "label": "Era Imperial" },
+  "system": "dnd5e-2014",
+  "scenes": [
+    {
+      "id": "convocacao",
+      "name": "Convocação",
+      "treatment": {
+        "kind": "text",
+        "text": "Aos aventureiros de Pedras Cinzentas:\n\nMonstros foram avistados nas matas além de Fenwick. Três caravanas não retornaram. O Conselho oferece 500 peças de ouro a quem trouxer respostas — ou cabeças.\n\nAssinado, em selo lacrado:\n\nMagistra Velhena Corvo"
+      }
+    },
+    {
+      "id": "vilarejo",
+      "name": "Vilarejo de Fenwick",
+      "treatment": { "kind": "color", "color": "#1a2410", "label": "Vilarejo de Fenwick" }
+    },
+    {
+      "id": "floresta-escura",
+      "name": "Floresta Escura",
+      "treatment": { "kind": "color", "color": "#06120a", "label": "A floresta respira" }
+    },
+    {
+      "id": "ruinas",
+      "name": "Ruínas Antigas",
+      "treatment": { "kind": "color", "color": "#2a1a0a", "label": "Ruínas antigas" }
+    },
+    {
+      "id": "combate",
+      "name": "Sangue na neve",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "Sangue na neve" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" },
+    { "id": "youtube", "label": "YouTube", "url": "https://www.youtube.com", "emoji": "📺" }
+  ]
+}
