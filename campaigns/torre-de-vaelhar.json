@@ -1,0 +1,41 @@
+{
+  "id": "torre-de-vaelhar",
+  "title": "A Torre de Vaelhar",
+  "genre": "fantasy",
+  "era": { "startYear": 1401, "label": "Era do Renascimento Arcano" },
+  "system": "dnd5e-2024",
+  "scenes": [
+    {
+      "id": "intimacao",
+      "name": "Intimação Real",
+      "treatment": {
+        "kind": "text",
+        "text": "Vassalos do Reino,\n\nO Concílio da Coroa convoca os aventureiros prudentes para uma tarefa de urgência. A torre de Vaelhar — selada por três gerações — voltou a brilhar nesta lua nova. Quem cruzar suas portas, será pago em ouro real e nomeado Companheiro da Coroa.\n\n— Lorde-Chanceler Halrik, Mão Direita do Trono"
+      }
+    },
+    {
+      "id": "vilarejo",
+      "name": "Vilarejo de Aldenharn",
+      "treatment": { "kind": "color", "color": "#1f2810", "label": "Aldenharn ao entardecer" }
+    },
+    {
+      "id": "trilha-norte",
+      "name": "Trilha do Norte",
+      "treatment": { "kind": "color", "color": "#06120a", "label": "A trilha respira" }
+    },
+    {
+      "id": "torre-base",
+      "name": "Base da Torre",
+      "treatment": { "kind": "color", "color": "#1a0e2a", "label": "Base da Torre" }
+    },
+    {
+      "id": "combate",
+      "name": "O Guardião desperta",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "O Guardião desperta" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}
