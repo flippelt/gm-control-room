@@ -1,0 +1,41 @@
+{
+  "id": "bruma-de-newbridge",
+  "title": "A Bruma sobre Newbridge",
+  "genre": "modern",
+  "era": { "startYear": 1907, "label": "Newbridge, 1907" },
+  "system": "candela-obscura",
+  "scenes": [
+    {
+      "id": "carta-do-circulo",
+      "name": "Carta do Círculo",
+      "treatment": {
+        "kind": "text",
+        "text": "Operativos da Candela,\n\nUma criança desapareceu de Westchapel há três noites. Os pais juram ouvir um sussurro pela chaminé — sempre depois das três da manhã. As lanternas a gás daquela rua apagam-se sozinhas há semanas.\n\nReúnam-se na sede até a próxima vigília. As tochas estão pesadas; precisamos de mãos firmes.\n\n— Mestre da Lanterna"
+      }
+    },
+    {
+      "id": "rua-niebla",
+      "name": "Rua na bruma",
+      "treatment": { "kind": "color", "color": "#080a14", "label": "A bruma rola pelas pedras" }
+    },
+    {
+      "id": "subsolo",
+      "name": "Catacumbas de Newbridge",
+      "treatment": { "kind": "color", "color": "#0a0a0a", "label": "Catacumbas — só lanternas" }
+    },
+    {
+      "id": "ritual",
+      "name": "Marca circular no chão",
+      "treatment": { "kind": "color", "color": "#220a30", "label": "Marca circular no chão" }
+    },
+    {
+      "id": "iluminacao",
+      "name": "Iluminação",
+      "treatment": { "kind": "color", "color": "#3a0606", "label": "A Bruma responde" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}
