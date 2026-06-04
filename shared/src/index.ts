@@ -238,6 +238,11 @@ export interface DiceRoll {
   modifier: number
   total: number
   at: number
+  /**
+   * Anotações estruturadas vindas de regras do sistema
+   * (ex: ['vantagem', 'acertou'] para um attack roll D&D).
+   */
+  notes?: string[]
 }
 
 export interface Combatant {
@@ -319,6 +324,18 @@ export interface ClientToServerEvents {
   // --- Ferramentas de jogo ---
   /** Rola dados (notação NdM±K). O servidor sorteia e faz broadcast. */
   rollDice: (notation: string) => void
+  /**
+   * Rolagem feita localmente pelas regras do sistema (ex: D&D attack vs AC
+   * com vantagem). O cliente envia o resultado já calculado; o servidor
+   * sanitiza e broadcasta. Útil quando a mecânica não cabe na notação NdM+K.
+   */
+  customRoll: (result: {
+    notation: string
+    rolls: number[]
+    modifier: number
+    total: number
+    notes?: string[]
+  }) => void
   addCombatant: (
     name: string,
     initiative: number,

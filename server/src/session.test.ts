@@ -161,6 +161,31 @@ describe('createSession / handleConnection', () => {
       expect(roll.total).toBeLessThanOrEqual(12)
     })
 
+    it('customRoll aceita resultado do cliente sanitizando os campos', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.customRoll({
+        notation: '1d20+5',
+        rolls: [17],
+        modifier: 5,
+        total: 22,
+        notes: ['vantagem', 'acertou'],
+      })
+      const r = lastBroadcast().lastRoll!
+      expect(r.notation).toBe('1d20+5')
+      expect(r.rolls).toEqual([17])
+      expect(r.modifier).toBe(5)
+      expect(r.total).toBe(22)
+      expect(r.notes).toEqual(['vantagem', 'acertou'])
+    })
+
+    it('customRoll ignora resultado sem rolagens válidas', () => {
+      const { handlers, ioEmit } = setup()
+      ioEmit.mockClear()
+      handlers.customRoll({ notation: 'x', rolls: 'oops', modifier: 0, total: 0 })
+      // Nenhum broadcast novo.
+      expect(ioEmit).not.toHaveBeenCalled()
+    })
+
     it('addCombatant insere o combatente saneando a iniciativa', () => {
       const { handlers, lastBroadcast } = setup()
       handlers.addCombatant('Goblin', 15)

@@ -757,6 +757,88 @@ code {
   min-width: 52px;
 }
 
+.dice-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ===== Ações de regra do sistema (Atacar / Save / Dano) ===== */
+.rule-actions {
+  margin: 10px 0;
+}
+
+.rule-actions__tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.rule-actions__tabs .btn-ghost.is-active {
+  background: #1d1d22;
+  border-color: #4a4a6a;
+  color: #e7e7ea;
+}
+
+.rule-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+  margin-top: 8px;
+  padding: 10px;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+}
+
+.rule-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.75rem;
+  color: #8a8a94;
+}
+
+.rule-field input {
+  width: 70px;
+  min-height: 36px;
+}
+
+.rule-advdis {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+  color: #b8b8c0;
+}
+
+.rule-advdis label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rule-advdis input {
+  width: auto;
+  min-height: 0;
+}
+
+.rule-form > button {
+  margin-left: auto;
+}
+
+.last-notes {
+  color: #8b8bff;
+  font-style: italic;
+}
+
+.dice-overlay__notes {
+  margin-top: 12px;
+  font-family: monospace;
+  font-size: clamp(0.9rem, 2vw, 1.4rem);
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
 /* ===== Tracker (painel) ===== */
 .cbts {
   display: flex;

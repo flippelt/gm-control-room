@@ -38,6 +38,26 @@ export function capNotation(value: unknown): string {
   return typeof value === 'string' ? value.slice(0, 24) : ''
 }
 
+/** Saneia notas de uma rolagem (strings curtas, sem vazios, limitadas). */
+export function sanitizeNotes(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const out = value
+    .filter((s): s is string => typeof s === 'string')
+    .map((s) => s.trim().slice(0, 60))
+    .filter((s) => s.length > 0)
+    .slice(0, 8)
+  return out.length > 0 ? out : undefined
+}
+
+/** Saneia array de rolagens individuais (1..maxFaces, max 100 dados). */
+export function sanitizeRolls(value: unknown): number[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((n): n is number => typeof n === 'number' && Number.isFinite(n))
+    .map((n) => clamp(Math.trunc(n), 1, 1000))
+    .slice(0, 100)
+}
+
 /**
  * Saneia o mapa de campos custom (`Combatant.extra`). Chaves precisam ser
  * identificadores curtos (kebab/camelCase), valores apenas number ou boolean.

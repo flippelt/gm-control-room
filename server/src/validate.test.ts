@@ -4,6 +4,8 @@ import {
   clamp,
   isSafeCssColor,
   sanitizeExtras,
+  sanitizeNotes,
+  sanitizeRolls,
   sanitizeStatuses,
   toFiniteInt,
 } from './validate'
@@ -99,5 +101,33 @@ describe('sanitizeExtras', () => {
     expect(sanitizeExtras(null)).toBeUndefined()
     expect(sanitizeExtras([])).toBeUndefined()
     expect(sanitizeExtras('x')).toBeUndefined()
+  })
+})
+
+describe('sanitizeRolls', () => {
+  it('mantém só números finitos truncados e clampados em 1..1000', () => {
+    expect(sanitizeRolls([3, 5.7, 0, 9999, -1])).toEqual([3, 5, 1, 1000, 1])
+  })
+  it('limita a 100 dados', () => {
+    expect(sanitizeRolls(Array.from({ length: 200 }, () => 5))).toHaveLength(100)
+  })
+  it('retorna [] para entradas inválidas', () => {
+    expect(sanitizeRolls('x')).toEqual([])
+    expect(sanitizeRolls(null)).toEqual([])
+  })
+})
+
+describe('sanitizeNotes', () => {
+  it('aceita até 8 strings, aparadas e cortadas em 60 chars', () => {
+    expect(sanitizeNotes(['acertou', '  vantagem ', '', 7, '0123456789'.repeat(10)])).toEqual([
+      'acertou',
+      'vantagem',
+      '0123456789'.repeat(6),
+    ])
+  })
+  it('retorna undefined quando vazio ou inválido', () => {
+    expect(sanitizeNotes([])).toBeUndefined()
+    expect(sanitizeNotes('x')).toBeUndefined()
+    expect(sanitizeNotes(null)).toBeUndefined()
   })
 })

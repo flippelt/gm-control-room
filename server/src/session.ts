@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -19,6 +20,8 @@ import {
   clamp,
   isSafeCssColor,
   sanitizeExtras,
+  sanitizeNotes,
+  sanitizeRolls,
   sanitizeStatuses,
   toFiniteInt,
 } from './validate.js'
@@ -159,6 +162,25 @@ export function createSession(io: IO) {
       const roll = tools.rollDice(capNotation(notation))
       if (!roll) return
       state.lastRoll = roll
+      broadcast()
+    })
+    socket.on('customRoll', (result) => {
+      if (!result || typeof result !== 'object') return
+      const rolls = sanitizeRolls(result.rolls)
+      if (rolls.length === 0) return
+      const modifier = clamp(toFiniteInt(result.modifier), -10000, 10000)
+      const total = clamp(toFiniteInt(result.total), -1000000, 1000000)
+      const notation = capNotation(result.notation) || `${rolls.length}d?`
+      const notes = sanitizeNotes(result.notes)
+      state.lastRoll = {
+        id: crypto.randomUUID(),
+        notation,
+        rolls,
+        modifier,
+        total,
+        at: Date.now(),
+        ...(notes ? { notes } : {}),
+      }
       broadcast()
     })
     socket.on('addCombatant', (name, initiative, extras) => {

@@ -24,6 +24,9 @@ export function DiceOverlay({ roll }: { roll: DiceRoll | null }) {
         {roll.notation} — [{roll.rolls.join(', ')}]
         {roll.modifier ? (roll.modifier > 0 ? ` +${roll.modifier}` : ` ${roll.modifier}`) : ''}
       </div>
+      {roll.notes && roll.notes.length > 0 && (
+        <div className="dice-overlay__notes">{roll.notes.join(' · ')}</div>
+      )}
     </div>
   )
 }
