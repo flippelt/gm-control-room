@@ -14,6 +14,7 @@
     "@fontsource/special-elite": "^5.2.8",
     "@gmcr/srd-core": "file:../../gmcr-srd-systems/packages/core",
     "@gmcr/srd-dnd5e-2014": "file:../../gmcr-srd-systems/packages/dnd5e-2014",
+    "@gmcr/srd-gumshoe": "file:../../gmcr-srd-systems/packages/gumshoe",
     "@gmcr/srd-lancer": "file:../../gmcr-srd-systems/packages/lancer",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

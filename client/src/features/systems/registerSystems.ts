@@ -1,5 +1,6 @@
 import { register } from '@gmcr/srd-core'
 import { dnd5e2014 } from '@gmcr/srd-dnd5e-2014'
+import { gumshoe } from '@gmcr/srd-gumshoe'
 import { lancer } from '@gmcr/srd-lancer'
 
 /**
@@ -13,5 +14,6 @@ import { lancer } from '@gmcr/srd-lancer'
  */
 export function registerSystems(): void {
   register(dnd5e2014)
+  register(gumshoe)
   register(lancer)
 }

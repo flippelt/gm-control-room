@@ -1,0 +1,41 @@
+{
+  "id": "caso-avenida-marvell",
+  "title": "O Caso da Avenida Marvell",
+  "genre": "modern",
+  "era": { "startYear": 1926, "label": "Boston, 1926" },
+  "system": "gumshoe",
+  "scenes": [
+    {
+      "id": "telegrama",
+      "name": "Telegrama do cliente",
+      "treatment": {
+        "kind": "text",
+        "text": "Investigadores,\n\nMinha irmã desapareceu ontem à noite da residência na Avenida Marvell, 14. A polícia não quer acreditar em mim. O senhor Crowley, da delegacia central, disse que ela 'tinha motivos para fugir'. Não tinha.\n\nO endereço está fechado. Por favor — venham antes que o tempo se feche também."
+      }
+    },
+    {
+      "id": "rua-vazia",
+      "name": "Rua vazia",
+      "treatment": { "kind": "color", "color": "#0a0a14", "label": "Avenida Marvell, 23h" }
+    },
+    {
+      "id": "biblioteca",
+      "name": "Biblioteca municipal",
+      "treatment": { "kind": "color", "color": "#1a1410", "label": "Biblioteca municipal" }
+    },
+    {
+      "id": "tensao",
+      "name": "Algo te observa",
+      "treatment": { "kind": "color", "color": "#240606", "label": "Algo te observa" }
+    },
+    {
+      "id": "revelacao",
+      "name": "Revelação",
+      "treatment": { "kind": "color", "color": "#220a30", "label": "Tudo cai no lugar" }
+    }
+  ],
+  "audio": [],
+  "shortcuts": [
+    { "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }
+  ]
+}
