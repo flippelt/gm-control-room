@@ -18,6 +18,7 @@ import {
   capNotation,
   clamp,
   isSafeCssColor,
+  sanitizeExtras,
   sanitizeStatuses,
   toFiniteInt,
 } from './validate.js'
@@ -160,11 +161,12 @@ export function createSession(io: IO) {
       state.lastRoll = roll
       broadcast()
     })
-    socket.on('addCombatant', (name, initiative) => {
+    socket.on('addCombatant', (name, initiative, extras) => {
       tools.addCombatant(
         state.tracker,
         typeof name === 'string' ? name : '',
         clamp(toFiniteInt(initiative), -1000, 1000),
+        sanitizeExtras(extras),
       )
       broadcast()
     })
@@ -177,6 +179,7 @@ export function createSession(io: IO) {
       if (patch.hp !== undefined) clean.hp = clamp(toFiniteInt(patch.hp), 0, 100000)
       if (patch.maxHp !== undefined) clean.maxHp = clamp(toFiniteInt(patch.maxHp), 0, 100000)
       if (patch.statuses !== undefined) clean.statuses = sanitizeStatuses(patch.statuses)
+      if (patch.extra !== undefined) clean.extra = sanitizeExtras(patch.extra)
       tools.updateCombatant(state.tracker, id, clean)
       broadcast()
     })
