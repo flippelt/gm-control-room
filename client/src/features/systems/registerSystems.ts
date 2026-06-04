@@ -1,5 +1,6 @@
 import { register } from '@gmcr/srd-core'
 import { dnd5e2014 } from '@gmcr/srd-dnd5e-2014'
+import { lancer } from '@gmcr/srd-lancer'
 
 /**
  * Registra todos os sistemas RPG suportados pela instalação atual.
@@ -12,4 +13,5 @@ import { dnd5e2014 } from '@gmcr/srd-dnd5e-2014'
  */
 export function registerSystems(): void {
   register(dnd5e2014)
+  register(lancer)
 }
