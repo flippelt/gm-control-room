@@ -36,12 +36,16 @@ export function addCombatant(
   name: string,
   initiative: number,
   extras?: Record<string, number | boolean>,
+  hp?: number,
+  maxHp?: number,
 ): void {
   tracker.combatants.push({
     id: crypto.randomUUID(),
     name: name.slice(0, 60) || 'Sem nome',
     initiative,
     statuses: [],
+    ...(hp !== undefined ? { hp } : {}),
+    ...(maxHp !== undefined ? { maxHp } : {}),
     ...(extras && Object.keys(extras).length > 0 ? { extra: { ...extras } } : {}),
   })
   reorder(tracker)

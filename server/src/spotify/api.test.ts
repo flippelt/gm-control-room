@@ -80,6 +80,8 @@ describe('getState', () => {
     expect(state.playback).toEqual({
       isPlaying: true,
       device: 'Sala',
+      shuffle: false,
+      repeat: 'off',
       track: { name: 'Faixa X', artists: 'A, B', albumImage: 'http://img/x.jpg' },
     })
   })

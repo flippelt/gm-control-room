@@ -7,7 +7,12 @@ import crypto from 'node:crypto'
  */
 
 const AUTH_BASE = 'https://accounts.spotify.com'
-const SCOPES = ['user-read-playback-state', 'user-modify-playback-state'].join(' ')
+const SCOPES = [
+  'user-read-playback-state',
+  'user-modify-playback-state',
+  'playlist-read-private',
+  'playlist-read-collaborative',
+].join(' ')
 
 // Lidos de forma preguiçosa: o dotenv só roda depois que os módulos são
 // importados, então ler em tempo de chamada evita pegar valores vazios.

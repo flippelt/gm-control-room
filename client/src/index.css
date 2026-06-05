@@ -933,12 +933,101 @@ input[type='range'] {
   color: #1db954;
 }
 
+.spotify__mode-on {
+  border-color: #1db954 !important;
+  color: #1db954 !important;
+}
+
+.spotify__playlists-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.spotify__playlists {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.playlist {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  text-align: left;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  color: inherit;
+  font-size: 0.85rem;
+}
+
+.playlist:hover {
+  border-color: #1db954;
+}
+
+.playlist__art {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.playlist__meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.playlist__meta strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
 code {
   background: #0e0e11;
   border: 1px solid #2c2c34;
   border-radius: 4px;
   padding: 1px 5px;
   font-size: 0.85em;
+}
+
+/* ===== Notas ===== */
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.notes__area {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.35);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 0.95em;
+  line-height: 1.45;
+}
+.notes__area:focus {
+  outline: 2px solid rgba(180, 90, 90, 0.55);
+  outline-offset: 1px;
+}
+.notes__meta {
+  font-size: 0.8em;
 }
 
 /* ===== Atalhos ===== */
@@ -964,6 +1053,12 @@ code {
 
 .shortcut:hover {
   border-color: #4a4a6a;
+}
+
+/* Botão de ação (não-link) — herda visual de .shortcut. */
+.shortcut--action {
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .shortcut__emoji {
@@ -1207,37 +1302,80 @@ code {
   font-size: 0.8rem;
 }
 
-/* ===== Overlay de dados (tela dos jogadores) ===== */
-.dice-overlay {
+/* ===== Feed de rolagens (tela dos jogadores) =====
+   Substitui o antigo overlay fullscreen. Barra de chat na borda inferior,
+   não bloqueia pointer events, não dima a cena. */
+.dice-feed {
   position: fixed;
-  inset: 0;
-  z-index: 80;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 70;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+
+.dice-feed__list {
+  pointer-events: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  pointer-events: none;
-  animation: dice-pop 0.5s cubic-bezier(0.2, 1.4, 0.5, 1);
+  gap: 4px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-.dice-overlay__total {
-  font-size: clamp(5rem, 22vw, 16rem);
+.dice-feed__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+
+.dice-feed__row--new {
+  background: rgba(140, 140, 255, 0.16);
+  box-shadow: 0 0 0 1px rgba(140, 140, 255, 0.4) inset;
+  animation: dice-feed-pulse 0.5s ease-out;
+}
+
+.dice-feed__total {
+  font-size: 1.4rem;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 0 30px rgba(140, 140, 255, 0.8), 0 6px 24px rgba(0, 0, 0, 0.8);
-  line-height: 1;
+  min-width: 36px;
+  text-align: right;
+  text-shadow: 0 0 14px rgba(140, 140, 255, 0.6);
 }
 
-.dice-overlay__detail {
-  font-size: clamp(1rem, 3vw, 2rem);
-  color: rgba(255, 255, 255, 0.8);
+.dice-feed__detail {
   font-family: monospace;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@keyframes dice-pop {
-  from { transform: scale(0.4); opacity: 0; }
+.dice-feed__notes {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+@keyframes dice-feed-pulse {
+  from { transform: scale(0.95); opacity: 0.4; }
   to { transform: scale(1); opacity: 1; }
 }
 

@@ -45,6 +45,7 @@ export function createSession(io: IO) {
     lastRoll: null,
     rollHistory: [],
     tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
+    notes: saved?.notes ?? '',
   }
 
   const ROLL_HISTORY_CAP = 50
@@ -76,6 +77,7 @@ export function createSession(io: IO) {
     state.audio = persisted?.audio ?? next.audio.map((layer) => ({ ...layer }))
     state.lastRoll = null
     state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
+    state.notes = persisted?.notes ?? ''
     broadcast()
   }
 
@@ -191,12 +193,14 @@ export function createSession(io: IO) {
       })
       broadcast()
     })
-    socket.on('addCombatant', (name, initiative, extras) => {
+    socket.on('addCombatant', (name, initiative, extras, hp, maxHp) => {
       tools.addCombatant(
         state.tracker,
         typeof name === 'string' ? name : '',
         clamp(toFiniteInt(initiative), -1000, 1000),
         sanitizeExtras(extras),
+        hp !== undefined ? clamp(toFiniteInt(hp), 0, 100000) : undefined,
+        maxHp !== undefined ? clamp(toFiniteInt(maxHp), 0, 100000) : undefined,
       )
       broadcast()
     })
@@ -228,6 +232,12 @@ export function createSession(io: IO) {
     })
     socket.on('clearCombat', () => {
       tools.clearCombat(state.tracker)
+      broadcast()
+    })
+    socket.on('setNotes', (text) => {
+      if (typeof text !== 'string') return
+      // Limite defensivo: ~16KB (16384 chars).
+      state.notes = text.slice(0, 16384)
       broadcast()
     })
   }

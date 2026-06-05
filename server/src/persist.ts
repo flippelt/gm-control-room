@@ -13,6 +13,7 @@ interface Persisted {
   lighting: SessionState['lighting']
   audio: SessionState['audio']
   tracker: SessionState['tracker']
+  notes?: string
 }
 
 /** Carrega o snapshot persistido, se for da mesma campanha. */
@@ -25,6 +26,7 @@ export function loadPersisted(campaignId: string): Partial<SessionState> | null 
       lighting: data.lighting,
       audio: data.audio,
       tracker: data.tracker,
+      notes: data.notes ?? '',
     }
   } catch {
     return null
@@ -43,6 +45,7 @@ export function savePersisted(state: SessionState): void {
       lighting: state.lighting,
       audio: state.audio,
       tracker: state.tracker,
+      notes: state.notes,
     }
     fs.writeFile(FILE, JSON.stringify(data, null, 2), () => {})
   }, 500)

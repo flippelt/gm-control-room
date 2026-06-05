@@ -1,5 +1,7 @@
+import { exec } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
@@ -11,7 +13,7 @@ import type { ClientToServerEvents, ServerToClientEvents, SpotifyCommand } from 
 import { createSession } from './session.js'
 import { getLanUrls } from './lib/lan.js'
 import { buildAuthorizeUrl, handleCallback, isConfigured } from './spotify/auth.js'
-import { getState, runCommand } from './spotify/api.js'
+import { getState, listPlaylists, runCommand } from './spotify/api.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // .env fica na raiz do monorepo (../../ a partir de server/src ou server/dist).
@@ -77,6 +79,10 @@ app.get('/spotify/state', async (_req, res) => {
   res.json(await getState())
 })
 
+app.get('/spotify/playlists', async (_req, res) => {
+  res.json({ playlists: await listPlaylists() })
+})
+
 app.post('/spotify/command', async (req, res) => {
   try {
     await runCommand(req.body as SpotifyCommand)
@@ -84,6 +90,46 @@ app.post('/spotify/command', async (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: (err as Error).message })
   }
+})
+
+// Abre a pasta de assets do servidor no file manager nativo. Útil pro mestre
+// soltar mapas/handouts na pasta sem sair do painel. Funciona apenas quando o
+// servidor roda na mesma máquina do operador (loopback, sem efeito em remoto).
+app.post('/system/open-assets', (req, res) => {
+  // Aceita só requisições do próprio host — evita um cliente remoto na LAN
+  // abrir o file manager da máquina do mestre por engano.
+  const ip = req.ip ?? req.socket.remoteAddress ?? ''
+  const isLoopback =
+    ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.endsWith('localhost')
+  if (!isLoopback) {
+    res.status(403).json({ ok: false, error: 'Apenas pelo aparelho do mestre (loopback).' })
+    return
+  }
+  // Garante que o diretório existe (cria se faltar — primeira execução).
+  try {
+    fs.mkdirSync(assetsDir, { recursive: true })
+  } catch {
+    // segue: se mkdir falhar, o open vai reclamar.
+  }
+  const platform = os.platform()
+  const cmd =
+    platform === 'win32'
+      ? `explorer "${assetsDir}"`
+      : platform === 'darwin'
+        ? `open "${assetsDir}"`
+        : `xdg-open "${assetsDir}"`
+  exec(cmd, (err) => {
+    if (err) {
+      // explorer.exe sai com código 1 mesmo em sucesso — não tratar como erro.
+      if (platform === 'win32' && err.code === 1) {
+        res.json({ ok: true, path: assetsDir })
+        return
+      }
+      res.status(500).json({ ok: false, error: err.message })
+      return
+    }
+    res.json({ ok: true, path: assetsDir })
+  })
 })
 
 // Em produção, o servidor serve o client buildado (mesma origem).

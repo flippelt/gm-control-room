@@ -44,9 +44,14 @@ export async function getState(): Promise<SpotifyState> {
     let playback = null
     if (playRes.status === 200) {
       const p = (await playRes.json()) as any
+      const repeatRaw = typeof p.repeat_state === 'string' ? p.repeat_state : 'off'
+      const repeat: 'off' | 'track' | 'context' =
+        repeatRaw === 'track' || repeatRaw === 'context' ? repeatRaw : 'off'
       playback = {
         isPlaying: !!p.is_playing,
         device: p.device?.name as string | undefined,
+        shuffle: !!p.shuffle_state,
+        repeat,
         track: p.item
           ? {
               name: p.item.name as string,
@@ -92,5 +97,37 @@ export async function runCommand(cmd: SpotifyCommand): Promise<void> {
         body: JSON.stringify({ device_ids: [cmd.deviceId], play: true }),
       })
       break
+    case 'shuffle':
+      await call(`/me/player/shuffle?state=${cmd.enabled ? 'true' : 'false'}`, {
+        method: 'PUT',
+      })
+      break
+    case 'repeat':
+      // Spotify API: 'track' | 'context' | 'off'
+      await call(`/me/player/repeat?state=${encodeURIComponent(cmd.mode)}`, {
+        method: 'PUT',
+      })
+      break
+  }
+}
+
+import type { SpotifyPlaylist } from '@gmcr/shared'
+
+/** Lista as playlists do usuário (até 50; chamada feita on demand). */
+export async function listPlaylists(): Promise<SpotifyPlaylist[]> {
+  if (!isConfigured() || !isConnected()) return []
+  try {
+    const res = await call('/me/playlists?limit=50')
+    if (!res.ok) return []
+    const data = (await res.json()) as { items: any[] }
+    return (data.items ?? []).map((p: any) => ({
+      id: p.id as string,
+      name: p.name as string,
+      tracks: p.tracks?.total ?? 0,
+      image: p.images?.[0]?.url as string | undefined,
+      uri: p.uri as string,
+    }))
+  } catch {
+    return []
   }
 }

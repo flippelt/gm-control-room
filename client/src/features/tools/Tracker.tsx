@@ -75,6 +75,8 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
 
   const setHp = (delta: number) =>
     socket.emit('updateCombatant', c.id, { hp: Math.max(0, (c.hp ?? 0) + delta) })
+  const setMaxHp = (delta: number) =>
+    socket.emit('updateCombatant', c.id, { maxHp: Math.max(0, (c.maxHp ?? 0) + delta) })
 
   const addStatus = (s: string) => {
     const v = s.trim()
@@ -99,10 +101,14 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
           title="Iniciativa"
         />
         <span className="cbt__name">{c.name}</span>
-        <span className="cbt__hp">
-          <button onClick={() => setHp(-1)}>−</button>
+        <span className="cbt__hp" title="HP atual / máximo">
+          <button onClick={() => setHp(-1)} aria-label="HP −1">−</button>
           <span>{c.hp ?? '—'}</span>
-          <button onClick={() => setHp(1)}>+</button>
+          <button onClick={() => setHp(1)} aria-label="HP +1">+</button>
+          <span className="muted" style={{ margin: '0 4px' }}>/</span>
+          <button onClick={() => setMaxHp(-1)} aria-label="Max HP −1" className="btn-ghost">−</button>
+          <span className="muted">{c.maxHp ?? '—'}</span>
+          <button onClick={() => setMaxHp(1)} aria-label="Max HP +1" className="btn-ghost">+</button>
         </span>
         <button className="cbt__remove" onClick={() => socket.emit('removeCombatant', c.id)}>
           ✕
@@ -141,19 +147,24 @@ export function Tracker() {
   const system = useActiveSystem()
   const [name, setName] = useState('')
   const [init, setInit] = useState('')
+  const [hp, setHp] = useState('')
 
   const add = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
     const extras = defaultExtras(system)
+    const hpVal = Number(hp) || undefined
     socket.emit(
       'addCombatant',
       name,
       Number(init) || 0,
       Object.keys(extras).length > 0 ? extras : undefined,
+      hpVal,
+      hpVal, // maxHp = mesmo valor inicial; o stepper ajusta depois
     )
     setName('')
     setInit('')
+    setHp('')
   }
 
   return (
@@ -207,6 +218,14 @@ export function Tracker() {
           value={init}
           onChange={(e) => setInit(e.target.value)}
           placeholder="Inic."
+        />
+        <input
+          style={{ flex: 1 }}
+          type="number"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+          placeholder="HP"
+          title="HP máximo (= HP atual no início)"
         />
         <button type="submit">Add</button>
       </form>

@@ -193,6 +193,21 @@ export interface SpotifyPlayback {
   isPlaying: boolean
   device?: string
   track?: SpotifyTrack
+  /** Modo shuffle ativo no player. */
+  shuffle?: boolean
+  /** Modo repeat: 'off' | 'track' | 'context'. */
+  repeat?: 'off' | 'track' | 'context'
+}
+
+export interface SpotifyPlaylist {
+  id: string
+  name: string
+  /** Quantas músicas (informativo). */
+  tracks: number
+  /** URL da arte de capa (180px+). */
+  image?: string
+  /** URI de contexto pra usar em SpotifyCommand 'play'. */
+  uri: string
 }
 
 /** Resposta de GET /spotify/state. */
@@ -213,6 +228,8 @@ export type SpotifyCommand =
   | { action: 'previous' }
   | { action: 'volume'; volumePercent: number }
   | { action: 'transfer'; deviceId: string }
+  | { action: 'shuffle'; enabled: boolean }
+  | { action: 'repeat'; mode: 'off' | 'track' | 'context' }
 
 // ===================== Ferramentas de jogo =====================
 
@@ -309,6 +326,8 @@ export interface SessionState {
   rollHistory: DiceRoll[]
   /** Tracker de iniciativa/combate. */
   tracker: Tracker
+  /** Notas livres do mestre (markdown leve, persiste com a sessão). */
+  notes: string
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -347,6 +366,8 @@ export interface ClientToServerEvents {
     name: string,
     initiative: number,
     extras?: Record<string, number | boolean>,
+    hp?: number,
+    maxHp?: number,
   ) => void
   updateCombatant: (
     id: string,
@@ -362,4 +383,8 @@ export interface ClientToServerEvents {
   listCampaigns: () => void
   /** Troca a campanha ativa. O servidor recarrega e reseta o estado. */
   selectCampaign: (id: string) => void
+
+  // --- Notas do mestre ---
+  /** Substitui o texto inteiro das notas (limite ~16KB no server). */
+  setNotes: (text: string) => void
 }
