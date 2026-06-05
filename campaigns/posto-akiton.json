@@ -1,0 +1,23 @@
+{
+  "id": "posto-akiton",
+  "title": "Posto Akiton-9",
+  "genre": "sci-fi",
+  "era": { "startYear": 4720, "label": "AbsalomStation Era" },
+  "system": "starfinder-1e",
+  "scenes": [
+    {
+      "id": "briefing",
+      "name": "Briefing do Stewards Corps",
+      "treatment": {
+        "kind": "text",
+        "text": "Operativos,\n\nO Posto Akiton-9 saiu do ar há 17 horas. Última transmissão: estática + um termo inteligível — 'Eoxians'. Comunicação com a estação principal AbsalomStation foi cortada por uma tempestade solar.\n\nMissão: chegar, restabelecer power, identificar hostis. SP/HP/RP standards aplicáveis; armadura grau 3 disponível.\n\n— Stewards Corps Command"
+      }
+    },
+    { "id": "orbita", "name": "Em órbita de Akiton", "treatment": { "kind": "color", "color": "#06121e", "label": "Em órbita de Akiton" } },
+    { "id": "descida", "name": "Descida orbital", "treatment": { "kind": "color", "color": "#2a0e04", "label": "Descida orbital" } },
+    { "id": "posto", "name": "Posto Akiton-9", "treatment": { "kind": "color", "color": "#1a1a2a", "label": "Posto Akiton-9" } },
+    { "id": "engajamento", "name": "Engajamento", "treatment": { "kind": "color", "color": "#3a0606", "label": "Engajamento" } }
+  ],
+  "audio": [],
+  "shortcuts": [{ "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }]
+}

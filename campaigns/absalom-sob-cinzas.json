@@ -1,0 +1,23 @@
+{
+  "id": "absalom-sob-cinzas",
+  "title": "Absalom Sob Cinzas",
+  "genre": "fantasy",
+  "era": { "startYear": 4724, "label": "Idade dos Pináculos Perdidos" },
+  "system": "pathfinder-2e",
+  "scenes": [
+    {
+      "id": "convite",
+      "name": "Convite da Sociedade Esquecida",
+      "treatment": {
+        "kind": "text",
+        "text": "Caros aventureiros,\n\nO Distrito das Sombras de Absalom amanheceu coberto de cinzas que não vieram de nenhuma fogueira. Três fontes secaram. As ratazanas estão imóveis nos becos.\n\nA Sociedade Esquecida convida apenas grupos discretos. Recompensa: dois Hero Points em débito a cada cabeça vivamente devolvida — e nossas portas, da próxima vez que precisarem.\n\n— Mestra Vellora Quintaire"
+      }
+    },
+    { "id": "distrito", "name": "Distrito das Sombras", "treatment": { "kind": "color", "color": "#0a0a14", "label": "Distrito das Sombras" } },
+    { "id": "fonte-seca", "name": "A Fonte Seca", "treatment": { "kind": "color", "color": "#1a1410", "label": "A Fonte Seca" } },
+    { "id": "tumulo", "name": "Túmulo Profanado", "treatment": { "kind": "color", "color": "#1a0a2a", "label": "Túmulo Profanado" } },
+    { "id": "combate", "name": "Algo nas cinzas", "treatment": { "kind": "color", "color": "#3a0606", "label": "Algo nas cinzas" } }
+  ],
+  "audio": [],
+  "shortcuts": [{ "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }]
+}
