@@ -1,0 +1,23 @@
+{
+  "id": "golarion-fronteira-sul",
+  "title": "Fronteira Sul (Golarion)",
+  "genre": "fantasy",
+  "era": { "startYear": 4720, "label": "Idade dos Pináculos Perdidos" },
+  "system": "pathfinder-1e",
+  "scenes": [
+    {
+      "id": "contrato",
+      "name": "Contrato do Pathfinder Lodge",
+      "treatment": {
+        "kind": "text",
+        "text": "Aventureiros,\n\nUma expedição do Pathfinder Society está atrasada há duas estações. A última correspondência veio das Ruínas de Kel-Hardun, no extremo sul da Stolen Lands. O Venture-Captain pede que sigam o rastro e tragam quem ainda vive — ou as fichas de quem não.\n\nPagamento: contas pendentes da Sociedade quitadas + acesso à Reliquary subterrânea.\n\n— Venture-Captain Harlow"
+      }
+    },
+    { "id": "lodge", "name": "Pathfinder Lodge", "treatment": { "kind": "color", "color": "#1a1410", "label": "Pathfinder Lodge" } },
+    { "id": "campo", "name": "Acampamento na fronteira", "treatment": { "kind": "color", "color": "#2a1a08", "label": "Acampamento na fronteira" } },
+    { "id": "ruinas", "name": "Ruínas de Kel-Hardun", "treatment": { "kind": "color", "color": "#1a0a2a", "label": "Ruínas de Kel-Hardun" } },
+    { "id": "emboscada", "name": "Emboscada", "treatment": { "kind": "color", "color": "#3a0606", "label": "Emboscada" } }
+  ],
+  "audio": [],
+  "shortcuts": [{ "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }]
+}

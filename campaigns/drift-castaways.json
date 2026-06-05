@@ -1,0 +1,23 @@
+{
+  "id": "drift-castaways",
+  "title": "Drift Castaways",
+  "genre": "sci-fi",
+  "era": { "startYear": 4725, "label": "Pós-Drift" },
+  "system": "starfinder-2e",
+  "scenes": [
+    {
+      "id": "alerta",
+      "name": "Alerta da Stewards Network",
+      "treatment": {
+        "kind": "text",
+        "text": "Operativos,\n\nUma nave cargueira saiu do Drift no setor errado. Seis tripulantes vivos. Um vivo demais. Já temos relatos de eventos psíquicos a bordo — alguém ouviu sua própria voz vindo do reator.\n\nMissão: docar, identificar a anomalia, estabilizar (ou neutralizar) o vivo demais. EAC/KAC dela é classificado mas estimamos elite.\n\n— Stewards Corps Drift Division"
+      }
+    },
+    { "id": "drift", "name": "No Drift", "treatment": { "kind": "color", "color": "#06121e", "label": "No Drift" } },
+    { "id": "docking", "name": "Docagem", "treatment": { "kind": "color", "color": "#1a1a2a", "label": "Docagem" } },
+    { "id": "reator", "name": "Sala do Reator", "treatment": { "kind": "color", "color": "#0a2a14", "label": "Sala do Reator" } },
+    { "id": "vivomais", "name": "O vivo demais", "treatment": { "kind": "color", "color": "#3a0606", "label": "O vivo demais" } }
+  ],
+  "audio": [],
+  "shortcuts": [{ "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }]
+}

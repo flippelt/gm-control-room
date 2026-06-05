@@ -1,0 +1,23 @@
+{
+  "id": "ruinas-de-ashkar",
+  "title": "Ruínas de Ashkar",
+  "genre": "fantasy",
+  "era": { "startYear": 1370, "label": "Era do Ouro Negro" },
+  "system": "dnd-3.5",
+  "scenes": [
+    {
+      "id": "convocacao",
+      "name": "Conde Marghan convoca",
+      "treatment": {
+        "kind": "text",
+        "text": "Aventureiros,\n\nAs ruínas de Ashkar voltaram a brilhar à meia-noite. Já perdemos duas patrulhas. Os boatos falam de sussurros falando o nome de cada homem antes de matá-lo.\n\nPaga-se 200 peças de ouro pelo simples reconhecimento. O dobro se trouxer respostas. Vivos, claro.\n\n— Conde Marghan de Pedraverde"
+      }
+    },
+    { "id": "vilarejo", "name": "Aldeia Pedraverde", "treatment": { "kind": "color", "color": "#1f2810", "label": "Pedraverde" } },
+    { "id": "trilha", "name": "Trilha das Ruínas", "treatment": { "kind": "color", "color": "#06120a", "label": "Trilha das Ruínas" } },
+    { "id": "ruinas", "name": "Salão Profanado", "treatment": { "kind": "color", "color": "#2a0a30", "label": "Salão Profanado" } },
+    { "id": "combate", "name": "Os sussurros falam seu nome", "treatment": { "kind": "color", "color": "#3a0606", "label": "Os sussurros falam seu nome" } }
+  ],
+  "audio": [],
+  "shortcuts": [{ "id": "spotify", "label": "Spotify", "url": "spotify:", "emoji": "🎵" }]
+}
