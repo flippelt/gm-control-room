@@ -35,17 +35,14 @@ npm run build && npm start   # produção: tudo na porta 4000
 
 ## Documentação
 
-Documentação detalhada em [`docs/`](docs/README.md):
+Documentação completa na **[Wiki](https://github.com/flippelt/gm-control-room/wiki)**:
 
-- [Quick Start](docs/Quick-Start.md) — setup, dev vs produção, `.env`
-- [Architecture](docs/Architecture.md) — monorepo, socket flow
-- [Campaigns](docs/Campaigns.md) — schema JSON
-- [Scenes and Treatments](docs/Scenes-and-Treatments.md)
-- [Lighting](docs/Lighting-and-Atmosphere.md) · [Audio](docs/Audio-Mixer.md) · [Spotify](docs/Spotify.md)
-- [Combat Tracker](docs/Combat-Tracker.md) · [Dice](docs/Dice-and-Roll-History.md) · [Notes](docs/GM-Notes.md)
-- [RPG Systems](docs/RPG-Systems.md) — adicionar sistemas SRD
-- [Display & PWA](docs/Display-and-PWA.md) · [Shortcuts & Assets](docs/Shortcuts-and-Assets.md)
-- [Persistence](docs/Persistence.md) · [Development](docs/Development.md) · [Socket Events](docs/Socket-Events.md)
+- [Quick Start](https://github.com/flippelt/gm-control-room/wiki/Quick-Start) — setup, dev vs produção, `.env`
+- [Architecture](https://github.com/flippelt/gm-control-room/wiki/Architecture) · [Development](https://github.com/flippelt/gm-control-room/wiki/Development) · [Socket Events](https://github.com/flippelt/gm-control-room/wiki/Socket-Events)
+- [Campaigns](https://github.com/flippelt/gm-control-room/wiki/Campaigns) · [Scenes and Treatments](https://github.com/flippelt/gm-control-room/wiki/Scenes-and-Treatments) · [Lighting](https://github.com/flippelt/gm-control-room/wiki/Lighting-and-Atmosphere) · [Audio](https://github.com/flippelt/gm-control-room/wiki/Audio-Mixer)
+- [Combat Tracker](https://github.com/flippelt/gm-control-room/wiki/Combat-Tracker) · [Dice](https://github.com/flippelt/gm-control-room/wiki/Dice-and-Roll-History) · [Notes](https://github.com/flippelt/gm-control-room/wiki/GM-Notes)
+- [Spotify](https://github.com/flippelt/gm-control-room/wiki/Spotify) — OAuth, playlists, shuffle/repeat
+- [RPG Systems](https://github.com/flippelt/gm-control-room/wiki/RPG-Systems) · [Display and PWA](https://github.com/flippelt/gm-control-room/wiki/Display-and-PWA) · [Shortcuts and Assets](https://github.com/flippelt/gm-control-room/wiki/Shortcuts-and-Assets) · [Persistence](https://github.com/flippelt/gm-control-room/wiki/Persistence)
 
 ## Repositórios relacionados
 
