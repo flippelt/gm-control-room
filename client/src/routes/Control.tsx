@@ -4,6 +4,7 @@ import { useSession } from '../store'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
 import { DiceRoller } from '../features/tools/DiceRoller'
+import { NotesPanel } from '../features/tools/NotesPanel'
 import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
@@ -230,6 +231,11 @@ export function Control() {
           <section className="card">
             <h2>Spotify</h2>
             <SpotifyPanel />
+          </section>
+
+          <section className="card">
+            <h2>Notas do mestre</h2>
+            <NotesPanel />
           </section>
 
           <section className="card">

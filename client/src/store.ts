@@ -21,6 +21,7 @@ interface SessionStore {
   lastRoll: DiceRoll | null
   rollHistory: DiceRoll[]
   tracker: Tracker
+  notes: string
   connected: boolean
 }
 
@@ -34,6 +35,7 @@ export const useSession = create<SessionStore>(() => ({
   lastRoll: null,
   rollHistory: [],
   tracker: DEFAULT_TRACKER,
+  notes: '',
   connected: false,
 }))
 
@@ -48,6 +50,7 @@ socket.on('state', (state: SessionState) =>
     lastRoll: state.lastRoll,
     rollHistory: state.rollHistory ?? [],
     tracker: state.tracker,
+    notes: state.notes ?? '',
   }),
 )
 socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))
