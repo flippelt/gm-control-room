@@ -1066,6 +1066,15 @@ code {
 }
 
 /* ===== Dados (painel) ===== */
+.dice-presets-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+.dice-presets-head em { font-style: italic; }
+
 .dice-presets {
   display: flex;
   flex-wrap: wrap;
@@ -1077,11 +1086,130 @@ code {
   background: #0e0e11;
   border: 1px solid #2c2c34;
   min-width: 52px;
+  position: relative;
 }
 
 .dice-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Preset com notação não-executável: pinta âmbar e mostra ícone de "configurar". */
+.dice-btn--invalid {
+  border-color: #8a6308;
+  border-style: dashed;
+  color: #d6a14a;
+}
+.dice-btn--invalid:hover {
+  background: #1a1306;
+}
+.dice-btn__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #d6a14a;
+  color: #1a1306;
+  font-size: 0.65rem;
+  border-radius: 999px;
+  padding: 1px 4px;
+  line-height: 1;
+}
+
+/* ===== Modal genérico ===== */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal__panel {
+  background: #15151c;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  max-width: 540px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.modal__panel--wide {
+  max-width: 920px;
+}
+.modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #2c2c34;
+}
+.modal__head h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.modal__body {
+  padding: 14px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 16px;
+  border-top: 1px solid #2c2c34;
+}
+
+/* ===== Preset editor (tabela) ===== */
+.preset-editor {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.preset-editor th,
+.preset-editor td {
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: left;
+}
+.preset-editor th {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.preset-editor input,
+.preset-editor select {
+  width: 100%;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  color: inherit;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.85rem;
+}
+.preset-editor__row--invalid input[value]:not([value=""]) {
+  border-color: #8a6308;
+}
+.tag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+}
+.tag--warn {
+  background: rgba(214, 161, 74, 0.15);
+  border-color: rgba(214, 161, 74, 0.5);
+  color: #d6a14a;
 }
 
 /* ===== Ações de regra do sistema (Atacar / Save / Dano) ===== */

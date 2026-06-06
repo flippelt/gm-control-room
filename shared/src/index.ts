@@ -99,6 +99,69 @@ export interface Campaign {
   audio: AudioLayer[]
   /** Atalhos para apps externos (abrem no aparelho de controle). */
   shortcuts: Shortcut[]
+  /**
+   * Presets de dados customizados pra esta campanha. Sobrepõe (por `id`)
+   * ou estende a lista do sistema. Útil pra:
+   * - Substituir presets sem notação válida (ex: Blade Runner "pool 2"
+   *   vira "1d8+1d6" pro seu personagem específico).
+   * - Adicionar rolagens próprias (ex: "Healing surge" = "2d8+5").
+   *
+   * Veja `mergeDicePresets` pra como o merge funciona.
+   */
+  dicePresets?: CampaignDicePreset[]
+}
+
+/**
+ * Preset de dado declarado pela campanha. Usa a mesma estrutura do
+ * `DicePreset` do `@lippelt/srd-core`, mas em-typed aqui pra evitar
+ * dependência cruzada no `shared/`.
+ */
+export interface CampaignDicePreset {
+  id: string
+  label: string
+  /** Notação NdM±K ou identificador especial (`advantage`/`disadvantage`). */
+  notation: string
+  category?: 'check' | 'attack' | 'damage' | 'save' | 'special'
+  description?: string
+}
+
+/**
+ * Combina presets do sistema com overrides/adições da campanha.
+ *
+ * Regra:
+ * - Cada preset do sistema vira a base.
+ * - Pra cada preset da campanha, se `id` bate com um do sistema, SUBSTITUI;
+ *   caso contrário, APPEND ao final.
+ *
+ * Resultado: lista com a mesma forma de `system.dicePresets` (DicePreset).
+ */
+export function mergeDicePresets(
+  systemPresets: readonly CampaignDicePreset[] | undefined,
+  campaignPresets: readonly CampaignDicePreset[] | undefined,
+): CampaignDicePreset[] {
+  const base = systemPresets ? [...systemPresets] : []
+  const overrides = campaignPresets ?? []
+  for (const p of overrides) {
+    const idx = base.findIndex((b) => b.id === p.id)
+    if (idx >= 0) base[idx] = p
+    else base.push(p)
+  }
+  return base
+}
+
+/**
+ * Heurística simples pra reconhecer presets que NÃO são executáveis pelo
+ * roller padrão (NdM±K). Esses são candidatos a customização — a UI pode
+ * marcar visualmente como "precisa configurar".
+ *
+ * Aceita:
+ * - `NdM±K` (regex parseDiceNotation)
+ * - `advantage` / `disadvantage` (handled por system.rules)
+ */
+export function isExecutableNotation(notation: string): boolean {
+  const n = (notation ?? '').trim().toLowerCase()
+  if (n === 'advantage' || n === 'disadvantage') return true
+  return /^(\d*)d(\d+)\s*([+-]\s*\d+)?$/.test(n)
 }
 
 /** Versão enxuta da campanha — usada na lista do seletor (sem cenas/áudio). */
@@ -387,4 +450,12 @@ export interface ClientToServerEvents {
   // --- Notas do mestre ---
   /** Substitui o texto inteiro das notas (limite ~16KB no server). */
   setNotes: (text: string) => void
+
+  // --- Edição de campanha ---
+  /**
+   * Salva uma campanha no disco (sobrescreve `campaigns/<id>.json`).
+   * Loopback-only no server. Após salvar, o `fs.watch` recarrega
+   * automaticamente e dispara broadcast.
+   */
+  saveCampaign: (campaign: Campaign) => void
 }

@@ -10,7 +10,7 @@ import type {
   SessionState,
 } from '@gmcr/shared'
 import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/shared'
-import { listCampaigns, loadCampaign, loadCampaignById } from './data/loadCampaign.js'
+import { listCampaigns, loadCampaign, loadCampaignById, saveCampaignFile } from './data/loadCampaign.js'
 import { loadPersisted, savePersisted } from './persist.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -239,6 +239,24 @@ export function createSession(io: IO) {
       // Limite defensivo: ~16KB (16384 chars).
       state.notes = text.slice(0, 16384)
       broadcast()
+    })
+    socket.on('saveCampaign', (campaign) => {
+      // Loopback-only: ignora se vier de aparelho remoto da LAN.
+      const ip = socket.handshake.address ?? ''
+      const isLoopback =
+        ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('localhost')
+      if (!isLoopback) {
+        console.warn(`[campaign] saveCampaign de ${ip} bloqueado (loopback-only)`)
+        return
+      }
+      try {
+        saveCampaignFile(campaign)
+        // O fs.watch recarrega quando a campanha ativa muda; refresca a lista
+        // pra todos os clients (campanhas novas aparecem no seletor).
+        io.emit('campaigns', listCampaigns())
+      } catch (err) {
+        console.warn(`[campaign] saveCampaign falhou: ${(err as Error).message}`)
+      }
     })
   }
 
