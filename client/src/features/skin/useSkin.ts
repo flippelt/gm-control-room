@@ -1,61 +1,116 @@
 import { useEffect, useState } from 'react'
+import type { Genre } from '@gmcr/shared'
+import { useSession } from '../../store'
 
-export type SkinId = 'crt' | 'magick' | 'noir' | 'neon'
+/** Skin "concreto" aplicado ao body (sem 'auto'). */
+export type ResolvedSkin = 'crt' | 'magick' | 'noir' | 'neon'
 
-export const SKINS: { id: SkinId; label: string; description: string }[] = [
+/** Preferência do usuário — inclui 'auto' (derivar do gênero da campanha). */
+export type SkinPref = ResolvedSkin | 'auto'
+
+export const SKIN_OPTIONS: { id: SkinPref; label: string; description: string }[] = [
+  { id: 'auto', label: 'Auto', description: 'Derivado do gênero da campanha ativa.' },
   { id: 'crt', label: 'CRT', description: 'Dark vermelho retro (default).' },
-  { id: 'magick', label: 'Magick', description: 'Pergaminho/fantasia. Para campanhas medievais.' },
-  { id: 'noir', label: 'Noir', description: 'Alto contraste P&B. Para horror cósmico/detetive.' },
-  { id: 'neon', label: 'Neon', description: 'Cyberpunk magenta/cyan. Para sci-fi vibrante.' },
+  { id: 'magick', label: 'Magick', description: 'Pergaminho/fantasia.' },
+  { id: 'noir', label: 'Noir', description: 'Alto contraste P&B.' },
+  { id: 'neon', label: 'Neon', description: 'Cyberpunk magenta/cyan.' },
 ]
+
+/**
+ * Mapa gênero → skin (modo Auto).
+ *
+ * Estratégia conservadora: sci-fi/post-apoc/modern/generic ficam no CRT
+ * (default histórico do app); só fantasy/cosmic-horror viram pra Magick/Noir.
+ * Cyberpunk não é gênero canônico no schema, mas se você quiser Neon, escolha
+ * manualmente.
+ */
+export function deriveSkinFromGenre(genre: Genre | undefined): ResolvedSkin {
+  switch (genre) {
+    case 'fantasy':
+      return 'magick'
+    case 'cosmic-horror':
+      return 'noir'
+    case 'sci-fi':
+      return 'neon'
+    case 'post-apocalyptic':
+    case 'modern':
+    case 'generic':
+    default:
+      return 'crt'
+  }
+}
 
 const KEY = 'gmcr.skin'
 
-function readPref(): SkinId {
-  if (typeof window === 'undefined') return 'crt'
+function readPref(): SkinPref {
+  if (typeof window === 'undefined') return 'auto'
   const v = window.localStorage.getItem(KEY)
-  if (v === 'crt' || v === 'magick' || v === 'noir' || v === 'neon') return v
-  return 'crt'
+  if (
+    v === 'auto' ||
+    v === 'crt' ||
+    v === 'magick' ||
+    v === 'noir' ||
+    v === 'neon'
+  ) {
+    return v
+  }
+  // Default: prefere auto pra que mudar de campanha já reflita o visual.
+  return 'auto'
 }
 
-function applyToBody(skin: SkinId): void {
+function applyToBody(skin: ResolvedSkin): void {
   if (typeof document === 'undefined') return
   const body = document.body
   body.classList.remove('skin--crt', 'skin--magick', 'skin--noir', 'skin--neon')
-  // CRT é o default sem classe; ainda assim aplicamos pra ficar explícito.
   body.classList.add(`skin--${skin}`)
 }
 
 /**
- * Hook de tema visual. Persiste a escolha em localStorage (`gmcr.skin`) —
- * Control e Display compartilham a preferência se rodam no mesmo browser.
+ * Hook de tema visual. A preferência do usuário (`'auto' | 'crt' | 'magick'
+ * | 'noir' | 'neon'`) persiste em localStorage (`gmcr.skin`); quando `auto`,
+ * o skin efetivo é derivado de `campaign.genre`.
  *
- * Em dispositivos diferentes (mestre no PC, TV no celular), cada um lê o
- * próprio localStorage. Pra sincronizar via socket no futuro, mover essa
- * preferência pro SessionState.
+ * Retorna:
+ * - `pref`: o que o usuário escolheu (com 'auto')
+ * - `resolved`: o skin concreto sendo aplicado ao body
+ * - `setPref(next)`: atualiza a preferência
  */
-export function useSkin(): { skin: SkinId; setSkin: (next: SkinId) => void } {
-  const [skin, setSkinState] = useState<SkinId>(readPref)
+export function useSkin(): {
+  pref: SkinPref
+  resolved: ResolvedSkin
+  setPref: (next: SkinPref) => void
+} {
+  const [pref, setPrefState] = useState<SkinPref>(readPref)
+  const genre = useSession((s) => s.campaign?.genre)
 
-  // Aplica ao body sempre que muda (incluindo no mount).
+  const resolved: ResolvedSkin =
+    pref === 'auto' ? deriveSkinFromGenre(genre) : pref
+
+  // Aplica ao body sempre que muda.
   useEffect(() => {
-    applyToBody(skin)
-  }, [skin])
+    applyToBody(resolved)
+  }, [resolved])
 
   // Sincroniza entre abas/janelas do mesmo browser.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key !== KEY || !e.newValue) return
-      if (e.newValue === 'crt' || e.newValue === 'magick' || e.newValue === 'noir' || e.newValue === 'neon') {
-        setSkinState(e.newValue)
+      if (
+        e.newValue === 'auto' ||
+        e.newValue === 'crt' ||
+        e.newValue === 'magick' ||
+        e.newValue === 'noir' ||
+        e.newValue === 'neon'
+      ) {
+        setPrefState(e.newValue)
       }
     }
     window.addEventListener('storage', onStorage)
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  const setSkin = (next: SkinId) => {
-    setSkinState(next)
+  const setPref = (next: SkinPref) => {
+    setPrefState(next)
     try {
       window.localStorage.setItem(KEY, next)
     } catch {
@@ -63,5 +118,5 @@ export function useSkin(): { skin: SkinId; setSkin: (next: SkinId) => void } {
     }
   }
 
-  return { skin, setSkin }
+  return { pref, resolved, setPref }
 }
