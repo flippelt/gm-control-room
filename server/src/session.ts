@@ -5,13 +5,14 @@ import { fileURLToPath } from 'node:url'
 import type { Server, Socket } from 'socket.io'
 import type {
   ClientToServerEvents,
+  CreatureLibraryEntry,
   Lighting,
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
-import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed } from '@gmcr/shared'
+import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed, parseCreatureFrom5etools } from '@gmcr/shared'
 import { listCampaigns, loadCampaign, loadCampaignById, saveCampaignFile } from './data/loadCampaign.js'
-import { loadPersisted, savePersisted } from './persist.js'
+import { loadCreatures, loadPersisted, saveCreatures, savePersisted } from './persist.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import * as tools from './tools.js'
@@ -46,6 +47,13 @@ export function createSession(io: IO) {
     rollHistory: [],
     tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
     notes: saved?.notes ?? '',
+    creatures: loadCreatures(),
+  }
+
+  const CREATURE_LIBRARY_CAP = 500
+
+  function persistCreatures() {
+    saveCreatures(state.creatures)
   }
 
   const ROLL_HISTORY_CAP = 50
@@ -240,6 +248,70 @@ export function createSession(io: IO) {
       state.notes = text.slice(0, 16384)
       broadcast()
     })
+    // --- Biblioteca de criaturas (global, persiste em .creatures.json) ---
+    socket.on('importCreature5e', (rawJson, systemOverride) => {
+      if (typeof rawJson !== 'string' || rawJson.length === 0) return
+      if (rawJson.length > 200_000) return // ~200KB de JSON é um teto generoso
+      let parsed: Omit<CreatureLibraryEntry, 'id' | 'createdAt'>
+      try {
+        parsed = parseCreatureFrom5etools(
+          rawJson,
+          typeof systemOverride === 'string' ? systemOverride : undefined,
+        )
+      } catch (err) {
+        console.warn(`[creatures] import falhou: ${(err as Error).message}`)
+        return
+      }
+      const entry: CreatureLibraryEntry = {
+        ...parsed,
+        id: crypto.randomUUID(),
+        createdAt: Date.now(),
+      }
+      state.creatures = [entry, ...state.creatures].slice(0, CREATURE_LIBRARY_CAP)
+      persistCreatures()
+      broadcast()
+    })
+
+    socket.on('saveCreature', (entry) => {
+      if (!entry || typeof entry !== 'object') return
+      if (typeof entry.name !== 'string' || !entry.name.trim()) return
+      if (typeof entry.system !== 'string' || !entry.system.trim()) return
+      const stored: CreatureLibraryEntry = {
+        ...(entry as CreatureLibraryEntry),
+        name: entry.name.slice(0, 120),
+        system: entry.system.slice(0, 80),
+        id: crypto.randomUUID(),
+        createdAt: Date.now(),
+      }
+      state.creatures = [stored, ...state.creatures].slice(0, CREATURE_LIBRARY_CAP)
+      persistCreatures()
+      broadcast()
+    })
+
+    socket.on('deleteCreature', (id) => {
+      if (typeof id !== 'string') return
+      const next = state.creatures.filter((c) => c.id !== id)
+      if (next.length === state.creatures.length) return
+      state.creatures = next
+      persistCreatures()
+      broadcast()
+    })
+
+    socket.on('spawnCombatantFromCreature', (creatureId, initiative) => {
+      if (typeof creatureId !== 'string') return
+      const creature = state.creatures.find((c) => c.id === creatureId)
+      if (!creature) return
+      tools.addCombatant(
+        state.tracker,
+        creature.name,
+        clamp(toFiniteInt(initiative), -1000, 1000),
+        undefined,
+        creature.hp?.average,
+        creature.hp?.average,
+      )
+      broadcast()
+    })
+
     socket.on('saveCampaign', (campaign) => {
       // Loopback-only: ignora se vier de aparelho remoto da LAN.
       const ip = socket.handshake.address ?? ''

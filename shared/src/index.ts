@@ -369,6 +369,73 @@ export const STATUS_PRESETS = [
   'Sangrando',
 ] as const
 
+// ===================== Biblioteca de criaturas =====================
+
+/**
+ * Bloco de ação/trait com lista de parágrafos. Mantemos a forma "lista de
+ * strings" porque tanto 5etools quanto entrada manual cabem nisso — cada
+ * string é um parágrafo já renderizado (markup do 5etools convertido).
+ */
+export interface CreatureFeature {
+  name: string
+  entries: string[]
+}
+
+/**
+ * Bloco de spellcasting. Estrutura tolerante: `headerEntries` descreve o
+ * caster (ex.: "DC 22, +14 to hit"), `groups` é a lista de pools de magias
+ * agrupadas por chave (ex.: "will", "daily-3", "1st-level"). Os nomes das
+ * magias vêm como strings simples.
+ */
+export interface CreatureSpellcasting {
+  name?: string
+  headerEntries?: string[]
+  ability?: string
+  /** Pools de magias (ex.: { will: [...], "daily-3": [...], "1st-level": [...] }). */
+  groups: Record<string, string[]>
+}
+
+export interface CreatureLibraryEntry {
+  id: string
+  /** Sistema dono da criatura (ex.: 'dnd5e-2014', 'lancer', 'vampire-v5'). */
+  system: string
+  name: string
+  /** Categoria livre (undead, beast, soldier-mech, ...). */
+  type?: string
+  /** 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan'. */
+  size?: string
+  /** Texto livre (ex.: 'typically neutral evil'). */
+  alignment?: string
+  /** Challenge Rating em formato livre ('1/4', '21', 'Tier 2'). */
+  cr?: string
+  hp?: { average?: number; formula?: string }
+  ac?: { value: number; from?: string }
+  /** Velocidades por modo (walk, fly, swim, climb, burrow). */
+  speed?: Record<string, number>
+  /** Atributos canônicos. Outros sistemas podem ignorar. */
+  abilities?: { str?: number; dex?: number; con?: number; int?: number; wis?: number; cha?: number }
+  /** Modificadores de save por habilidade (ex.: { con: '+12', int: '+14' }). */
+  saves?: Record<string, string>
+  senses?: string[]
+  passivePerception?: number
+  languages?: string[]
+  immune?: string[]
+  conditionImmune?: string[]
+  traits?: CreatureFeature[]
+  actions?: CreatureFeature[]
+  bonusActions?: CreatureFeature[]
+  reactions?: CreatureFeature[]
+  legendary?: CreatureFeature[]
+  spellcasting?: CreatureSpellcasting[]
+  /** Origem (livro/página). Opcional. */
+  source?: { book?: string; page?: number }
+  /** Notas livres do mestre. */
+  notes?: string
+  createdAt: number
+}
+
+export type CreatureLibrary = CreatureLibraryEntry[]
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -391,6 +458,12 @@ export interface SessionState {
   tracker: Tracker
   /** Notas livres do mestre (markdown leve, persiste com a sessão). */
   notes: string
+  /**
+   * Biblioteca de criaturas salvas (NPCs/monstros). Persiste num arquivo
+   * global (`.creatures.json`), separado de campanha — pra que o mestre
+   * possa reaproveitar a Lich de uma sessão na próxima.
+   */
+  creatures: CreatureLibrary
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -458,4 +531,31 @@ export interface ClientToServerEvents {
    * automaticamente e dispara broadcast.
    */
   saveCampaign: (campaign: Campaign) => void
+
+  // --- Biblioteca de criaturas ---
+  /**
+   * Importa uma criatura a partir do JSON do 5etools (D&D 5e). O server
+   * faz o parsing e salva na library. Sistema padrão: 'dnd5e-2024'; pode
+   * forçar via `systemOverride` (ex.: 'dnd5e-2014').
+   */
+  importCreature5e: (rawJson: string, systemOverride?: string) => void
+  /**
+   * Salva uma criatura genérica diretamente (qualquer sistema). UI envia
+   * o objeto já no formato `CreatureLibraryEntry` exceto `id`/`createdAt`,
+   * que o server gera.
+   */
+  saveCreature: (
+    entry: Omit<CreatureLibraryEntry, 'id' | 'createdAt'>,
+  ) => void
+  /** Remove uma criatura da biblioteca. */
+  deleteCreature: (id: string) => void
+  /**
+   * Atalho: pega uma criatura da library e adiciona ao tracker como
+   * combatante (com iniciativa rolada/passada).
+   */
+  spawnCombatantFromCreature: (creatureId: string, initiative: number) => void
 }
+
+// Re-export do importer pra que o server e o client peguem por uma única
+// origem (@gmcr/shared).
+export * from './creatureImporter.js'
