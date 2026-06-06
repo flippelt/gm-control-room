@@ -3,6 +3,7 @@ import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
 import { CampaignEditor } from '../features/campaign/CampaignEditor'
+import { NpcGenPanel } from '../features/npcgen/NpcGenPanel'
 import { SkinToggle } from '../features/skin/SkinToggle'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
@@ -247,6 +248,11 @@ export function Control() {
           <section className="card">
             <h2>Iniciativa / combate</h2>
             <Tracker />
+          </section>
+
+          <section className="card">
+            <h2>Gerar NPC</h2>
+            <NpcGenPanel />
           </section>
 
           <section className="card">

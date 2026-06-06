@@ -23,6 +23,7 @@
     "@lippelt/srd-dnd5e-2024": "file:../../gmcr-srd-systems/packages/dnd5e-2024",
     "@lippelt/srd-gumshoe": "file:../../gmcr-srd-systems/packages/gumshoe",
     "@lippelt/srd-lancer": "file:../../gmcr-srd-systems/packages/lancer",
+    "@lippelt/srd-npcgen": "file:../../gmcr-srd-systems/packages/npcgen",
     "@lippelt/srd-pathfinder-1e": "file:../../gmcr-srd-systems/packages/pathfinder-1e",
     "@lippelt/srd-pathfinder-2e": "file:../../gmcr-srd-systems/packages/pathfinder-2e",
     "@lippelt/srd-starfinder-1e": "file:../../gmcr-srd-systems/packages/starfinder-1e",
