@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
+import { CampaignEditor } from '../features/campaign/CampaignEditor'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
 import { DiceRoller } from '../features/tools/DiceRoller'
@@ -34,6 +36,7 @@ export function Control() {
   const connected = useSession((s) => s.connected)
   const rollHistory = useSession((s) => s.rollHistory)
   const system = useActiveSystem()
+  const [editorMode, setEditorMode] = useState<'closed' | 'edit' | 'create'>('closed')
 
   return (
     <div className="control">
@@ -62,6 +65,22 @@ export function Control() {
               ))}
             </select>
           )}
+          {campaign && (
+            <button
+              className="btn-ghost"
+              onClick={() => setEditorMode('edit')}
+              title="Editar campanha atual"
+            >
+              ✎ Editar
+            </button>
+          )}
+          <button
+            className="btn-ghost"
+            onClick={() => setEditorMode('create')}
+            title="Criar nova campanha"
+          >
+            + Nova
+          </button>
           <span className={connected ? 'status status--on' : 'status'}>
             {connected ? '● conectado' : '○ desconectado'}
           </span>
@@ -253,6 +272,12 @@ export function Control() {
           </p>
         </>
       )}
+
+      <CampaignEditor
+        open={editorMode !== 'closed'}
+        onClose={() => setEditorMode('closed')}
+        campaign={editorMode === 'edit' && campaign ? campaign : undefined}
+      />
     </div>
   )
 }

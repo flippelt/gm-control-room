@@ -1212,6 +1212,110 @@ code {
   color: #d6a14a;
 }
 
+/* ===== Modal tabs (Campaign Editor) ===== */
+.modal__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px 0 16px;
+  border-bottom: 1px solid #2c2c34;
+}
+.tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  padding: 6px 12px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  border-radius: 6px 6px 0 0;
+  position: relative;
+  top: 1px;
+}
+.tab-btn:hover {
+  color: #fff;
+}
+.tab-btn--active {
+  border-color: #2c2c34;
+  border-bottom: 1px solid #15151c;
+  background: #15151c;
+  color: #fff;
+}
+.tab-btn__count {
+  display: inline-block;
+  margin-left: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+/* ===== Editor item (cena, áudio, etc) ===== */
+.editor-item {
+  border: 1px solid #2c2c34;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+.editor-item > summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.editor-item > summary::-webkit-details-marker { display: none; }
+.editor-item__title {
+  flex: 1;
+  font-size: 0.9rem;
+}
+.editor-item__body {
+  padding: 8px 10px 10px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.editor-item--flat {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ===== Treatment editor (sub-form de cena) ===== */
+.treatment-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+.treatment-editor textarea {
+  width: 100%;
+  resize: vertical;
+  background: #0e0e11;
+  color: inherit;
+  border: 1px solid #2c2c34;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-family: ui-monospace, monospace;
+}
+.treatment-editor input[type="color"] {
+  width: 50px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #2c2c34;
+  border-radius: 4px;
+  background: #0e0e11;
+}
+
 /* ===== Ações de regra do sistema (Atacar / Save / Dano) ===== */
 .rule-actions {
   margin: 10px 0;
