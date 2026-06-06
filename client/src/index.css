@@ -1946,6 +1946,17 @@ body.skin--neon {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
 }
+/* Quando pref=auto e este botão é o skin atualmente derivado, mostra
+   um ponto sutil indicando "este é o atual via Auto". */
+.skin-toggle__btn--resolved {
+  color: rgba(255, 255, 255, 0.85);
+}
+.skin-toggle__dot {
+  display: inline-block;
+  margin-left: 2px;
+  opacity: 0.6;
+  font-weight: 700;
+}
 .skin--magick .skin-toggle {
   background: rgba(0, 0, 0, 0.4);
   border-color: #6a4a28;
