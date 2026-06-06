@@ -19,11 +19,18 @@ export function PresetEditor({
   onClose,
   campaign,
   system,
+  onSave,
 }: {
   open: boolean
   onClose: () => void
   campaign: Campaign
   system: System | null
+  /**
+   * Callback opcional: se fornecido, recebe a lista de overrides em vez
+   * do PresetEditor emitir `saveCampaign` direto. Usado pelo
+   * `CampaignEditor` pra integrar ao draft em vez de salvar imediatamente.
+   */
+  onSave?: (overrides: CampaignDicePreset[]) => void
 }) {
   const systemPresets = (system?.dicePresets ?? []) as CampaignDicePreset[]
   const initial = mergeDicePresets(systemPresets, campaign.dicePresets ?? [])
@@ -105,11 +112,13 @@ export function PresetEditor({
   }
 
   const save = () => {
-    const updated: Campaign = {
-      ...campaign,
-      dicePresets: computeOverrides(),
+    const overrides = computeOverrides()
+    if (onSave) {
+      onSave(overrides)
+    } else {
+      const updated: Campaign = { ...campaign, dicePresets: overrides }
+      socket.emit('saveCampaign', updated)
     }
-    socket.emit('saveCampaign', updated)
     onClose()
   }
 
