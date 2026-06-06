@@ -6,10 +6,14 @@ import { DiceFeed } from '../features/display/DiceFeed'
 import { TrackerPanel } from '../features/display/TrackerPanel'
 import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
 import { HistoryButton } from '../features/display/HistoryButton'
+import { useSkin } from '../features/skin/useSkin'
 import { useAudioEngine } from '../features/audio/useAudioEngine'
 import { preloadTypewriterAudio } from '../features/audio/typewriterAudio'
 
 export function Display() {
+  // Aplica skin no body (mesma preferência do Control via localStorage).
+  useSkin()
+
   const campaign = useSession((s) => s.campaign)
   const lighting = useSession((s) => s.lighting)
   const audio = useSession((s) => s.audio)

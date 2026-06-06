@@ -16,6 +16,16 @@ import '@fontsource/special-elite/latin-ext.css'
 import '@fontsource/im-fell-english/latin.css'
 import '@fontsource/caveat/latin-400.css'
 import '@fontsource/caveat/latin-ext-400.css'
+// Fontes das skins alternativas (carregadas sempre — ~30KB extra é trivial):
+// - Spectral: skin "magick" (corpo serifa quente, fantasy/medieval)
+// - Courier Prime: skin "noir" (alto contraste P&B)
+// - JetBrains Mono: skin "neon" (sci-fi cyberpunk)
+import '@fontsource/spectral/latin.css'
+import '@fontsource/spectral/latin-ext.css'
+import '@fontsource/courier-prime/latin.css'
+import '@fontsource/courier-prime/latin-ext.css'
+import '@fontsource/jetbrains-mono/latin.css'
+import '@fontsource/jetbrains-mono/latin-ext.css'
 import './index.css'
 
 const router = createBrowserRouter([
