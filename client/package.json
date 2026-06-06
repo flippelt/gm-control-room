@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@fontsource/caveat": "^5.2.8",
+    "@fontsource/courier-prime": "^5.2.8",
     "@fontsource/im-fell-english": "^5.2.6",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@fontsource/special-elite": "^5.2.8",
+    "@fontsource/spectral": "^5.2.8",
     "@lippelt/srd-candela-obscura": "file:../../gmcr-srd-systems/packages/candela-obscura",
     "@lippelt/srd-core": "file:../../gmcr-srd-systems/packages/core",
     "@lippelt/srd-daggerheart": "file:../../gmcr-srd-systems/packages/daggerheart",

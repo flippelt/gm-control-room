@@ -3,6 +3,7 @@ import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
 import { CampaignEditor } from '../features/campaign/CampaignEditor'
+import { SkinToggle } from '../features/skin/SkinToggle'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
 import { Shortcuts } from '../features/shortcuts/Shortcuts'
 import { DiceRoller } from '../features/tools/DiceRoller'
@@ -81,6 +82,7 @@ export function Control() {
           >
             + Nova
           </button>
+          <SkinToggle />
           <span className={connected ? 'status status--on' : 'status'}>
             {connected ? '● conectado' : '○ desconectado'}
           </span>

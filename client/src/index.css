@@ -1678,3 +1678,282 @@ code {
   color: #e7c7ff;
   padding-left: 2.6em;
 }
+
+/* ============================================================================
+ * SKINS / TEMAS
+ * ============================================================================
+ *
+ * O tema default (CRT, dark-vermelho) é o que está hardcoded acima. Cada
+ * classe `.skin--<nome>` aplicada ao <body> sobrescreve as cores/fontes
+ * "chrome" do painel sem mexer nas cenas (typewriter, CRT phosphor, etc),
+ * que mantêm sua identidade.
+ *
+ * Variantes:
+ * - magick: pergaminho/fantasia (Spectral, tons quentes de madeira/couro)
+ * - noir:   horror cósmico (Courier Prime, monocromático alto contraste)
+ * - neon:   cyberpunk (mono futurista, magenta/cyan)
+ *
+ * O TrackerPanel do display e a SceneView mantêm cores próprias por design.
+ */
+
+/* ---------- MAGICK (medieval / fantasia) ---------- */
+.skin--magick body,
+body.skin--magick {
+  background: #1a140d;
+  color: #ede0c8;
+  font-family: 'Spectral', Georgia, serif;
+}
+.skin--magick .control__header h1 {
+  font-family: 'IM Fell English', Georgia, serif;
+  color: #f0d8a0;
+  letter-spacing: 0.02em;
+}
+.skin--magick .card {
+  background: linear-gradient(180deg, #2a1f15 0%, #261a0c 100%);
+  border: 1px solid #6a4a28;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 230, 180, 0.08);
+}
+.skin--magick .card h2,
+.skin--magick h2,
+.skin--magick h3 {
+  font-family: 'IM Fell English', Georgia, serif;
+  color: #f0d8a0;
+}
+.skin--magick .campaign-select,
+.skin--magick input,
+.skin--magick select,
+.skin--magick textarea {
+  background: #1a1308;
+  border-color: #6a4a28;
+  color: #ede0c8;
+  font-family: 'Spectral', Georgia, serif;
+}
+.skin--magick button {
+  background: #3a2614;
+  border: 1px solid #6a4a28;
+  color: #ede0c8;
+  font-family: 'Spectral', Georgia, serif;
+}
+.skin--magick button:hover {
+  background: #4a3018;
+  border-color: #8b4513;
+}
+.skin--magick .btn-ghost {
+  background: transparent;
+  border-color: #6a4a28;
+  color: #c8a878;
+}
+.skin--magick .system-badge {
+  background: #3a2614;
+  border-color: #8b6420;
+  color: #f0d8a0;
+  font-family: 'IM Fell English', Georgia, serif;
+}
+.skin--magick .muted,
+.skin--magick .notes__meta {
+  color: rgba(237, 224, 200, 0.55);
+}
+.skin--magick code {
+  background: #1a1308;
+  border-color: #6a4a28;
+  color: #f0d8a0;
+}
+.skin--magick .modal__panel {
+  background: linear-gradient(180deg, #2a1f15 0%, #261a0c 100%);
+  border-color: #6a4a28;
+}
+
+/* ---------- NOIR (horror cósmico / detetive sombrio) ---------- */
+.skin--noir body,
+body.skin--noir {
+  background: #050505;
+  color: #d0d0d0;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+.skin--noir .control__header h1 {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.skin--noir .card {
+  background: #0c0c0c;
+  border: 1px solid #2a2a2a;
+  border-left: 3px solid #6a6a6a;
+}
+.skin--noir h2,
+.skin--noir h3 {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #f0f0f0;
+  font-weight: 700;
+}
+.skin--noir .campaign-select,
+.skin--noir input,
+.skin--noir select,
+.skin--noir textarea {
+  background: #050505;
+  border-color: #3a3a3a;
+  color: #d0d0d0;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+.skin--noir button {
+  background: #1a1a1a;
+  border: 1px solid #4a4a4a;
+  color: #f0f0f0;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85em;
+}
+.skin--noir button:hover {
+  background: #2a2a2a;
+  border-color: #888;
+}
+.skin--noir .btn-ghost {
+  background: transparent;
+  border-color: #3a3a3a;
+  color: #999;
+}
+.skin--noir .system-badge {
+  background: #1a1a1a;
+  border-color: #6a6a6a;
+  color: #d0d0d0;
+}
+.skin--noir .muted,
+.skin--noir .notes__meta {
+  color: rgba(208, 208, 208, 0.55);
+}
+.skin--noir code {
+  background: #050505;
+  border-color: #3a3a3a;
+  color: #d0d0d0;
+}
+.skin--noir .modal__panel {
+  background: #0c0c0c;
+  border-color: #4a4a4a;
+}
+
+/* ---------- NEON (cyberpunk / sci-fi vibrante) ---------- */
+.skin--neon body,
+body.skin--neon {
+  background: #0a0518;
+  color: #e0d8ff;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+.skin--neon .control__header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  background: linear-gradient(90deg, #ff00ff 0%, #00ffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.skin--neon .card {
+  background: #15102a;
+  border: 1px solid #3a1a5a;
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.08), inset 0 0 1px rgba(0, 255, 255, 0.1);
+}
+.skin--neon h2,
+.skin--neon h3 {
+  font-family: 'JetBrains Mono', monospace;
+  color: #ff66ff;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.4);
+  letter-spacing: 0.04em;
+}
+.skin--neon .campaign-select,
+.skin--neon input,
+.skin--neon select,
+.skin--neon textarea {
+  background: #0a0518;
+  border-color: #5a2a8a;
+  color: #e0d8ff;
+  font-family: 'JetBrains Mono', monospace;
+}
+.skin--neon .campaign-select:focus,
+.skin--neon input:focus,
+.skin--neon select:focus,
+.skin--neon textarea:focus {
+  outline: 1px solid #ff00ff;
+  border-color: #ff00ff;
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.4);
+}
+.skin--neon button {
+  background: #1c0e3a;
+  border: 1px solid #5a2a8a;
+  color: #e0d8ff;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.skin--neon button:hover {
+  background: #2a1454;
+  border-color: #ff00ff;
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.3);
+}
+.skin--neon .btn-ghost {
+  background: transparent;
+  border-color: #5a2a8a;
+  color: #00ffff;
+}
+.skin--neon .system-badge {
+  background: #2a0e54;
+  border-color: #ff00ff;
+  color: #ff66ff;
+  text-shadow: 0 0 4px rgba(255, 0, 255, 0.6);
+}
+.skin--neon .muted,
+.skin--neon .notes__meta {
+  color: rgba(224, 216, 255, 0.5);
+}
+.skin--neon code {
+  background: #0a0518;
+  border-color: #5a2a8a;
+  color: #00ffff;
+}
+.skin--neon .modal__panel {
+  background: #15102a;
+  border-color: #5a2a8a;
+  box-shadow: 0 0 24px rgba(255, 0, 255, 0.15);
+}
+
+/* ---------- Toggle do skin no header ---------- */
+.skin-toggle {
+  display: inline-flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #2c2c34;
+  border-radius: 999px;
+  padding: 2px;
+}
+.skin-toggle__btn {
+  background: transparent;
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 999px;
+  min-height: auto;
+  text-transform: capitalize;
+}
+.skin-toggle__btn:hover {
+  color: #fff;
+}
+.skin-toggle__btn--active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+.skin--magick .skin-toggle {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: #6a4a28;
+}
+.skin--noir .skin-toggle {
+  border-color: #3a3a3a;
+}
+.skin--neon .skin-toggle {
+  border-color: #5a2a8a;
+  background: rgba(255, 0, 255, 0.05);
+}
