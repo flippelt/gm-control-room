@@ -33,7 +33,12 @@ vi.mock('./data/loadCampaign.js', () => ({
   ],
 }))
 // Sem disco nos testes: nada persistido na entrada, save é um espião inócuo.
-vi.mock('./persist.js', () => ({ loadPersisted: () => null, savePersisted: vi.fn() }))
+vi.mock('./persist.js', () => ({
+  loadPersisted: () => null,
+  savePersisted: vi.fn(),
+  loadCreatures: () => [],
+  saveCreatures: vi.fn(),
+}))
 
 import { createSession } from './session'
 

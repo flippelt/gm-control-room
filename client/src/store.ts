@@ -3,6 +3,7 @@ import type {
   AudioLayer,
   Campaign,
   CampaignSummary,
+  CreatureLibrary,
   DiceRoll,
   Lighting,
   Scene,
@@ -22,6 +23,7 @@ interface SessionStore {
   rollHistory: DiceRoll[]
   tracker: Tracker
   notes: string
+  creatures: CreatureLibrary
   connected: boolean
 }
 
@@ -36,6 +38,7 @@ export const useSession = create<SessionStore>(() => ({
   rollHistory: [],
   tracker: DEFAULT_TRACKER,
   notes: '',
+  creatures: [],
   connected: false,
 }))
 
@@ -51,6 +54,7 @@ socket.on('state', (state: SessionState) =>
     rollHistory: state.rollHistory ?? [],
     tracker: state.tracker,
     notes: state.notes ?? '',
+    creatures: state.creatures ?? [],
   }),
 )
 socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))
