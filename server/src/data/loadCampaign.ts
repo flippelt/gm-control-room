@@ -58,6 +58,41 @@ export function loadCampaignById(id: string): Campaign {
   return data
 }
 
+/**
+ * Salva (sobrescreve) uma campanha no disco. Valida estrutura mínima e
+ * sanitiza o id contra path traversal. Loopback-only deveria ser garantido
+ * pela camada de socket (não validado aqui).
+ *
+ * O `fs.watch()` da sessão captura a mudança e recarrega automaticamente.
+ */
+export function saveCampaignFile(campaign: Campaign): void {
+  if (!campaign || typeof campaign !== 'object') {
+    throw new Error('campanha inválida')
+  }
+  const file = fileForId(campaign.id) // valida id
+  if (typeof campaign.title !== 'string' || !campaign.title.trim()) {
+    throw new Error('título obrigatório')
+  }
+  if (!campaign.genre || typeof campaign.genre !== 'string') {
+    throw new Error('genre obrigatório')
+  }
+  if (!campaign.era || typeof campaign.era.startYear !== 'number') {
+    throw new Error('era.startYear obrigatório')
+  }
+  if (!Array.isArray(campaign.scenes)) {
+    throw new Error('scenes deve ser array')
+  }
+  // Garante arrays opcionais.
+  const sanitized: Campaign = {
+    ...campaign,
+    audio: Array.isArray(campaign.audio) ? campaign.audio : [],
+    shortcuts: Array.isArray(campaign.shortcuts) ? campaign.shortcuts : [],
+  }
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  fs.writeFileSync(file, JSON.stringify(sanitized, null, 2), 'utf-8')
+  console.log(`[campaign] salvada ${file}`)
+}
+
 /** Lista campanhas disponíveis no diretório `campaigns/` (sumário leve). */
 export function listCampaigns(): CampaignSummary[] {
   const dir = campaignsDir()

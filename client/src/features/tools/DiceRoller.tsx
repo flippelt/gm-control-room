@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import type { CampaignDicePreset } from '@gmcr/shared'
+import { isExecutableNotation, mergeDicePresets } from '@gmcr/shared'
 import type { RollResult, System } from '@lippelt/srd-core'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 import { useActiveSystem } from '../systems/useActiveSystem'
+import { PresetEditor } from './PresetEditor'
 
 /** Botões genéricos quando a campanha não declara um `system`. */
 const GENERIC_PRESETS = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100']
@@ -192,25 +195,62 @@ function RuleActions({ system }: { system: System }) {
 
 export function DiceRoller() {
   const lastRoll = useSession((s) => s.lastRoll)
+  const campaign = useSession((s) => s.campaign)
   const [notation, setNotation] = useState('2d6+3')
+  const [editorOpen, setEditorOpen] = useState(false)
   const system = useActiveSystem()
+
+  // Lista efetiva: presets do sistema + overrides/adições da campanha.
+  const effective: CampaignDicePreset[] = mergeDicePresets(
+    (system?.dicePresets ?? []) as CampaignDicePreset[],
+    campaign?.dicePresets ?? [],
+  )
 
   return (
     <div>
-      {system ? (
-        <div className="dice-presets" title={`Presets do sistema: ${system.name}`}>
-          {system.dicePresets.map((p) => {
+      <div className="dice-presets-head">
+        <span className="muted">
+          {system ? `Presets — ${system.name}` : 'Presets genéricos'}
+          {campaign?.dicePresets && campaign.dicePresets.length > 0 && (
+            <> · <em>{campaign.dicePresets.length} customizado(s)</em></>
+          )}
+        </span>
+        {campaign && (
+          <button className="btn-ghost" onClick={() => setEditorOpen(true)} title="Editar presets desta campanha">
+            ✎ Editar
+          </button>
+        )}
+      </div>
+
+      {system || effective.length > 0 ? (
+        <div className="dice-presets" title="Clique pra rolar. Presets inválidos abrem o editor.">
+          {effective.map((p) => {
             const special = p.notation === 'advantage' || p.notation === 'disadvantage'
+            const invalid = !isExecutableNotation(p.notation)
+            const click = () => {
+              if (invalid) {
+                setEditorOpen(true)
+                return
+              }
+              if (special && system) {
+                rollD20Local(system, p.notation)
+              } else {
+                socket.emit('rollDice', p.notation)
+              }
+            }
             return (
               <button
                 key={p.id}
-                className="dice-btn"
-                title={p.description ?? p.label}
-                onClick={() =>
-                  special ? rollD20Local(system, p.notation) : socket.emit('rollDice', p.notation)
+                className={'dice-btn' + (invalid ? ' dice-btn--invalid' : '')}
+                title={
+                  invalid
+                    ? `${p.label} — notação "${p.notation}" não executável. Clique pra customizar.`
+                    : (p.description ?? p.label)
                 }
+                onClick={click}
               >
                 {p.label}
+                {invalid && <span className="dice-btn__badge" aria-hidden>⚙</span>}
               </button>
             )
           })}
@@ -251,6 +291,15 @@ export function DiceRoller() {
             <span className="last-notes"> · {lastRoll.notes.join(' · ')}</span>
           )}
         </p>
+      )}
+
+      {campaign && (
+        <PresetEditor
+          open={editorOpen}
+          onClose={() => setEditorOpen(false)}
+          campaign={campaign}
+          system={system}
+        />
       )}
     </div>
   )
