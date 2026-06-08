@@ -63,6 +63,32 @@ describe('tracker', () => {
     expect(t.round).toBe(2)
   })
 
+  it('nextTurn pula combatentes mortos', () => {
+    const t = newTracker()
+    addCombatant(t, 'A', 20)
+    addCombatant(t, 'B', 10)
+    addCombatant(t, 'C', 5)
+    setCombatActive(t, true) // turno A (índice 0)
+    updateCombatant(t, t.combatants[1].id, { dead: true }) // B morto
+    nextTurn(t)
+    expect(t.combatants[t.turnIndex].name).toBe('C') // pulou o B
+    expect(t.round).toBe(1)
+    nextTurn(t)
+    expect(t.combatants[t.turnIndex].name).toBe('A') // deu a volta
+    expect(t.round).toBe(2)
+  })
+
+  it('nextTurn não trava quando todos estão mortos', () => {
+    const t = newTracker()
+    addCombatant(t, 'A', 20)
+    addCombatant(t, 'B', 10)
+    setCombatActive(t, true)
+    updateCombatant(t, t.combatants[0].id, { dead: true })
+    updateCombatant(t, t.combatants[1].id, { dead: true })
+    nextTurn(t) // não deve entrar em laço infinito
+    expect([0, 1]).toContain(t.turnIndex)
+  })
+
   it('reordena ao mudar iniciativa preservando o combatente do turno', () => {
     const t = newTracker()
     addCombatant(t, 'A', 20)

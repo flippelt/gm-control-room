@@ -221,6 +221,7 @@ export function createSession(io: IO) {
       if (patch.hp !== undefined) clean.hp = clamp(toFiniteInt(patch.hp), 0, 100000)
       if (patch.maxHp !== undefined) clean.maxHp = clamp(toFiniteInt(patch.maxHp), 0, 100000)
       if (patch.statuses !== undefined) clean.statuses = sanitizeStatuses(patch.statuses)
+      if (patch.dead !== undefined) clean.dead = patch.dead === true
       if (patch.extra !== undefined) clean.extra = sanitizeExtras(patch.extra)
       tools.updateCombatant(state.tracker, id, clean)
       broadcast()

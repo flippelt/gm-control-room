@@ -88,8 +88,10 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
   const removeStatus = (s: string) =>
     socket.emit('updateCombatant', c.id, { statuses: c.statuses.filter((x) => x !== s) })
 
+  const toggleDead = () => socket.emit('updateCombatant', c.id, { dead: !c.dead })
+
   return (
-    <div className={'cbt' + (active ? ' cbt--active' : '')}>
+    <div className={'cbt' + (active ? ' cbt--active' : '') + (c.dead ? ' cbt--dead' : '')}>
       <div className="cbt__top">
         <input
           className="cbt__init"
@@ -110,6 +112,14 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
           <span className="muted">{c.maxHp ?? '—'}</span>
           <button onClick={() => setMaxHp(1)} aria-label="Max HP +1" className="btn-ghost">+</button>
         </span>
+        <button
+          className={'cbt__dead' + (c.dead ? ' is-on' : '')}
+          onClick={toggleDead}
+          title={c.dead ? 'Reviver (volta à ordem de turno)' : 'Marcar como morto (pula o turno)'}
+          aria-label="Alternar morto"
+        >
+          ☠
+        </button>
         <button className="cbt__remove" onClick={() => socket.emit('removeCombatant', c.id)}>
           ✕
         </button>
