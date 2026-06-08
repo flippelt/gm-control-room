@@ -335,6 +335,8 @@ export interface Combatant {
   maxHp?: number
   /** Marcadores de status (ex.: "Envenenado"). */
   statuses: string[]
+  /** Marcado como morto/fora de combate — o `nextTurn` pula o turno dele. */
+  dead?: boolean
   /**
    * Valores de campos específicos do sistema (ex: D&D AC=16, deathSuccesses=1;
    * Lancer structure=3, stress=2). As chaves vêm de `system.trackerFields[].key`.
@@ -507,7 +509,7 @@ export interface ClientToServerEvents {
   ) => void
   updateCombatant: (
     id: string,
-    patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'extra'>>,
+    patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'dead' | 'extra'>>,
   ) => void
   removeCombatant: (id: string) => void
   nextTurn: () => void

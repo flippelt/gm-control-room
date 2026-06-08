@@ -54,7 +54,7 @@ export function addCombatant(
 export function updateCombatant(
   tracker: Tracker,
   id: string,
-  patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'extra'>>,
+  patch: Partial<Pick<Combatant, 'name' | 'initiative' | 'hp' | 'maxHp' | 'statuses' | 'dead' | 'extra'>>,
 ): void {
   const c = tracker.combatants.find((x) => x.id === id)
   if (!c) return
@@ -62,6 +62,7 @@ export function updateCombatant(
   if (patch.hp !== undefined) c.hp = patch.hp
   if (patch.maxHp !== undefined) c.maxHp = patch.maxHp
   if (patch.statuses !== undefined) c.statuses = patch.statuses.slice(0, 12)
+  if (patch.dead !== undefined) c.dead = patch.dead
   // `extra` é mesclado, não substituído — preserva campos não tocados.
   if (patch.extra !== undefined) c.extra = { ...(c.extra ?? {}), ...patch.extra }
   if (patch.initiative !== undefined) {
@@ -78,11 +79,19 @@ export function removeCombatant(tracker: Tracker, id: string): void {
 export function nextTurn(tracker: Tracker): void {
   const n = tracker.combatants.length
   if (n === 0) return
-  tracker.turnIndex += 1
-  if (tracker.turnIndex >= n) {
-    tracker.turnIndex = 0
-    tracker.round += 1
+  // Pula combatentes marcados como mortos. Se todos estão mortos, só avança
+  // (evita laço infinito).
+  const anyAlive = tracker.combatants.some((c) => !c.dead)
+  let idx = tracker.turnIndex
+  for (let step = 0; step < n; step++) {
+    idx += 1
+    if (idx >= n) {
+      idx = 0
+      tracker.round += 1
+    }
+    if (!anyAlive || !tracker.combatants[idx]!.dead) break
   }
+  tracker.turnIndex = idx
 }
 
 export function setCombatActive(tracker: Tracker, active: boolean): void {

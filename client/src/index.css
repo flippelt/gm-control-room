@@ -1438,6 +1438,25 @@ code {
   box-shadow: 0 0 0 1px #8b8bff inset;
 }
 
+.cbt--dead {
+  opacity: 0.55;
+}
+.cbt--dead .cbt__name {
+  text-decoration: line-through;
+}
+.cbt__dead {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.45;
+  font-size: 0.95em;
+  line-height: 1;
+}
+.cbt__dead.is-on {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px #ff6b6b);
+}
+
 .cbt__top {
   display: flex;
   align-items: center;
@@ -1702,6 +1721,73 @@ code {
   font-size: 0.72rem;
   color: #e7c7ff;
   padding-left: 2.6em;
+}
+
+/* Em ação — destaque grande (legível à distância na tablet) */
+.tp-now {
+  margin: 4px 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(139, 139, 255, 0.22);
+  outline: 1px solid rgba(139, 139, 255, 0.6);
+  box-shadow: 0 0 20px rgba(139, 139, 255, 0.35);
+}
+.tp-now__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c9c9ff;
+}
+.tp-now__name {
+  font-size: 1.7rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+.tp-now__statuses {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.tp-status {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(231, 199, 255, 0.18);
+  border: 1px solid rgba(231, 199, 255, 0.4);
+  color: #f0dcff;
+}
+
+/* Próximo a agir */
+.tp-next {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-left: 2px;
+  opacity: 0.85;
+}
+.tp-next__label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9bd3ff;
+}
+.tp-next__name {
+  font-weight: 700;
+}
+.tp-item--next {
+  outline: 1px dashed rgba(155, 211, 255, 0.5);
+}
+
+/* Mortos: riscados e apagados — visíveis, mas claramente fora do turno */
+.tp-item--dead {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.tp-item--dead.tp-item--active {
+  text-decoration: none;
 }
 
 /* ============================================================================
