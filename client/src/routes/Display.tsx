@@ -7,7 +7,6 @@ import { TrackerPanel } from '../features/display/TrackerPanel'
 import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
 import { HistoryButton } from '../features/display/HistoryButton'
 import { useSkin } from '../features/skin/useSkin'
-import { useAudioEngine } from '../features/audio/useAudioEngine'
 import { preloadTypewriterAudio } from '../features/audio/typewriterAudio'
 
 export function Display() {
@@ -16,7 +15,6 @@ export function Display() {
 
   const campaign = useSession((s) => s.campaign)
   const lighting = useSession((s) => s.lighting)
-  const audio = useSession((s) => s.audio)
   const lastRoll = useSession((s) => s.lastRoll)
   const rollHistory = useSession((s) => s.rollHistory)
   const tracker = useSession((s) => s.tracker)
@@ -25,7 +23,6 @@ export function Display() {
   // Estado inicial respeita a preferência salva; mas só conta como
   // "destravado" depois que o usuário clica (autoplay policy).
   const [audioEnabled, setAudioEnabled] = useState(() => readAudioPref())
-  useAudioEngine(audio, audioEnabled)
 
   // Pré-carrega o sample assim que o display monta — não precisa de
   // gesto pra fetch+decode. Só o resume() precisa de gesto (no toggle).
