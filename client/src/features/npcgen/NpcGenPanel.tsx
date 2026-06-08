@@ -58,10 +58,13 @@ const NAME_STYLES: { id: NameStyle; label: string }[] = [
  * sistema da campanha ativa, mostra preview em markdown, e tem botão pra
  * adicionar ao tracker.
  *
- * Só aparece quando a campanha tem um sistema da família d20 suportada
- * (D&D 3.5/5e, Pathfinder 1e/2e, Starfinder 1e/2e). Sistemas de pool
- * (Daggerheart/Candela/GUMSHOE) ficam sem o painel até o Bloco B do
- * ROADMAP do npcgen.
+ * Suporta as duas famílias do npcgen:
+ *  - d20 (D&D 3.5/5e, Pathfinder 1e/2e, Starfinder 1e/2e): nível, papel,
+ *    estilo de nome e os hooks `System.npc`.
+ *  - pool (Daggerheart, Candela Obscura, GUMSHOE): nível/tier + tipo/tamanho
+ *    (o gerador escolhe o papel do sistema e nomeia internamente).
+ *
+ * Sistemas sem gerador (ex.: Lancer) mostram um aviso.
  */
 const D20_SYSTEM_IDS = new Set([
   'dnd5e-2024',
@@ -72,6 +75,8 @@ const D20_SYSTEM_IDS = new Set([
   'starfinder-1e',
   'starfinder-2e',
 ])
+
+const POOL_SYSTEM_IDS = new Set(['daggerheart', 'candela-obscura', 'gumshoe'])
 
 export function NpcGenPanel() {
   const campaign = useSession((s) => s.campaign)
@@ -85,9 +90,11 @@ export function NpcGenPanel() {
   const [withEpithet, setWithEpithet] = useState(false)
   const [npc, setNpc] = useState<GeneratedNpc | null>(null)
 
-  // Sistema atual da campanha (id).
+  // Sistema atual da campanha (id) e a qual família pertence.
   const systemId = campaign?.system ?? ''
-  const supported = D20_SYSTEM_IDS.has(systemId)
+  const isD20 = D20_SYSTEM_IDS.has(systemId)
+  const isPool = POOL_SYSTEM_IDS.has(systemId)
+  const supported = isD20 || isPool
 
   const previewMarkdown = useMemo(
     () => (npc ? toCodexMarkdown(npc) : ''),
@@ -101,9 +108,9 @@ export function NpcGenPanel() {
   if (!supported) {
     return (
       <p className="muted">
-        Sistema <code>{systemId || '(sem sistema)'}</code> não é da família d20.
-        O gerador suporta D&D 3.5/5e, Pathfinder 1e/2e, Starfinder 1e/2e. Sistemas
-        de pool (Daggerheart, Candela, GUMSHOE etc.) ficam pra uma versão futura.
+        Sistema <code>{systemId || '(sem sistema)'}</code> ainda não tem gerador de
+        NPC. Suportados: d20 (D&D 3.5/5e, Pathfinder 1e/2e, Starfinder 1e/2e) e
+        pool (Daggerheart, Candela Obscura, GUMSHOE).
       </p>
     )
   }
@@ -113,13 +120,13 @@ export function NpcGenPanel() {
       const generated = generateNpc({
         systemId,
         level,
-        role: role || undefined,
         creatureType,
         creatureSize,
-        nameStyle,
-        withEpithet,
-        // Hooks: se o System tem `.npc`, passa pro gerador refinar.
-        npc: system?.npc,
+        // Papel, estilo de nome e hooks só valem na família d20; nos sistemas
+        // de pool o gerador escolhe o papel do sistema e nomeia internamente.
+        ...(isD20
+          ? { role: role || undefined, nameStyle, withEpithet, npc: system?.npc }
+          : {}),
       })
       setNpc(generated)
     } catch (err) {
@@ -156,18 +163,20 @@ export function NpcGenPanel() {
             onChange={(e) => setLevel(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
           />
         </label>
-        <label className="rule-field" style={{ flex: 1 }}>
-          <span>Papel</span>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as NpcRole | '')}
-          >
-            <option value="">(sorteado)</option>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>{r}</option>
-            ))}
-          </select>
-        </label>
+        {isD20 && (
+          <label className="rule-field" style={{ flex: 1 }}>
+            <span>Papel</span>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as NpcRole | '')}
+            >
+              <option value="">(sorteado)</option>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       <div className="row" style={{ gap: 10 }}>
@@ -195,30 +204,32 @@ export function NpcGenPanel() {
         </label>
       </div>
 
-      <div className="row" style={{ gap: 10 }}>
-        <label className="rule-field" style={{ flex: 1 }}>
-          <span>Estilo de nome</span>
-          <select
-            value={nameStyle}
-            onChange={(e) => setNameStyle(e.target.value as NameStyle)}
-          >
-            {NAME_STYLES.map((s) => (
-              <option key={s.id} value={s.id}>{s.label}</option>
-            ))}
-          </select>
-        </label>
-        <label className="rule-field" style={{ alignItems: 'flex-start' }}>
-          <span>&nbsp;</span>
-          <span className="row" style={{ gap: 6, alignItems: 'center' }}>
-            <input
-              type="checkbox"
-              checked={withEpithet}
-              onChange={(e) => setWithEpithet(e.target.checked)}
-            />
-            Com epíteto
-          </span>
-        </label>
-      </div>
+      {isD20 && (
+        <div className="row" style={{ gap: 10 }}>
+          <label className="rule-field" style={{ flex: 1 }}>
+            <span>Estilo de nome</span>
+            <select
+              value={nameStyle}
+              onChange={(e) => setNameStyle(e.target.value as NameStyle)}
+            >
+              {NAME_STYLES.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="rule-field" style={{ alignItems: 'flex-start' }}>
+            <span>&nbsp;</span>
+            <span className="row" style={{ gap: 6, alignItems: 'center' }}>
+              <input
+                type="checkbox"
+                checked={withEpithet}
+                onChange={(e) => setWithEpithet(e.target.checked)}
+              />
+              Com epíteto
+            </span>
+          </label>
+        </div>
+      )}
 
       <div className="row" style={{ gap: 8, marginTop: 6 }}>
         <button onClick={handleGenerate}>🎲 Gerar NPC</button>
