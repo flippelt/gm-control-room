@@ -1723,7 +1723,8 @@ code {
   opacity: 0.9;
 }
 /* Escopo eleva a especificidade acima das regras de skin (.skin--X button). */
-.tracker-panel .panel-controls__btn {
+.tracker-panel .panel-controls__btn,
+.clocks-panel .panel-controls__btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.22);
   color: #fff;
@@ -1734,7 +1735,8 @@ code {
   min-height: 0;
   cursor: pointer;
 }
-.tracker-panel .panel-controls__btn:hover {
+.tracker-panel .panel-controls__btn:hover,
+.clocks-panel .panel-controls__btn:hover {
   background: rgba(255, 255, 255, 0.16);
 }
 
