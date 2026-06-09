@@ -7,12 +7,21 @@ import type {
   ClientToServerEvents,
   CreatureLibraryEntry,
   Lighting,
+  SavedCombatant,
+  SavedEncounter,
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
 import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed, parseCreatureFrom5etools } from '@gmcr/shared'
 import { listCampaigns, loadCampaign, loadCampaignById, saveCampaignFile } from './data/loadCampaign.js'
-import { loadCreatures, loadPersisted, saveCreatures, savePersisted } from './persist.js'
+import {
+  loadCreatures,
+  loadEncounters,
+  loadPersisted,
+  saveCreatures,
+  saveEncounters,
+  savePersisted,
+} from './persist.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import * as tools from './tools.js'
@@ -49,12 +58,31 @@ export function createSession(io: IO) {
     clocks: saved?.clocks ?? [],
     notes: saved?.notes ?? '',
     creatures: loadCreatures(),
+    encounters: loadEncounters(),
   }
 
   const CREATURE_LIBRARY_CAP = 500
+  const ENCOUNTER_LIBRARY_CAP = 300
+  const ENCOUNTER_COMBATANTS_CAP = 40
 
   function persistCreatures() {
     saveCreatures(state.creatures)
+  }
+
+  /** Saneia um combatente salvo (limites defensivos no limite de confiança). */
+  function sanitizeSavedCombatant(raw: unknown): SavedCombatant | null {
+    if (!raw || typeof raw !== 'object') return null
+    const r = raw as Record<string, unknown>
+    if (typeof r.name !== 'string' || !r.name.trim()) return null
+    const c: SavedCombatant = {
+      name: r.name.slice(0, 60),
+      initiative: clamp(toFiniteInt(r.initiative), -1000, 1000),
+    }
+    if (r.hp !== undefined) c.hp = clamp(toFiniteInt(r.hp), 0, 100000)
+    if (r.maxHp !== undefined) c.maxHp = clamp(toFiniteInt(r.maxHp), 0, 100000)
+    const extra = sanitizeExtras(r.extra)
+    if (extra && Object.keys(extra).length > 0) c.extra = extra
+    return c
   }
 
   const ROLL_HISTORY_CAP = 50
@@ -345,6 +373,58 @@ export function createSession(io: IO) {
         creature.hp?.average,
         creature.hp?.average,
       )
+      broadcast()
+    })
+
+    // --- Biblioteca de encontros (global, persiste em .encounters.json) ---
+    socket.on('saveEncounter', (entry) => {
+      if (!entry || typeof entry !== 'object') return
+      if (typeof entry.name !== 'string' || !entry.name.trim()) return
+      if (typeof entry.system !== 'string' || !entry.system.trim()) return
+      if (!Array.isArray(entry.combatants)) return
+      const combatants = entry.combatants
+        .slice(0, ENCOUNTER_COMBATANTS_CAP)
+        .map(sanitizeSavedCombatant)
+        .filter((c): c is SavedCombatant => c !== null)
+      if (combatants.length === 0) return
+      const stored: SavedEncounter = {
+        id: crypto.randomUUID(),
+        name: entry.name.slice(0, 80),
+        system: entry.system.slice(0, 80),
+        combatants,
+        ...(typeof entry.notes === 'string' && entry.notes.trim()
+          ? { notes: entry.notes.slice(0, 2000) }
+          : {}),
+        createdAt: Date.now(),
+      }
+      state.encounters = [stored, ...state.encounters].slice(0, ENCOUNTER_LIBRARY_CAP)
+      saveEncounters(state.encounters)
+      broadcast()
+    })
+
+    socket.on('deleteEncounter', (id) => {
+      if (typeof id !== 'string') return
+      const next = state.encounters.filter((e) => e.id !== id)
+      if (next.length === state.encounters.length) return
+      state.encounters = next
+      saveEncounters(state.encounters)
+      broadcast()
+    })
+
+    socket.on('spawnEncounter', (id) => {
+      if (typeof id !== 'string') return
+      const enc = state.encounters.find((e) => e.id === id)
+      if (!enc) return
+      for (const c of enc.combatants) {
+        tools.addCombatant(
+          state.tracker,
+          c.name,
+          c.initiative,
+          c.extra,
+          c.hp,
+          c.maxHp,
+        )
+      }
       broadcast()
     })
 

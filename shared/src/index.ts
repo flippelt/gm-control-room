@@ -463,6 +463,40 @@ export interface CreatureLibraryEntry {
 
 export type CreatureLibrary = CreatureLibraryEntry[]
 
+// ===================== Biblioteca de encontros =====================
+
+/**
+ * Combatente salvo num encontro — o mínimo pra recriar no tracker via
+ * `addCombatant`. Sem id/statuses (o tracker gera id e começa sem status).
+ */
+export interface SavedCombatant {
+  name: string
+  initiative: number
+  hp?: number
+  maxHp?: number
+  /** Campos de sistema (ex.: ac), mesma forma do `Combatant.extra`. */
+  extra?: Record<string, number | boolean>
+}
+
+/**
+ * Encontro salvo: um grupo nomeado de combatentes pronto pra jogar no tracker.
+ * Persiste num arquivo global (`.encounters.json`), separado de campanha — o
+ * mestre prepara antes e re-joga quando quiser. Tipicamente vem do gerador de
+ * NPCs/encontros, mas é só dados.
+ */
+export interface SavedEncounter {
+  id: string
+  name: string
+  /** Sistema dono (ex.: 'dnd5e-2024', 'daggerheart'). */
+  system: string
+  combatants: SavedCombatant[]
+  /** Notas livres do mestre. */
+  notes?: string
+  createdAt: number
+}
+
+export type EncounterLibrary = SavedEncounter[]
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -493,6 +527,11 @@ export interface SessionState {
    * possa reaproveitar a Lich de uma sessão na próxima.
    */
   creatures: CreatureLibrary
+  /**
+   * Biblioteca de encontros salvos (grupos prontos). Persiste em
+   * `.encounters.json` (global). O mestre prepara antes e re-joga no tracker.
+   */
+  encounters: EncounterLibrary
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -596,6 +635,19 @@ export interface ClientToServerEvents {
    * combatante (com iniciativa rolada/passada).
    */
   spawnCombatantFromCreature: (creatureId: string, initiative: number) => void
+
+  // --- Biblioteca de encontros ---
+  /** Salva um encontro (grupo de combatentes) na biblioteca global. */
+  saveEncounter: (entry: {
+    name: string
+    system: string
+    combatants: SavedCombatant[]
+    notes?: string
+  }) => void
+  /** Remove um encontro salvo. */
+  deleteEncounter: (id: string) => void
+  /** Joga todos os combatentes do encontro salvo no tracker. */
+  spawnEncounter: (id: string) => void
 }
 
 // Re-export do importer pra que o server e o client peguem por uma única
