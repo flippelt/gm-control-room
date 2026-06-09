@@ -8,6 +8,7 @@ import type {
   DiceRoll,
   EncounterLibrary,
   Lighting,
+  RandomTableLibrary,
   Scene,
   SceneMusic,
   SessionState,
@@ -30,6 +31,7 @@ interface SessionStore {
   creatures: CreatureLibrary
   encounters: EncounterLibrary
   sceneMusic: Record<string, SceneMusic>
+  tables: RandomTableLibrary
   connected: boolean
 }
 
@@ -48,6 +50,7 @@ export const useSession = create<SessionStore>(() => ({
   creatures: [],
   encounters: [],
   sceneMusic: {},
+  tables: [],
   connected: false,
 }))
 
@@ -67,6 +70,7 @@ socket.on('state', (state: SessionState) =>
     creatures: state.creatures ?? [],
     encounters: state.encounters ?? [],
     sceneMusic: state.sceneMusic ?? {},
+    tables: state.tables ?? [],
   }),
 )
 socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))

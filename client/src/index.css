@@ -2233,6 +2233,52 @@ body.skin--neon {
   font-size: 0.8rem;
 }
 
+/* ===================== Tabelas aleatórias ===================== */
+.tables__new {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.tables__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.table-row {
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.table-row__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.table-row__name {
+  font-weight: 600;
+}
+.table-row__count {
+  font-size: 0.8rem;
+}
+.table-row__head .spacer {
+  flex: 1;
+}
+.table-row__result {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(139, 139, 255, 0.15);
+  border: 1px solid rgba(139, 139, 255, 0.4);
+  cursor: pointer;
+}
+.table-row--editing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* ===================== Clocks — 2ª tela (jogadores) ===================== */
 .clocks-panel {
   position: fixed;

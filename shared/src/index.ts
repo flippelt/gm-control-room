@@ -509,6 +509,23 @@ export interface SavedEncounter {
 
 export type EncounterLibrary = SavedEncounter[]
 
+// ===================== Tabelas aleatórias =====================
+
+/**
+ * Tabela aleatória do mestre (loot, eventos, rumores, nomes…). Rolar sorteia
+ * uma entrada. Persiste em `.tables.json` (global, reutilizável entre
+ * campanhas). A rolagem em si é feita no cliente (improviso do GM).
+ */
+export interface RandomTable {
+  id: string
+  name: string
+  /** Entradas; cada uma é um resultado possível (peso uniforme). */
+  entries: string[]
+  createdAt: number
+}
+
+export type RandomTableLibrary = RandomTable[]
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -550,6 +567,10 @@ export interface SessionState {
    * `.scene-music.json`.
    */
   sceneMusic: Record<string, SceneMusic>
+  /**
+   * Tabelas aleatórias do mestre (global). Persiste em `.tables.json`.
+   */
+  tables: RandomTableLibrary
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -670,6 +691,14 @@ export interface ClientToServerEvents {
   // --- Trilha por cena (Spotify) ---
   /** Define (ou remove, com null) a trilha do Spotify de uma cena. */
   setSceneMusic: (sceneId: string, music: SceneMusic | null) => void
+
+  // --- Tabelas aleatórias ---
+  /** Cria uma tabela aleatória (nome + entradas). */
+  saveTable: (entry: { name: string; entries: string[] }) => void
+  /** Atualiza nome e/ou entradas de uma tabela. */
+  updateTable: (id: string, patch: { name?: string; entries?: string[] }) => void
+  /** Remove uma tabela. */
+  deleteTable: (id: string) => void
 }
 
 // Re-export do importer pra que o server e o client peguem por uma única

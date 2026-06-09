@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { CreatureLibrary, EncounterLibrary, SceneMusic, SessionState } from '@gmcr/shared'
+import type {
+  CreatureLibrary,
+  EncounterLibrary,
+  RandomTableLibrary,
+  SceneMusic,
+  SessionState,
+} from '@gmcr/shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // __dirname = server/{src,dist} → ../../ é a raiz do monorepo.
@@ -17,6 +23,9 @@ const ENCOUNTERS_FILE = path.resolve(__dirname, '../../.encounters.json')
 
 // Trilha por cena — global, mas indexado por campanha (sobrevive a trocas).
 const SCENE_MUSIC_FILE = path.resolve(__dirname, '../../.scene-music.json')
+
+// Tabelas aleatórias — global, mesma lógica das criaturas/encontros.
+const TABLES_FILE = path.resolve(__dirname, '../../.tables.json')
 
 interface Persisted {
   campaignId: string
@@ -133,4 +142,25 @@ export function saveSceneMusic(campaignId: string, map: Record<string, SceneMusi
   all[campaignId] = map
   // Escrita síncrona simples: o volume é baixo (poucas cenas por campanha).
   fs.writeFile(SCENE_MUSIC_FILE, JSON.stringify(all, null, 2), () => {})
+}
+
+/** Carrega as tabelas aleatórias (`.tables.json`). `[]` se ausente. */
+export function loadTables(): RandomTableLibrary {
+  try {
+    const data = JSON.parse(fs.readFileSync(TABLES_FILE, 'utf-8'))
+    if (Array.isArray(data)) return data as RandomTableLibrary
+    return []
+  } catch {
+    return []
+  }
+}
+
+let tablesTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Salva as tabelas aleatórias (debounce de 500ms). */
+export function saveTables(tables: RandomTableLibrary): void {
+  if (tablesTimer) clearTimeout(tablesTimer)
+  tablesTimer = setTimeout(() => {
+    fs.writeFile(TABLES_FILE, JSON.stringify(tables, null, 2), () => {})
+  }, 500)
 }

@@ -14,6 +14,7 @@ import { NotesPanel } from '../features/tools/NotesPanel'
 import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
 import { ClocksPanel } from '../features/tools/ClocksPanel'
+import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
 
 const TREATMENT_LABEL: Record<string, string> = {
@@ -227,6 +228,11 @@ export function Control() {
           <section className="card">
             <h2>Biblioteca de encontros</h2>
             <EncounterLibraryPanel />
+          </section>
+
+          <section className="card">
+            <h2>Tabelas aleatórias</h2>
+            <TablesPanel />
           </section>
 
           <section className="card">
