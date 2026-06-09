@@ -1479,6 +1479,7 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  margin-top: 8px;
   font-variant-numeric: tabular-nums;
 }
 

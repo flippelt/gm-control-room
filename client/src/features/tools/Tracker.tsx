@@ -103,15 +103,6 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
           title="Iniciativa"
         />
         <span className="cbt__name">{c.name}</span>
-        <span className="cbt__hp" title="HP atual / máximo">
-          <button onClick={() => setHp(-1)} aria-label="HP −1">−</button>
-          <span>{c.hp ?? '—'}</span>
-          <button onClick={() => setHp(1)} aria-label="HP +1">+</button>
-          <span className="muted" style={{ margin: '0 4px' }}>/</span>
-          <button onClick={() => setMaxHp(-1)} aria-label="Max HP −1" className="btn-ghost">−</button>
-          <span className="muted">{c.maxHp ?? '—'}</span>
-          <button onClick={() => setMaxHp(1)} aria-label="Max HP +1" className="btn-ghost">+</button>
-        </span>
         <button
           className={'cbt__dead' + (c.dead ? ' is-on' : '')}
           onClick={toggleDead}
@@ -124,6 +115,16 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
           ✕
         </button>
       </div>
+
+      <span className="cbt__hp" title="HP atual / máximo">
+        <button onClick={() => setHp(-1)} aria-label="HP −1">−</button>
+        <span>{c.hp ?? '—'}</span>
+        <button onClick={() => setHp(1)} aria-label="HP +1">+</button>
+        <span className="muted" style={{ margin: '0 4px' }}>/</span>
+        <button onClick={() => setMaxHp(-1)} aria-label="Max HP −1" className="btn-ghost">−</button>
+        <span className="muted">{c.maxHp ?? '—'}</span>
+        <button onClick={() => setMaxHp(1)} aria-label="Max HP +1" className="btn-ghost">+</button>
+      </span>
 
       {system && system.trackerFields.length > 0 && (
         <div className="cbt__extras">
