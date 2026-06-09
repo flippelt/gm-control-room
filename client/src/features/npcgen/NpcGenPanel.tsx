@@ -2,12 +2,17 @@ import { useMemo, useState } from 'react'
 import type {
   CreatureSize,
   CreatureType,
+  EncounterDifficulty,
+  GeneratedEncounter,
   GeneratedNpc,
   NameStyle,
   NpcRole,
 } from '@lippelt/srd-npcgen'
 import {
+  generateEncounter,
   generateNpc,
+  encounterToCodexMarkdown,
+  encounterToTrackerCombatants,
   toCodexMarkdown,
   toTrackerCombatant,
 } from '@lippelt/srd-npcgen'
@@ -53,16 +58,23 @@ const NAME_STYLES: { id: NameStyle; label: string }[] = [
   { id: 'plain', label: 'Simples' },
 ]
 
+const DIFFICULTIES: { id: EncounterDifficulty; label: string }[] = [
+  { id: 'easy', label: 'Fácil' },
+  { id: 'medium', label: 'Médio' },
+  { id: 'hard', label: 'Difícil' },
+  { id: 'deadly', label: 'Mortal' },
+]
+
 /**
- * Painel "Gerar NPC" — usa @lippelt/srd-npcgen pra produzir um NPC pro
- * sistema da campanha ativa, mostra preview em markdown, e tem botão pra
- * adicionar ao tracker.
+ * Painel "Gerar NPC / Encontro" — usa @lippelt/srd-npcgen pra produzir um NPC
+ * avulso OU um encontro inteiro balanceado pro sistema da campanha ativa,
+ * mostra preview em markdown, e joga no tracker (um ou vários combatentes).
  *
  * Suporta as duas famílias do npcgen:
  *  - d20 (D&D 3.5/5e, Pathfinder 1e/2e, Starfinder 1e/2e): nível, papel,
- *    estilo de nome e os hooks `System.npc`.
- *  - pool (Daggerheart, Candela Obscura, GUMSHOE): nível/tier + tipo/tamanho
- *    (o gerador escolhe o papel do sistema e nomeia internamente).
+ *    estilo de nome e os hooks `System.npc`; encontro usa orçamento de XP.
+ *  - pool (Daggerheart, Candela Obscura, GUMSHOE): nível/tier + tipo/tamanho;
+ *    encontro balanceia por contagem (sem orçamento de XP).
  *
  * Sistemas sem gerador (ex.: Lancer) mostram um aviso.
  */
@@ -78,17 +90,27 @@ const D20_SYSTEM_IDS = new Set([
 
 const POOL_SYSTEM_IDS = new Set(['daggerheart', 'candela-obscura', 'gumshoe'])
 
+type Mode = 'npc' | 'encounter'
+
 export function NpcGenPanel() {
   const campaign = useSession((s) => s.campaign)
   const system = useActiveSystem()
 
+  const [mode, setMode] = useState<Mode>('npc')
   const [level, setLevel] = useState(3)
   const [role, setRole] = useState<NpcRole | ''>('')
   const [creatureType, setCreatureType] = useState<CreatureType>('humanoid')
   const [creatureSize, setCreatureSize] = useState<CreatureSize>('medium')
   const [nameStyle, setNameStyle] = useState<NameStyle>('fantasy')
   const [withEpithet, setWithEpithet] = useState(false)
+  const [withFlavor, setWithFlavor] = useState(false)
+  // Encontro
+  const [partySize, setPartySize] = useState(4)
+  const [difficulty, setDifficulty] = useState<EncounterDifficulty>('medium')
+  const [withLoot, setWithLoot] = useState(false)
+  // Resultados (um por modo)
   const [npc, setNpc] = useState<GeneratedNpc | null>(null)
+  const [encounter, setEncounter] = useState<GeneratedEncounter | null>(null)
 
   // Sistema atual da campanha (id) e a qual família pertence.
   const systemId = campaign?.system ?? ''
@@ -96,10 +118,10 @@ export function NpcGenPanel() {
   const isPool = POOL_SYSTEM_IDS.has(systemId)
   const supported = isD20 || isPool
 
-  const previewMarkdown = useMemo(
-    () => (npc ? toCodexMarkdown(npc) : ''),
-    [npc],
-  )
+  const previewMarkdown = useMemo(() => {
+    if (mode === 'encounter') return encounter ? encounterToCodexMarkdown(encounter) : ''
+    return npc ? toCodexMarkdown(npc) : ''
+  }, [mode, npc, encounter])
 
   if (!campaign) {
     return <p className="muted">Aguardando campanha…</p>
@@ -122,6 +144,7 @@ export function NpcGenPanel() {
         level,
         creatureType,
         creatureSize,
+        ...(withFlavor ? { withFlavor: true } : {}),
         // Papel, estilo de nome e hooks só valem na família d20; nos sistemas
         // de pool o gerador escolhe o papel do sistema e nomeia internamente.
         ...(isD20
@@ -135,14 +158,41 @@ export function NpcGenPanel() {
     }
   }
 
+  const handleGenerateEncounter = () => {
+    try {
+      const generated = generateEncounter({
+        systemId,
+        partySize,
+        partyLevel: level,
+        difficulty,
+        ...(withLoot ? { withLoot: true } : {}),
+        ...(withFlavor ? { withFlavor: true } : {}),
+        creatureType,
+        creatureSize,
+        ...(isD20 ? { nameStyle, withEpithet, npc: system?.npc } : {}),
+      })
+      setEncounter(generated)
+    } catch (err) {
+      console.error('[npcgen]', err)
+      setEncounter(null)
+    }
+  }
+
   const handleAddToTracker = () => {
     if (!npc) return
     const c = toTrackerCombatant(npc)
     socket.emit('addCombatant', c.name, c.initiative, c.fields, c.hp, c.maxHp)
   }
 
+  const handleAddEncounterToTracker = () => {
+    if (!encounter) return
+    for (const c of encounterToTrackerCombatants(encounter)) {
+      socket.emit('addCombatant', c.name, c.initiative, c.fields, c.hp, c.maxHp)
+    }
+  }
+
   const handleCopyMarkdown = async () => {
-    if (!npc) return
+    if (!previewMarkdown) return
     try {
       await navigator.clipboard.writeText(previewMarkdown)
     } catch {
@@ -152,9 +202,24 @@ export function NpcGenPanel() {
 
   return (
     <div className="npcgen">
+      <div className="row" style={{ gap: 6, marginBottom: 4 }}>
+        <button
+          className={mode === 'npc' ? '' : 'btn-ghost'}
+          onClick={() => setMode('npc')}
+        >
+          NPC avulso
+        </button>
+        <button
+          className={mode === 'encounter' ? '' : 'btn-ghost'}
+          onClick={() => setMode('encounter')}
+        >
+          Encontro
+        </button>
+      </div>
+
       <div className="row" style={{ gap: 10 }}>
-        <label className="rule-field" style={{ width: 80 }}>
-          <span>Nível</span>
+        <label className="rule-field" style={{ width: mode === 'encounter' ? 120 : 80 }}>
+          <span>{mode === 'encounter' ? 'Nível do grupo' : 'Nível'}</span>
           <input
             type="number"
             value={level}
@@ -163,7 +228,34 @@ export function NpcGenPanel() {
             onChange={(e) => setLevel(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
           />
         </label>
-        {isD20 && (
+
+        {mode === 'encounter' && (
+          <>
+            <label className="rule-field" style={{ width: 110 }}>
+              <span>Jogadores</span>
+              <input
+                type="number"
+                value={partySize}
+                min={1}
+                max={12}
+                onChange={(e) => setPartySize(Math.max(1, Math.min(12, Number(e.target.value) || 1)))}
+              />
+            </label>
+            <label className="rule-field" style={{ flex: 1 }}>
+              <span>Dificuldade</span>
+              <select
+                value={difficulty}
+                onChange={(e) => setDifficulty(e.target.value as EncounterDifficulty)}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d.id} value={d.id}>{d.label}</option>
+                ))}
+              </select>
+            </label>
+          </>
+        )}
+
+        {mode === 'npc' && isD20 && (
           <label className="rule-field" style={{ flex: 1 }}>
             <span>Papel</span>
             <select
@@ -231,21 +323,58 @@ export function NpcGenPanel() {
         </div>
       )}
 
-      <div className="row" style={{ gap: 8, marginTop: 6 }}>
-        <button onClick={handleGenerate}>🎲 Gerar NPC</button>
-        {npc && (
-          <>
-            <button className="btn-ghost" onClick={handleAddToTracker}>
-              ➕ Adicionar ao tracker
-            </button>
-            <button className="btn-ghost" onClick={handleCopyMarkdown} title="Copiar markdown">
-              📋 Copiar
-            </button>
-          </>
+      <div className="row" style={{ gap: 14 }}>
+        <label className="row" style={{ gap: 6, alignItems: 'center' }}>
+          <input
+            type="checkbox"
+            checked={withFlavor}
+            onChange={(e) => setWithFlavor(e.target.checked)}
+          />
+          Flavor de interpretação
+        </label>
+        {mode === 'encounter' && (
+          <label className="row" style={{ gap: 6, alignItems: 'center' }}>
+            <input
+              type="checkbox"
+              checked={withLoot}
+              onChange={(e) => setWithLoot(e.target.checked)}
+            />
+            Recompensa
+          </label>
         )}
       </div>
 
-      {npc && (
+      {mode === 'npc' ? (
+        <div className="row" style={{ gap: 8, marginTop: 6 }}>
+          <button onClick={handleGenerate}>🎲 Gerar NPC</button>
+          {npc && (
+            <>
+              <button className="btn-ghost" onClick={handleAddToTracker}>
+                ➕ Adicionar ao tracker
+              </button>
+              <button className="btn-ghost" onClick={handleCopyMarkdown} title="Copiar markdown">
+                📋 Copiar
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="row" style={{ gap: 8, marginTop: 6 }}>
+          <button onClick={handleGenerateEncounter}>🎲 Gerar encontro</button>
+          {encounter && (
+            <>
+              <button className="btn-ghost" onClick={handleAddEncounterToTracker}>
+                ➕ Jogar encontro no tracker ({encounter.npcs.length})
+              </button>
+              <button className="btn-ghost" onClick={handleCopyMarkdown} title="Copiar markdown">
+                📋 Copiar
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {previewMarkdown && (
         <div className="npcgen__preview">
           <pre className="npcgen__statblock">{previewMarkdown}</pre>
         </div>
