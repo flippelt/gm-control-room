@@ -4,6 +4,7 @@ import { SceneView } from '../features/display/SceneView'
 import { LightingOverlay } from '../features/display/LightingOverlay'
 import { DiceFeed } from '../features/display/DiceFeed'
 import { TrackerPanel } from '../features/display/TrackerPanel'
+import { ClocksDisplay } from '../features/display/ClocksDisplay'
 import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
 import { HistoryButton } from '../features/display/HistoryButton'
 import { useSkin } from '../features/skin/useSkin'
@@ -18,6 +19,7 @@ export function Display() {
   const lastRoll = useSession((s) => s.lastRoll)
   const rollHistory = useSession((s) => s.rollHistory)
   const tracker = useSession((s) => s.tracker)
+  const clocks = useSession((s) => s.clocks)
   const scene = useActiveScene()
 
   // Estado inicial respeita a preferência salva; mas só conta como
@@ -47,6 +49,7 @@ export function Display() {
 
       <LightingOverlay lighting={lighting} />
       <TrackerPanel tracker={tracker} />
+      <ClocksDisplay clocks={clocks} />
       <DiceFeed rolls={rollHistory} highlightId={lastRoll?.id ?? null} />
       <AudioToggle enabled={audioEnabled} onToggle={setAudioEnabled} />
       <HistoryButton rolls={rollHistory} />

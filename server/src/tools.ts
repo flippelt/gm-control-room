@@ -1,6 +1,9 @@
 import crypto from 'node:crypto'
-import type { Combatant, DiceRoll, Tracker } from '@gmcr/shared'
-import { parseDiceNotation } from '@gmcr/shared'
+import type { Clock, Combatant, DiceRoll, Tracker } from '@gmcr/shared'
+import { CLOCK_MAX_SEGMENTS, CLOCK_MIN_SEGMENTS, parseDiceNotation } from '@gmcr/shared'
+
+const clampInt = (n: number, lo: number, hi: number) =>
+  Math.max(lo, Math.min(hi, Math.trunc(Number.isFinite(n) ? n : lo)))
 
 /** Sorteia uma rolagem a partir da notação. null se inválida. */
 export function rollDice(notation: string): DiceRoll | null {
@@ -108,4 +111,43 @@ export function clearCombat(tracker: Tracker): void {
   tracker.turnIndex = 0
   tracker.round = 1
   tracker.active = false
+}
+
+// ===================== Clocks / contadores de progresso =====================
+
+const clampSegments = (n: number) => clampInt(n, CLOCK_MIN_SEGMENTS, CLOCK_MAX_SEGMENTS)
+
+/** Cria um clock e devolve a nova lista (estilo funcional). */
+export function addClock(clocks: Clock[], name: string, segments: number): Clock[] {
+  const clock: Clock = {
+    id: crypto.randomUUID(),
+    name: (name ?? '').slice(0, 60) || 'Relógio',
+    segments: clampSegments(segments),
+    filled: 0,
+  }
+  return [...clocks, clock]
+}
+
+/** Atualiza um clock (nome/segmentos/preenchidos/cor). Devolve a nova lista. */
+export function updateClock(
+  clocks: Clock[],
+  id: string,
+  patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color'>>,
+): Clock[] {
+  return clocks.map((c) => {
+    if (c.id !== id) return c
+    const next: Clock = { ...c }
+    if (patch.name !== undefined) next.name = patch.name.slice(0, 60) || next.name
+    if (patch.segments !== undefined) next.segments = clampSegments(patch.segments)
+    // `filled` é reclampado contra os segmentos (já possivelmente atualizados).
+    if (patch.filled !== undefined) next.filled = clampInt(patch.filled, 0, next.segments)
+    else next.filled = clampInt(next.filled, 0, next.segments)
+    if (patch.color !== undefined) next.color = patch.color || undefined
+    return next
+  })
+}
+
+/** Remove um clock. Devolve a nova lista. */
+export function removeClock(clocks: Clock[], id: string): Clock[] {
+  return clocks.filter((c) => c.id !== id)
 }

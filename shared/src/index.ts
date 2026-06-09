@@ -371,6 +371,31 @@ export const STATUS_PRESETS = [
   'Sangrando',
 ] as const
 
+// ===================== Clocks / contadores de progresso =====================
+
+/**
+ * "Relógio" de progresso (estilo Blades in the Dark / PbtA; nativo em
+ * Candela Obscura e Daggerheart). Um anel de `segments` que enche conforme a
+ * tensão/contagem avança. Útil pra ameaças, contagens regressivas, projetos.
+ */
+export interface Clock {
+  id: string
+  name: string
+  /** Total de segmentos (ex.: 4, 6, 8). */
+  segments: number
+  /** Segmentos preenchidos (0..segments). */
+  filled: number
+  /** Cor CSS opcional do anel (sanitizada no servidor). */
+  color?: string
+}
+
+/** Tamanhos comuns de clock pra UI. */
+export const CLOCK_SEGMENT_PRESETS = [4, 6, 8, 10, 12] as const
+
+/** Limites defensivos de segmentos. */
+export const CLOCK_MIN_SEGMENTS = 2
+export const CLOCK_MAX_SEGMENTS = 24
+
 // ===================== Biblioteca de criaturas =====================
 
 /**
@@ -458,6 +483,8 @@ export interface SessionState {
   rollHistory: DiceRoll[]
   /** Tracker de iniciativa/combate. */
   tracker: Tracker
+  /** Clocks/contadores de progresso ativos (aparecem na 2ª tela). */
+  clocks: Clock[]
   /** Notas livres do mestre (markdown leve, persiste com a sessão). */
   notes: string
   /**
@@ -515,6 +542,19 @@ export interface ClientToServerEvents {
   nextTurn: () => void
   setCombatActive: (active: boolean) => void
   clearCombat: () => void
+
+  // --- Clocks / contadores de progresso ---
+  /** Cria um clock com nome e nº de segmentos. */
+  addClock: (name: string, segments: number) => void
+  /** Atualiza nome/segmentos/preenchidos/cor de um clock. */
+  updateClock: (
+    id: string,
+    patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color'>>,
+  ) => void
+  /** Remove um clock. */
+  removeClock: (id: string) => void
+  /** Remove todos os clocks. */
+  clearClocks: () => void
 
   // --- Gerência de campanha ---
   /** Solicita a lista atual de campanhas disponíveis. */
