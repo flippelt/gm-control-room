@@ -1,4 +1,5 @@
 import type { Tracker } from '@gmcr/shared'
+import { useMovablePanel } from './useMovablePanel'
 
 /**
  * Índice do próximo combatente que VAI agir — pula os mortos, espelhando o
@@ -24,6 +25,11 @@ function nextAliveIndex(tracker: Tracker): number {
  * (informação do mestre).
  */
 export function TrackerPanel({ tracker }: { tracker: Tracker }) {
+  const { ref, style, controlsStyle, handleProps, scaleUp, scaleDown, reset } = useMovablePanel(
+    'gmcr.trackerPanel',
+    'top right',
+  )
+
   if (!tracker.active || tracker.combatants.length === 0) return null
 
   const active = tracker.combatants[tracker.turnIndex]
@@ -31,7 +37,16 @@ export function TrackerPanel({ tracker }: { tracker: Tracker }) {
   const next = nextIdx >= 0 ? tracker.combatants[nextIdx] : null
 
   return (
-    <aside className="tracker-panel">
+    <aside className="tracker-panel" ref={ref} style={style}>
+      <div className="panel-controls" style={controlsStyle}>
+        <span className="panel-controls__grip" title="Arraste para mover" {...handleProps}>
+          ⠿
+        </span>
+        <span className="spacer" />
+        <button className="panel-controls__btn" onClick={scaleDown} title="Diminuir">A−</button>
+        <button className="panel-controls__btn" onClick={scaleUp} title="Aumentar">A+</button>
+        <button className="panel-controls__btn" onClick={reset} title="Resetar posição e tamanho">⟲</button>
+      </div>
       <div className="tracker-panel__round">Rodada {tracker.round}</div>
 
       {active && (
