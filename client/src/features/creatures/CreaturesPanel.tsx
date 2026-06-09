@@ -59,6 +59,11 @@ export function CreaturesPanel() {
     setPaste('')
   }
 
+  // O parser do 5etools é específico do formato D&D 5e. Em campanhas 5e
+  // mostramos o import do 5etools; nos demais sistemas, um import genérico
+  // (formulário mínimo) que salva via `saveCreature`.
+  const is5e = campaignSystem === 'dnd5e-2024' || campaignSystem === 'dnd5e-2014'
+
   const spawn = () => {
     if (!selected) return
     const init = Number(initiative) || 0
@@ -73,36 +78,40 @@ export function CreaturesPanel() {
 
   return (
     <div className="creatures-panel">
-      <details className="card" style={{ marginBottom: '0.75rem' }}>
-        <summary>
-          <strong>Importar do 5etools</strong>
-        </summary>
-        <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <textarea
-            value={paste}
-            onChange={(e) => setPaste(e.target.value)}
-            placeholder='Cole o JSON de uma criatura (ex.: {"name":"False Lich","cr":"21",...})'
-            rows={6}
-            style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.85rem' }}
-          />
-          <div className="row" style={{ gap: 6, alignItems: 'center' }}>
-            <label className="muted" style={{ fontSize: '0.85rem' }}>
-              Sistema:
-            </label>
-            <input
-              type="text"
-              value={systemOverride}
-              onChange={(e) => setSystemOverride(e.target.value)}
-              placeholder={campaignSystem ?? 'dnd5e-2024'}
-              style={{ width: 140 }}
+      {is5e ? (
+        <details className="card" style={{ marginBottom: '0.75rem' }}>
+          <summary>
+            <strong>Importar do 5etools</strong>
+          </summary>
+          <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <textarea
+              value={paste}
+              onChange={(e) => setPaste(e.target.value)}
+              placeholder='Cole o JSON de uma criatura (ex.: {"name":"False Lich","cr":"21",...})'
+              rows={6}
+              style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.85rem' }}
             />
-            <button onClick={importPaste} style={{ marginLeft: 'auto' }}>
-              Importar
-            </button>
+            <div className="row" style={{ gap: 6, alignItems: 'center' }}>
+              <label className="muted" style={{ fontSize: '0.85rem' }}>
+                Sistema:
+              </label>
+              <input
+                type="text"
+                value={systemOverride}
+                onChange={(e) => setSystemOverride(e.target.value)}
+                placeholder={campaignSystem ?? 'dnd5e-2024'}
+                style={{ width: 140 }}
+              />
+              <button onClick={importPaste} style={{ marginLeft: 'auto' }}>
+                Importar
+              </button>
+            </div>
+            {error && <span style={{ color: 'var(--danger, #c33)' }}>{error}</span>}
           </div>
-          {error && <span style={{ color: 'var(--danger, #c33)' }}>{error}</span>}
-        </div>
-      </details>
+        </details>
+      ) : (
+        <GenericCreatureForm system={campaignSystem ?? 'generic'} />
+      )}
 
       <div className="row" style={{ gap: 6, marginBottom: '0.5rem' }}>
         <input
@@ -261,6 +270,102 @@ function CreatureDetails({ entry }: { entry: CreatureLibraryEntry }) {
         </div>
       )}
     </div>
+  )
+}
+
+/**
+ * Import genérico (qualquer sistema não-5e): formulário mínimo que salva uma
+ * criatura via `saveCreature`. Sem parser — os campos essenciais bastam pra
+ * jogar no tracker e reusar entre sessões.
+ */
+function GenericCreatureForm({ system }: { system: string }) {
+  const [name, setName] = useState('')
+  const [type, setType] = useState('')
+  const [cr, setCr] = useState('')
+  const [hp, setHp] = useState('')
+  const [ac, setAc] = useState('')
+  const [notes, setNotes] = useState('')
+
+  const canSave = name.trim().length > 0
+
+  const save = () => {
+    if (!canSave) return
+    const hpNum = Number(hp)
+    const acNum = Number(ac)
+    socket.emit('saveCreature', {
+      system,
+      name: name.trim(),
+      ...(type.trim() ? { type: type.trim() } : {}),
+      ...(cr.trim() ? { cr: cr.trim() } : {}),
+      ...(hp.trim() && Number.isFinite(hpNum) ? { hp: { average: hpNum } } : {}),
+      ...(ac.trim() && Number.isFinite(acNum) ? { ac: { value: acNum } } : {}),
+      ...(notes.trim() ? { notes: notes.trim() } : {}),
+    })
+    setName('')
+    setType('')
+    setCr('')
+    setHp('')
+    setAc('')
+    setNotes('')
+  }
+
+  return (
+    <details className="card" style={{ marginBottom: '0.75rem' }}>
+      <summary>
+        <strong>Adicionar criatura</strong>{' '}
+        <span className="muted" style={{ fontSize: '0.82rem' }}>({system})</span>
+      </summary>
+      <div style={{ display: 'grid', gap: '0.5rem', marginTop: '0.5rem' }}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nome (obrigatório)"
+        />
+        <div className="row" style={{ gap: 6 }}>
+          <input
+            type="text"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            placeholder="Tipo (ex.: soldado, fera)"
+            style={{ flex: 1 }}
+          />
+          <input
+            type="text"
+            value={cr}
+            onChange={(e) => setCr(e.target.value)}
+            placeholder="Nível/CR/tier"
+            style={{ width: 110 }}
+          />
+        </div>
+        <div className="row" style={{ gap: 6 }}>
+          <input
+            type="number"
+            value={hp}
+            onChange={(e) => setHp(e.target.value)}
+            placeholder="HP"
+            style={{ width: 90 }}
+          />
+          <input
+            type="number"
+            value={ac}
+            onChange={(e) => setAc(e.target.value)}
+            placeholder="CA/Defesa"
+            style={{ width: 110 }}
+          />
+          <button onClick={save} disabled={!canSave} style={{ marginLeft: 'auto' }}>
+            Adicionar
+          </button>
+        </div>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Notas (ataques, traços, o que precisar)"
+          rows={3}
+          style={{ width: '100%' }}
+        />
+      </div>
+    </details>
   )
 }
 

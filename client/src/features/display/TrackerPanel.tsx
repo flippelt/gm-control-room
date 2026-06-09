@@ -75,6 +75,13 @@ export function TrackerPanel({ tracker }: { tracker: Tracker }) {
             )}
           </li>
         ))}
+        {/* Divisor de rodada: marca o fim da ordem — ao passar daqui, a
+            iniciativa volta ao topo e começa a próxima rodada. */}
+        <li className="tp-round-div" aria-hidden="true">
+          <span className="tp-round-div__line" />
+          <span className="tp-round-div__label">↻ Rodada {tracker.round + 1}</span>
+          <span className="tp-round-div__line" />
+        </li>
       </ol>
     </aside>
   )
