@@ -60,6 +60,18 @@ export interface Scene {
   treatment: DisplayTreatment
 }
 
+/**
+ * Vínculo de trilha do Spotify a uma cena: ao ativar a cena, o servidor manda
+ * tocar este contexto (playlist/álbum) no dispositivo ativo. Guardado fora da
+ * campanha (arquivo global por campanha), editável pelo painel.
+ */
+export interface SceneMusic {
+  /** URI de contexto do Spotify (ex.: 'spotify:playlist:...'). */
+  uri: string
+  /** Nome amigável (pra UI). */
+  name?: string
+}
+
 /** Camada de áudio do mixer (trilha/ambiência), tocada na tela dos jogadores. */
 export interface AudioLayer {
   id: string
@@ -532,6 +544,12 @@ export interface SessionState {
    * `.encounters.json` (global). O mestre prepara antes e re-joga no tracker.
    */
   encounters: EncounterLibrary
+  /**
+   * Trilha por cena (sceneId → música). Ao ativar uma cena com vínculo, o
+   * servidor manda o Spotify tocar o contexto. Por campanha; persiste em
+   * `.scene-music.json`.
+   */
+  sceneMusic: Record<string, SceneMusic>
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -648,6 +666,10 @@ export interface ClientToServerEvents {
   deleteEncounter: (id: string) => void
   /** Joga todos os combatentes do encontro salvo no tracker. */
   spawnEncounter: (id: string) => void
+
+  // --- Trilha por cena (Spotify) ---
+  /** Define (ou remove, com null) a trilha do Spotify de uma cena. */
+  setSceneMusic: (sceneId: string, music: SceneMusic | null) => void
 }
 
 // Re-export do importer pra que o server e o client peguem por uma única

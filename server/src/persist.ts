@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { CreatureLibrary, EncounterLibrary, SessionState } from '@gmcr/shared'
+import type { CreatureLibrary, EncounterLibrary, SceneMusic, SessionState } from '@gmcr/shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // __dirname = server/{src,dist} → ../../ é a raiz do monorepo.
@@ -14,6 +14,9 @@ const CREATURES_FILE = path.resolve(__dirname, '../../.creatures.json')
 
 // Biblioteca de encontros — também global e persistente, mesma lógica.
 const ENCOUNTERS_FILE = path.resolve(__dirname, '../../.encounters.json')
+
+// Trilha por cena — global, mas indexado por campanha (sobrevive a trocas).
+const SCENE_MUSIC_FILE = path.resolve(__dirname, '../../.scene-music.json')
 
 interface Persisted {
   campaignId: string
@@ -106,4 +109,28 @@ export function saveEncounters(encounters: EncounterLibrary): void {
   encountersTimer = setTimeout(() => {
     fs.writeFile(ENCOUNTERS_FILE, JSON.stringify(encounters, null, 2), () => {})
   }, 500)
+}
+
+type SceneMusicFile = Record<string, Record<string, SceneMusic>>
+
+function readSceneMusicFile(): SceneMusicFile {
+  try {
+    const data = JSON.parse(fs.readFileSync(SCENE_MUSIC_FILE, 'utf-8'))
+    return data && typeof data === 'object' ? (data as SceneMusicFile) : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Trilha por cena da campanha (sceneId → SceneMusic). `{}` se ausente. */
+export function loadSceneMusic(campaignId: string): Record<string, SceneMusic> {
+  return readSceneMusicFile()[campaignId] ?? {}
+}
+
+/** Salva a trilha por cena da campanha, preservando as demais campanhas. */
+export function saveSceneMusic(campaignId: string, map: Record<string, SceneMusic>): void {
+  const all = readSceneMusicFile()
+  all[campaignId] = map
+  // Escrita síncrona simples: o volume é baixo (poucas cenas por campanha).
+  fs.writeFile(SCENE_MUSIC_FILE, JSON.stringify(all, null, 2), () => {})
 }

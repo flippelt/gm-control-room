@@ -18,10 +18,14 @@ import {
   loadCreatures,
   loadEncounters,
   loadPersisted,
+  loadSceneMusic,
   saveCreatures,
   saveEncounters,
+  saveSceneMusic,
   savePersisted,
 } from './persist.js'
+import { runCommand as runSpotifyCommand } from './spotify/api.js'
+import { isConnected as spotifyConnected } from './spotify/auth.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 import * as tools from './tools.js'
@@ -59,6 +63,7 @@ export function createSession(io: IO) {
     notes: saved?.notes ?? '',
     creatures: loadCreatures(),
     encounters: loadEncounters(),
+    sceneMusic: loadSceneMusic(campaign.id),
   }
 
   const CREATURE_LIBRARY_CAP = 500
@@ -116,6 +121,7 @@ export function createSession(io: IO) {
     state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
     state.clocks = persisted?.clocks ?? []
     state.notes = persisted?.notes ?? ''
+    state.sceneMusic = loadSceneMusic(next.id)
     broadcast()
   }
 
@@ -192,6 +198,39 @@ export function createSession(io: IO) {
     }
 
     state.activeSceneId = sceneId
+
+    // Trilha por cena: se houver vínculo e o Spotify estiver conectado, manda
+    // tocar o contexto no dispositivo ativo. Fire-and-forget — falha (ex.: sem
+    // dispositivo ativo) não atrapalha a troca de cena.
+    const music = state.sceneMusic[sceneId]
+    if (music?.uri && spotifyConnected()) {
+      runSpotifyCommand({ action: 'play', contextUri: music.uri }).catch((err) => {
+        console.warn(`[scene-music] play falhou: ${(err as Error).message}`)
+      })
+    }
+
+    broadcast()
+  }
+
+  function setSceneMusic(sceneId: string, music: { uri?: unknown; name?: unknown } | null) {
+    if (typeof sceneId !== 'string') return
+    if (music === null) {
+      if (!(sceneId in state.sceneMusic)) return
+      const next = { ...state.sceneMusic }
+      delete next[sceneId]
+      state.sceneMusic = next
+    } else {
+      if (!music || typeof music !== 'object') return
+      if (typeof music.uri !== 'string' || !music.uri.startsWith('spotify:')) return
+      state.sceneMusic = {
+        ...state.sceneMusic,
+        [sceneId]: {
+          uri: music.uri.slice(0, 200),
+          ...(typeof music.name === 'string' ? { name: music.name.slice(0, 120) } : {}),
+        },
+      }
+    }
+    saveSceneMusic(state.campaign.id, state.sceneMusic)
     broadcast()
   }
 
@@ -200,6 +239,7 @@ export function createSession(io: IO) {
     socket.emit('state', state)
     socket.emit('campaigns', listCampaigns())
     socket.on('setActiveScene', setActiveScene)
+    socket.on('setSceneMusic', setSceneMusic)
     socket.on('setLighting', setLighting)
     socket.on('setAudioLayer', setAudioLayer)
     socket.on('listCampaigns', () => socket.emit('campaigns', listCampaigns()))
