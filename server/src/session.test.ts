@@ -42,6 +42,8 @@ vi.mock('./persist.js', () => ({
   saveEncounters: vi.fn(),
   loadSceneMusic: () => ({}),
   saveSceneMusic: vi.fn(),
+  loadTables: () => [],
+  saveTables: vi.fn(),
 }))
 
 import { createSession } from './session'
@@ -304,6 +306,46 @@ describe('createSession / handleConnection', () => {
       // 'intro' é uma cena 'text' permitida na campanha de teste.
       expect(() => handlers.setActiveScene('intro')).not.toThrow()
       expect(lastBroadcast().activeSceneId).toBe('intro')
+    })
+  })
+
+  describe('tabelas aleatórias', () => {
+    it('saveTable cria saneando entradas (vazias removidas)', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveTable({ name: 'Rumores', entries: ['um', '  ', '', 'dois'] })
+      const tables = lastBroadcast().tables
+      expect(tables).toHaveLength(1)
+      expect(tables[0].name).toBe('Rumores')
+      expect(tables[0].entries).toEqual(['um', 'dois'])
+      expect(tables[0].id).toBeTruthy()
+    })
+
+    it('saveTable rejeita sem nome ou sem entradas válidas', () => {
+      const { handlers, ioEmit } = setup()
+      handlers.saveTable({ name: '', entries: ['x'] })
+      handlers.saveTable({ name: 'Vazia', entries: ['  ', ''] })
+      expect(ioEmit).not.toHaveBeenCalled()
+    })
+
+    it('updateTable troca nome e entradas', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveTable({ name: 'A', entries: ['x'] })
+      const id = lastBroadcast().tables[0].id
+      handlers.updateTable(id, { name: 'B', entries: ['y', 'z'] })
+      const t = lastBroadcast().tables[0]
+      expect(t.name).toBe('B')
+      expect(t.entries).toEqual(['y', 'z'])
+    })
+
+    it('deleteTable remove só o alvo', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveTable({ name: 'A', entries: ['x'] })
+      handlers.saveTable({ name: 'B', entries: ['y'] })
+      const tables = lastBroadcast().tables
+      handlers.deleteTable(tables[0].id)
+      const after = lastBroadcast().tables
+      expect(after).toHaveLength(1)
+      expect(after[0].id).toBe(tables[1].id)
     })
   })
 })

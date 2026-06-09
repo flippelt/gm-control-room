@@ -7,6 +7,7 @@ import type {
   ClientToServerEvents,
   CreatureLibraryEntry,
   Lighting,
+  RandomTable,
   SavedCombatant,
   SavedEncounter,
   ServerToClientEvents,
@@ -19,10 +20,12 @@ import {
   loadEncounters,
   loadPersisted,
   loadSceneMusic,
+  loadTables,
   saveCreatures,
   saveEncounters,
   saveSceneMusic,
   savePersisted,
+  saveTables,
 } from './persist.js'
 import { runCommand as runSpotifyCommand } from './spotify/api.js'
 import { isConnected as spotifyConnected } from './spotify/auth.js'
@@ -64,11 +67,24 @@ export function createSession(io: IO) {
     creatures: loadCreatures(),
     encounters: loadEncounters(),
     sceneMusic: loadSceneMusic(campaign.id),
+    tables: loadTables(),
   }
 
   const CREATURE_LIBRARY_CAP = 500
   const ENCOUNTER_LIBRARY_CAP = 300
   const ENCOUNTER_COMBATANTS_CAP = 40
+  const TABLE_LIBRARY_CAP = 300
+  const TABLE_ENTRIES_CAP = 300
+
+  /** Saneia entradas de uma tabela (string[] com limites). */
+  function sanitizeTableEntries(raw: unknown): string[] {
+    if (!Array.isArray(raw)) return []
+    return raw
+      .filter((e): e is string => typeof e === 'string')
+      .map((e) => e.slice(0, 300))
+      .filter((e) => e.trim().length > 0)
+      .slice(0, TABLE_ENTRIES_CAP)
+  }
 
   function persistCreatures() {
     saveCreatures(state.creatures)
@@ -465,6 +481,48 @@ export function createSession(io: IO) {
           c.maxHp,
         )
       }
+      broadcast()
+    })
+
+    // --- Tabelas aleatórias (global, persiste em .tables.json) ---
+    socket.on('saveTable', (entry) => {
+      if (!entry || typeof entry !== 'object') return
+      if (typeof entry.name !== 'string' || !entry.name.trim()) return
+      const entries = sanitizeTableEntries(entry.entries)
+      if (entries.length === 0) return
+      const stored: RandomTable = {
+        id: crypto.randomUUID(),
+        name: entry.name.slice(0, 80),
+        entries,
+        createdAt: Date.now(),
+      }
+      state.tables = [stored, ...state.tables].slice(0, TABLE_LIBRARY_CAP)
+      saveTables(state.tables)
+      broadcast()
+    })
+
+    socket.on('updateTable', (id, patch) => {
+      if (typeof id !== 'string' || !patch || typeof patch !== 'object') return
+      const t = state.tables.find((x) => x.id === id)
+      if (!t) return
+      const next: RandomTable = { ...t }
+      if (typeof patch.name === 'string' && patch.name.trim()) next.name = patch.name.slice(0, 80)
+      if (patch.entries !== undefined) {
+        const entries = sanitizeTableEntries(patch.entries)
+        if (entries.length === 0) return
+        next.entries = entries
+      }
+      state.tables = state.tables.map((x) => (x.id === id ? next : x))
+      saveTables(state.tables)
+      broadcast()
+    })
+
+    socket.on('deleteTable', (id) => {
+      if (typeof id !== 'string') return
+      const next = state.tables.filter((t) => t.id !== id)
+      if (next.length === state.tables.length) return
+      state.tables = next
+      saveTables(state.tables)
       broadcast()
     })
 
