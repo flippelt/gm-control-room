@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { SpotifyCommand, SpotifyPlaylist, SpotifyState } from '@gmcr/shared'
+import { socket } from '../../lib/socket'
+import { useSession } from '../../store'
 
 async function sendCommand(cmd: SpotifyCommand) {
   await fetch('/spotify/command', {
@@ -13,6 +15,9 @@ export function SpotifyPanel() {
   const [state, setState] = useState<SpotifyState | null>(null)
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([])
   const [showPlaylists, setShowPlaylists] = useState(false)
+  const [showSceneMusic, setShowSceneMusic] = useState(false)
+  const scenes = useSession((s) => s.campaign?.scenes ?? [])
+  const sceneMusic = useSession((s) => s.sceneMusic)
 
   async function refresh() {
     try {
@@ -39,10 +44,10 @@ export function SpotifyPanel() {
     return () => clearInterval(id)
   }, [])
 
-  // Carrega playlists só quando a lista for aberta pela primeira vez (lazy).
+  // Carrega playlists quando a lista OU a trilha-por-cena for aberta (lazy).
   useEffect(() => {
-    if (showPlaylists && playlists.length === 0) refreshPlaylists()
-  }, [showPlaylists, playlists.length])
+    if ((showPlaylists || showSceneMusic) && playlists.length === 0) refreshPlaylists()
+  }, [showPlaylists, showSceneMusic, playlists.length])
 
   // Otimismo leve: após um comando, recarrega o estado em seguida.
   const cmd = async (c: SpotifyCommand) => {
@@ -173,6 +178,60 @@ export function SpotifyPanel() {
                 </div>
               </button>
             ))
+          )}
+        </div>
+      )}
+
+      <div className="spotify__playlists-head">
+        <button
+          className="btn-ghost"
+          onClick={() => setShowSceneMusic((v) => !v)}
+          aria-expanded={showSceneMusic}
+        >
+          {showSceneMusic ? '▾ Trilha por cena' : '▸ Trilha por cena'}
+        </button>
+      </div>
+
+      {showSceneMusic && (
+        <div className="spotify__scene-music">
+          {scenes.length === 0 ? (
+            <span className="muted">Nenhuma cena na campanha.</span>
+          ) : (
+            <>
+              <p className="muted" style={{ fontSize: '0.82rem', margin: '0 0 6px' }}>
+                Ao ativar a cena, o Spotify toca a playlist no dispositivo ativo.
+              </p>
+              {scenes.map((sc) => {
+                const bound = sceneMusic[sc.id]?.uri ?? ''
+                return (
+                  <label key={sc.id} className="scene-music-row">
+                    <span className="scene-music-row__name">{sc.name}</span>
+                    <select
+                      value={bound}
+                      onChange={(e) => {
+                        const uri = e.target.value
+                        if (!uri) {
+                          socket.emit('setSceneMusic', sc.id, null)
+                          return
+                        }
+                        const pl = playlists.find((p) => p.uri === uri)
+                        socket.emit('setSceneMusic', sc.id, { uri, name: pl?.name })
+                      }}
+                    >
+                      <option value="">(nenhuma)</option>
+                      {/* Mantém o vínculo atual visível mesmo se as playlists
+                          ainda não carregaram. */}
+                      {bound && !playlists.some((p) => p.uri === bound) && (
+                        <option value={bound}>{sceneMusic[sc.id]?.name ?? bound}</option>
+                      )}
+                      {playlists.map((p) => (
+                        <option key={p.id} value={p.uri}>{p.name}</option>
+                      ))}
+                    </select>
+                  </label>
+                )
+              })}
+            </>
           )}
         </div>
       )}

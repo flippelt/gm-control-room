@@ -9,6 +9,7 @@ import type {
   EncounterLibrary,
   Lighting,
   Scene,
+  SceneMusic,
   SessionState,
   Tracker,
 } from '@gmcr/shared'
@@ -28,6 +29,7 @@ interface SessionStore {
   notes: string
   creatures: CreatureLibrary
   encounters: EncounterLibrary
+  sceneMusic: Record<string, SceneMusic>
   connected: boolean
 }
 
@@ -45,6 +47,7 @@ export const useSession = create<SessionStore>(() => ({
   notes: '',
   creatures: [],
   encounters: [],
+  sceneMusic: {},
   connected: false,
 }))
 
@@ -63,6 +66,7 @@ socket.on('state', (state: SessionState) =>
     notes: state.notes ?? '',
     creatures: state.creatures ?? [],
     encounters: state.encounters ?? [],
+    sceneMusic: state.sceneMusic ?? {},
   }),
 )
 socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))

@@ -40,6 +40,8 @@ vi.mock('./persist.js', () => ({
   saveCreatures: vi.fn(),
   loadEncounters: () => [],
   saveEncounters: vi.fn(),
+  loadSceneMusic: () => ({}),
+  saveSceneMusic: vi.fn(),
 }))
 
 import { createSession } from './session'
@@ -269,6 +271,39 @@ describe('createSession / handleConnection', () => {
       const after = lastBroadcast().encounters
       expect(after).toHaveLength(1)
       expect(after[0].id).toBe(encs[1].id)
+    })
+  })
+
+  describe('trilha por cena (setSceneMusic)', () => {
+    it('vincula uma playlist a uma cena', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setSceneMusic('intro', { uri: 'spotify:playlist:abc', name: 'Tensão' })
+      expect(lastBroadcast().sceneMusic.intro).toEqual({
+        uri: 'spotify:playlist:abc',
+        name: 'Tensão',
+      })
+    })
+
+    it('rejeita uri que não é do Spotify', () => {
+      const { handlers, ioEmit } = setup()
+      handlers.setSceneMusic('intro', { uri: 'http://evil', name: 'x' })
+      expect(ioEmit).not.toHaveBeenCalled()
+    })
+
+    it('remove o vínculo com null', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setSceneMusic('intro', { uri: 'spotify:playlist:abc' })
+      expect(lastBroadcast().sceneMusic.intro).toBeDefined()
+      handlers.setSceneMusic('intro', null)
+      expect(lastBroadcast().sceneMusic.intro).toBeUndefined()
+    })
+
+    it('setActiveScene com vínculo não quebra quando Spotify está desconectado', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setSceneMusic('intro', { uri: 'spotify:playlist:abc' })
+      // 'intro' é uma cena 'text' permitida na campanha de teste.
+      expect(() => handlers.setActiveScene('intro')).not.toThrow()
+      expect(lastBroadcast().activeSceneId).toBe('intro')
     })
   })
 })

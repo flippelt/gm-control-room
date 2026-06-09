@@ -955,6 +955,33 @@ input[type='range'] {
   padding-right: 4px;
 }
 
+.spotify__scene-music {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.scene-music-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.scene-music-row__name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scene-music-row select {
+  width: 160px;
+  flex: none;
+}
+
 .playlist {
   display: flex;
   gap: 8px;
