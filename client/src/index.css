@@ -2178,6 +2178,34 @@ body.skin--neon {
   background: rgba(139, 139, 255, 0.18);
 }
 
+/* ===================== Biblioteca de encontros ===================== */
+.enc-lib__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.enc-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 8px;
+}
+.enc-row__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.enc-row__name {
+  font-weight: 600;
+}
+.enc-row__meta {
+  font-size: 0.8rem;
+}
+
 /* ===================== Clocks — 2ª tela (jogadores) ===================== */
 .clocks-panel {
   position: fixed;

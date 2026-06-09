@@ -38,6 +38,8 @@ vi.mock('./persist.js', () => ({
   savePersisted: vi.fn(),
   loadCreatures: () => [],
   saveCreatures: vi.fn(),
+  loadEncounters: () => [],
+  saveEncounters: vi.fn(),
 }))
 
 import { createSession } from './session'
@@ -213,6 +215,60 @@ describe('createSession / handleConnection', () => {
       expect(tracker.combatants).toHaveLength(1)
       expect(tracker.combatants[0].name).toBe('Goblin')
       expect(tracker.combatants[0].initiative).toBe(15)
+    })
+  })
+
+  describe('biblioteca de encontros', () => {
+    const sampleEncounter = {
+      name: 'Emboscada goblin',
+      system: 'dnd5e-2024',
+      combatants: [
+        { name: 'Goblin A', initiative: 14, hp: 7, maxHp: 7, extra: { ac: 15 } },
+        { name: 'Goblin B', initiative: 12, hp: 7, maxHp: 7 },
+      ],
+    }
+
+    it('saveEncounter persiste o grupo saneado', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveEncounter(sampleEncounter)
+      const encs = lastBroadcast().encounters
+      expect(encs).toHaveLength(1)
+      expect(encs[0].name).toBe('Emboscada goblin')
+      expect(encs[0].id).toBeTruthy()
+      expect(encs[0].combatants).toHaveLength(2)
+      expect(encs[0].combatants[0].extra).toEqual({ ac: 15 })
+    })
+
+    it('saveEncounter rejeita sem nome ou sem combatentes', () => {
+      const { handlers, ioEmit } = setup()
+      handlers.saveEncounter({ name: '', system: 'x', combatants: sampleEncounter.combatants })
+      handlers.saveEncounter({ name: 'Vazio', system: 'x', combatants: [] })
+      // Entradas inválidas retornam cedo — nenhum broadcast (io.emit) ocorre.
+      expect(ioEmit).not.toHaveBeenCalled()
+    })
+
+    it('spawnEncounter joga todos os combatentes no tracker', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveEncounter(sampleEncounter)
+      const id = lastBroadcast().encounters[0].id
+      handlers.spawnEncounter(id)
+      const tracker = lastBroadcast().tracker
+      expect(tracker.combatants).toHaveLength(2)
+      // Ordenado por iniciativa desc (reorder do tracker).
+      expect(tracker.combatants[0].name).toBe('Goblin A')
+      expect(tracker.combatants[0].extra).toEqual({ ac: 15 })
+    })
+
+    it('deleteEncounter remove só o alvo', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.saveEncounter(sampleEncounter)
+      handlers.saveEncounter({ ...sampleEncounter, name: 'Outro' })
+      const encs = lastBroadcast().encounters
+      expect(encs).toHaveLength(2)
+      handlers.deleteEncounter(encs[0].id)
+      const after = lastBroadcast().encounters
+      expect(after).toHaveLength(1)
+      expect(after[0].id).toBe(encs[1].id)
     })
   })
 })

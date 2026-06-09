@@ -191,6 +191,21 @@ export function NpcGenPanel() {
     }
   }
 
+  const handleSaveEncounter = () => {
+    if (!encounter) return
+    const suggested = `${systemId} · ${difficulty} (${encounter.npcs.length})`
+    const name = window.prompt('Nome do encontro:', suggested)
+    if (!name || !name.trim()) return
+    const combatants = encounterToTrackerCombatants(encounter).map((c) => ({
+      name: c.name,
+      initiative: c.initiative,
+      hp: c.hp,
+      maxHp: c.maxHp,
+      extra: c.fields,
+    }))
+    socket.emit('saveEncounter', { name: name.trim(), system: systemId, combatants })
+  }
+
   const handleCopyMarkdown = async () => {
     if (!previewMarkdown) return
     try {
@@ -365,6 +380,9 @@ export function NpcGenPanel() {
             <>
               <button className="btn-ghost" onClick={handleAddEncounterToTracker}>
                 ➕ Jogar encontro no tracker ({encounter.npcs.length})
+              </button>
+              <button className="btn-ghost" onClick={handleSaveEncounter} title="Salvar na biblioteca">
+                💾 Salvar
               </button>
               <button className="btn-ghost" onClick={handleCopyMarkdown} title="Copiar markdown">
                 📋 Copiar

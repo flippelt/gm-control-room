@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import type { CreatureLibrary, SessionState } from '@gmcr/shared'
+import type { CreatureLibrary, EncounterLibrary, SessionState } from '@gmcr/shared'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // __dirname = server/{src,dist} → ../../ é a raiz do monorepo.
@@ -11,6 +11,9 @@ const FILE = path.resolve(__dirname, '../../.session.json')
 // quando troca de campanha) e cresce ao longo do tempo. Ficar no .session.json
 // pioraria o tráfego de broadcast e o snapshot diff.
 const CREATURES_FILE = path.resolve(__dirname, '../../.creatures.json')
+
+// Biblioteca de encontros — também global e persistente, mesma lógica.
+const ENCOUNTERS_FILE = path.resolve(__dirname, '../../.encounters.json')
 
 interface Persisted {
   campaignId: string
@@ -81,5 +84,26 @@ export function saveCreatures(creatures: CreatureLibrary): void {
   if (creaturesTimer) clearTimeout(creaturesTimer)
   creaturesTimer = setTimeout(() => {
     fs.writeFile(CREATURES_FILE, JSON.stringify(creatures, null, 2), () => {})
+  }, 500)
+}
+
+/** Carrega a biblioteca de encontros (`.encounters.json`). `[]` se ausente. */
+export function loadEncounters(): EncounterLibrary {
+  try {
+    const data = JSON.parse(fs.readFileSync(ENCOUNTERS_FILE, 'utf-8'))
+    if (Array.isArray(data)) return data as EncounterLibrary
+    return []
+  } catch {
+    return []
+  }
+}
+
+let encountersTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Salva a biblioteca de encontros (debounce de 500ms). */
+export function saveEncounters(encounters: EncounterLibrary): void {
+  if (encountersTimer) clearTimeout(encountersTimer)
+  encountersTimer = setTimeout(() => {
+    fs.writeFile(ENCOUNTERS_FILE, JSON.stringify(encounters, null, 2), () => {})
   }, 500)
 }

@@ -4,6 +4,7 @@ import { socket } from '../lib/socket'
 import { useSession } from '../store'
 import { CampaignEditor } from '../features/campaign/CampaignEditor'
 import { CreaturesPanel } from '../features/creatures/CreaturesPanel'
+import { EncounterLibraryPanel } from '../features/encounters/EncounterLibraryPanel'
 import { NpcGenPanel } from '../features/npcgen/NpcGenPanel'
 import { SkinToggle } from '../features/skin/SkinToggle'
 import { SpotifyPanel } from '../features/spotify/SpotifyPanel'
@@ -221,6 +222,11 @@ export function Control() {
           <section className="card">
             <h2>Biblioteca de criaturas</h2>
             <CreaturesPanel />
+          </section>
+
+          <section className="card">
+            <h2>Biblioteca de encontros</h2>
+            <EncounterLibraryPanel />
           </section>
 
           <section className="card">
