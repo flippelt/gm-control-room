@@ -1,12 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Tracker } from '@gmcr/shared'
+import type { Clock, Tracker } from '@gmcr/shared'
 import {
+  addClock,
   addCombatant,
   clearCombat,
   nextTurn,
+  removeClock,
   removeCombatant,
   rollDice,
   setCombatActive,
+  updateClock,
   updateCombatant,
 } from './tools'
 
@@ -141,5 +144,56 @@ describe('tracker', () => {
     const t = newTracker()
     addCombatant(t, 'NPC', 10)
     expect(t.combatants[0].extra).toBeUndefined()
+  })
+})
+
+describe('clocks', () => {
+  it('addClock cria com nome, segmentos clampados e zero preenchido', () => {
+    let clocks: Clock[] = []
+    clocks = addClock(clocks, 'Alarme', 6)
+    expect(clocks).toHaveLength(1)
+    expect(clocks[0].name).toBe('Alarme')
+    expect(clocks[0].segments).toBe(6)
+    expect(clocks[0].filled).toBe(0)
+    // clamp: 1 vira 2 (mínimo), 999 vira 24 (máximo)
+    expect(addClock([], 'x', 1)[0].segments).toBe(2)
+    expect(addClock([], 'x', 999)[0].segments).toBe(24)
+    // nome vazio cai no default
+    expect(addClock([], '', 4)[0].name).toBe('Relógio')
+  })
+
+  it('updateClock preenche dentro de 0..segments', () => {
+    let clocks = addClock([], 'C', 4)
+    const id = clocks[0].id
+    clocks = updateClock(clocks, id, { filled: 3 })
+    expect(clocks[0].filled).toBe(3)
+    // estoura → clampa no total
+    clocks = updateClock(clocks, id, { filled: 99 })
+    expect(clocks[0].filled).toBe(4)
+    // negativo → 0
+    clocks = updateClock(clocks, id, { filled: -5 })
+    expect(clocks[0].filled).toBe(0)
+  })
+
+  it('reduzir segmentos reclampa o preenchido', () => {
+    let clocks = addClock([], 'C', 8)
+    const id = clocks[0].id
+    clocks = updateClock(clocks, id, { filled: 8 })
+    clocks = updateClock(clocks, id, { segments: 4 })
+    expect(clocks[0].segments).toBe(4)
+    expect(clocks[0].filled).toBe(4) // reclampado de 8 para 4
+  })
+
+  it('removeClock tira só o alvo', () => {
+    let clocks = addClock(addClock([], 'A', 4), 'B', 6)
+    const idA = clocks[0].id
+    clocks = removeClock(clocks, idA)
+    expect(clocks).toHaveLength(1)
+    expect(clocks[0].name).toBe('B')
+  })
+
+  it('updateClock em id inexistente é no-op', () => {
+    const clocks = addClock([], 'A', 4)
+    expect(updateClock(clocks, 'nope', { filled: 2 })).toEqual(clocks)
   })
 })

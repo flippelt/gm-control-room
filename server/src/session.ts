@@ -46,6 +46,7 @@ export function createSession(io: IO) {
     lastRoll: null,
     rollHistory: [],
     tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
+    clocks: saved?.clocks ?? [],
     notes: saved?.notes ?? '',
     creatures: loadCreatures(),
   }
@@ -85,6 +86,7 @@ export function createSession(io: IO) {
     state.audio = persisted?.audio ?? next.audio.map((layer) => ({ ...layer }))
     state.lastRoll = null
     state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
+    state.clocks = persisted?.clocks ?? []
     state.notes = persisted?.notes ?? ''
     broadcast()
   }
@@ -241,6 +243,39 @@ export function createSession(io: IO) {
     })
     socket.on('clearCombat', () => {
       tools.clearCombat(state.tracker)
+      broadcast()
+    })
+
+    // --- Clocks / contadores de progresso ---
+    socket.on('addClock', (name, segments) => {
+      state.clocks = tools.addClock(
+        state.clocks,
+        typeof name === 'string' ? name : '',
+        toFiniteInt(segments),
+      )
+      broadcast()
+    })
+    socket.on('updateClock', (id, patch) => {
+      if (typeof id !== 'string' || !patch || typeof patch !== 'object') return
+      const clean: typeof patch = {}
+      if (patch.name !== undefined && typeof patch.name === 'string') clean.name = patch.name
+      if (patch.segments !== undefined) clean.segments = toFiniteInt(patch.segments)
+      if (patch.filled !== undefined) clean.filled = toFiniteInt(patch.filled)
+      if (patch.color !== undefined) {
+        // Só aceita null/'' (limpa) ou cor CSS segura.
+        if (patch.color === null || patch.color === '') clean.color = undefined
+        else if (isSafeCssColor(patch.color)) clean.color = patch.color
+      }
+      state.clocks = tools.updateClock(state.clocks, id, clean)
+      broadcast()
+    })
+    socket.on('removeClock', (id) => {
+      if (typeof id !== 'string') return
+      state.clocks = tools.removeClock(state.clocks, id)
+      broadcast()
+    })
+    socket.on('clearClocks', () => {
+      state.clocks = []
       broadcast()
     })
     socket.on('setNotes', (text) => {

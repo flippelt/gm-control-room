@@ -12,6 +12,7 @@ import { DiceRoller } from '../features/tools/DiceRoller'
 import { NotesPanel } from '../features/tools/NotesPanel'
 import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
+import { ClocksPanel } from '../features/tools/ClocksPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
 
 const TREATMENT_LABEL: Record<string, string> = {
@@ -205,6 +206,11 @@ export function Control() {
           <section className="card">
             <h2>Iniciativa / combate</h2>
             <Tracker />
+          </section>
+
+          <section className="card">
+            <h2>Clocks / progresso</h2>
+            <ClocksPanel />
           </section>
 
           <section className="card">
