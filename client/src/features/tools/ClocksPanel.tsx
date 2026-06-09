@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { CLOCK_SEGMENT_PRESETS } from '@gmcr/shared'
+import {
+  CLOCK_MAX_SEGMENTS,
+  CLOCK_MIN_SEGMENTS,
+  CLOCK_SEGMENT_PRESETS,
+} from '@gmcr/shared'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 
@@ -24,6 +28,9 @@ export function ClocksPanel() {
     socket.emit('updateClock', id, { filled: next })
   }
 
+  const clampSeg = (n: number) =>
+    Math.max(CLOCK_MIN_SEGMENTS, Math.min(CLOCK_MAX_SEGMENTS, Math.trunc(n) || CLOCK_MIN_SEGMENTS))
+
   return (
     <div className="clocks">
       <div className="row" style={{ gap: 8 }}>
@@ -35,17 +42,30 @@ export function ClocksPanel() {
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && add()}
         />
-        <select
-          value={segments}
-          style={{ width: 'auto' }}
-          title="Segmentos"
-          onChange={(e) => setSegments(Number(e.target.value))}
-        >
-          {CLOCK_SEGMENT_PRESETS.map((n) => (
-            <option key={n} value={n}>{n} seg</option>
-          ))}
-        </select>
         <button onClick={add}>+ clock</button>
+      </div>
+
+      <div className="row" style={{ gap: 6, alignItems: 'center' }}>
+        <span className="muted">segmentos</span>
+        <input
+          type="number"
+          className="clocks__seg"
+          min={CLOCK_MIN_SEGMENTS}
+          max={CLOCK_MAX_SEGMENTS}
+          value={segments}
+          title={`Custom (${CLOCK_MIN_SEGMENTS}–${CLOCK_MAX_SEGMENTS})`}
+          onChange={(e) => setSegments(clampSeg(Number(e.target.value)))}
+        />
+        {CLOCK_SEGMENT_PRESETS.map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={'clocks__preset' + (segments === n ? ' clocks__preset--on' : '')}
+            onClick={() => setSegments(n)}
+          >
+            {n}
+          </button>
+        ))}
       </div>
 
       {clocks.length === 0 ? (
