@@ -14,6 +14,10 @@ registerSystems()
 import '@fontsource/special-elite/latin.css'
 import '@fontsource/special-elite/latin-ext.css'
 import '@fontsource/im-fell-english/latin.css'
+// Pirata One (gótica/blackletter) — título das cenas medievais (variante scroll),
+// igual ao display do guild-briefings. Latin + latin-ext cobrem acentos PT.
+import '@fontsource/pirata-one/latin-400.css'
+import '@fontsource/pirata-one/latin-ext-400.css'
 import '@fontsource/caveat/latin-400.css'
 import '@fontsource/caveat/latin-ext-400.css'
 // Fontes das skins alternativas (carregadas sempre — ~30KB extra é trivial):
