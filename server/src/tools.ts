@@ -151,3 +151,23 @@ export function updateClock(
 export function removeClock(clocks: Clock[], id: string): Clock[] {
   return clocks.filter((c) => c.id !== id)
 }
+
+// ===================== Recursos de party / sessão =====================
+
+// Chave aceitável: a-z 0-9 _ - (igual à convenção de key do sistema).
+const PARTY_KEY_RE = /^[a-z0-9_-]{1,40}$/
+
+/**
+ * Define o valor de um recurso de party (pool de sessão declarado pelo
+ * sistema). Saneia a chave e faz um clamp defensivo genérico (0..99) — a faixa
+ * semântica de cada recurso (min/max do sistema) é aplicada no cliente.
+ * Devolve o novo mapa.
+ */
+export function setPartyResource(
+  resources: Record<string, number>,
+  key: string,
+  value: number,
+): Record<string, number> {
+  if (typeof key !== 'string' || !PARTY_KEY_RE.test(key)) return resources
+  return { ...resources, [key]: clampInt(value, 0, 99) }
+}

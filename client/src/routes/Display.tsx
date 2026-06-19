@@ -5,6 +5,7 @@ import { LightingOverlay } from '../features/display/LightingOverlay'
 import { DiceFeed } from '../features/display/DiceFeed'
 import { TrackerPanel } from '../features/display/TrackerPanel'
 import { ClocksDisplay } from '../features/display/ClocksDisplay'
+import { PartyResourcesDisplay } from '../features/display/PartyResourcesDisplay'
 import { AudioToggle, readAudioPref } from '../features/display/AudioToggle'
 import { HistoryButton } from '../features/display/HistoryButton'
 import { useSkin } from '../features/skin/useSkin'
@@ -50,6 +51,7 @@ export function Display() {
       <LightingOverlay lighting={lighting} />
       <TrackerPanel tracker={tracker} />
       <ClocksDisplay clocks={clocks} />
+      <PartyResourcesDisplay />
       <DiceFeed rolls={rollHistory} highlightId={lastRoll?.id ?? null} />
       <AudioToggle enabled={audioEnabled} onToggle={setAudioEnabled} />
       <HistoryButton rolls={rollHistory} />

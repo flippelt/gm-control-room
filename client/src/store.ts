@@ -27,6 +27,7 @@ interface SessionStore {
   rollHistory: DiceRoll[]
   tracker: Tracker
   clocks: Clock[]
+  partyResources: Record<string, number>
   notes: string
   creatures: CreatureLibrary
   encounters: EncounterLibrary
@@ -46,6 +47,7 @@ export const useSession = create<SessionStore>(() => ({
   rollHistory: [],
   tracker: DEFAULT_TRACKER,
   clocks: [],
+  partyResources: {},
   notes: '',
   creatures: [],
   encounters: [],
@@ -66,6 +68,7 @@ socket.on('state', (state: SessionState) =>
     rollHistory: state.rollHistory ?? [],
     tracker: state.tracker,
     clocks: state.clocks ?? [],
+    partyResources: state.partyResources ?? {},
     notes: state.notes ?? '',
     creatures: state.creatures ?? [],
     encounters: state.encounters ?? [],

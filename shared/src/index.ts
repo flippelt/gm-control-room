@@ -548,6 +548,13 @@ export interface SessionState {
   tracker: Tracker
   /** Clocks/contadores de progresso ativos (aparecem na 2ª tela). */
   clocks: Clock[]
+  /**
+   * Valores atuais dos recursos de party/sessão declarados pelo sistema ativo
+   * (pools compartilhados da mesa). Chave = `PartyResourceDef.key`. As
+   * definições (rótulo, faixa, dono) vivem no sistema (`@lippelt/srd-core`);
+   * aqui guardamos só os números. Vazio quando o sistema não tem recursos.
+   */
+  partyResources: Record<string, number>
   /** Notas livres do mestre (markdown leve, persiste com a sessão). */
   notes: string
   /**
@@ -633,6 +640,14 @@ export interface ClientToServerEvents {
   removeClock: (id: string) => void
   /** Remove todos os clocks. */
   clearClocks: () => void
+
+  // --- Recursos de party/sessão (pools compartilhados declarados pelo sistema) ---
+  /**
+   * Define o valor atual de um recurso de party (por `key`). O servidor
+   * saneia a chave e faz um clamp defensivo do valor; as faixas semânticas
+   * (min/max do sistema) são aplicadas no cliente.
+   */
+  setPartyResource: (key: string, value: number) => void
 
   // --- Gerência de campanha ---
   /** Solicita a lista atual de campanhas disponíveis. */
