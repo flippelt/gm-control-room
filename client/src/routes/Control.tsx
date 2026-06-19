@@ -14,6 +14,7 @@ import { NotesPanel } from '../features/tools/NotesPanel'
 import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
 import { ClocksPanel } from '../features/tools/ClocksPanel'
+import { PartyResourcesPanel } from '../features/tools/PartyResourcesPanel'
 import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
 
@@ -214,6 +215,13 @@ export function Control() {
             <h2>Clocks / progresso</h2>
             <ClocksPanel />
           </section>
+
+          {system?.partyResources && system.partyResources.length > 0 && (
+            <section className="card">
+              <h2>Recursos da party</h2>
+              <PartyResourcesPanel />
+            </section>
+          )}
 
           <section className="card">
             <h2>Gerar NPC</h2>

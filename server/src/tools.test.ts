@@ -9,6 +9,7 @@ import {
   removeCombatant,
   rollDice,
   setCombatActive,
+  setPartyResource,
   updateClock,
   updateCombatant,
 } from './tools'
@@ -195,5 +196,26 @@ describe('clocks', () => {
   it('updateClock em id inexistente é no-op', () => {
     const clocks = addClock([], 'A', 4)
     expect(updateClock(clocks, 'nope', { filled: 2 })).toEqual(clocks)
+  })
+})
+
+describe('setPartyResource', () => {
+  it('define o valor e devolve novo objeto (imutável)', () => {
+    const a = {}
+    const b = setPartyResource(a, 'mana', 3)
+    expect(b).toEqual({ mana: 3 })
+    expect(a).toEqual({}) // não mutou o original
+  })
+
+  it('faz clamp defensivo em 0..99', () => {
+    expect(setPartyResource({}, 'doom', -5).doom).toBe(0)
+    expect(setPartyResource({}, 'doom', 999).doom).toBe(99)
+    expect(setPartyResource({}, 'mana', 4.9).mana).toBe(4) // trunca
+  })
+
+  it('rejeita chave inválida (no-op)', () => {
+    const before = { mana: 2 }
+    expect(setPartyResource(before, 'Mana!', 5)).toBe(before)
+    expect(setPartyResource(before, '', 5)).toBe(before)
   })
 })

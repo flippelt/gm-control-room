@@ -63,6 +63,7 @@ export function createSession(io: IO) {
     rollHistory: [],
     tracker: saved?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] },
     clocks: saved?.clocks ?? [],
+    partyResources: saved?.partyResources ?? {},
     notes: saved?.notes ?? '',
     creatures: loadCreatures(),
     encounters: loadEncounters(),
@@ -136,6 +137,7 @@ export function createSession(io: IO) {
     state.lastRoll = null
     state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
     state.clocks = persisted?.clocks ?? []
+    state.partyResources = persisted?.partyResources ?? {}
     state.notes = persisted?.notes ?? ''
     state.sceneMusic = loadSceneMusic(next.id)
     broadcast()
@@ -360,6 +362,17 @@ export function createSession(io: IO) {
     })
     socket.on('clearClocks', () => {
       state.clocks = []
+      broadcast()
+    })
+
+    // --- Recursos de party/sessão (pools declarados pelo sistema) ---
+    socket.on('setPartyResource', (key, value) => {
+      if (typeof key !== 'string') return
+      state.partyResources = tools.setPartyResource(
+        state.partyResources,
+        key,
+        toFiniteInt(value),
+      )
       broadcast()
     })
     socket.on('setNotes', (text) => {

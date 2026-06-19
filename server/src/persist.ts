@@ -34,6 +34,7 @@ interface Persisted {
   audio: SessionState['audio']
   tracker: SessionState['tracker']
   clocks?: SessionState['clocks']
+  partyResources?: SessionState['partyResources']
   notes?: string
 }
 
@@ -48,6 +49,7 @@ export function loadPersisted(campaignId: string): Partial<SessionState> | null 
       audio: data.audio,
       tracker: data.tracker,
       clocks: data.clocks ?? [],
+      partyResources: data.partyResources ?? {},
       notes: data.notes ?? '',
     }
   } catch {
@@ -68,6 +70,7 @@ export function savePersisted(state: SessionState): void {
       audio: state.audio,
       tracker: state.tracker,
       clocks: state.clocks,
+      partyResources: state.partyResources,
       notes: state.notes,
     }
     fs.writeFile(FILE, JSON.stringify(data, null, 2), () => {})
