@@ -6,10 +6,28 @@ export const MARGIN: [number, number] = [14, 14]
 /** Altura (em linhas) de um card minimizado — cabe só o cabeçalho. */
 export const COLLAPSED_H = 2
 
-/** Larguras de breakpoint (px) e nº de colunas — mais colunas em telas maiores. */
-export const BREAKPOINTS: Record<DashboardBreakpoint, number> = { lg: 1200, md: 760, sm: 480, xs: 0 }
-export const COLS: Record<DashboardBreakpoint, number> = { lg: 4, md: 3, sm: 2, xs: 1 }
-export const BREAKPOINT_ORDER: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
+/**
+ * Larguras de breakpoint (px da LARGURA DO CONTAINER medida pelo RGL) e nº de
+ * colunas — mais colunas em telas maiores, incluindo ultrawide. Como o RGL mede
+ * o container, o `.control` precisa alargar junto (ver `.control` no index.css).
+ */
+export const BREAKPOINTS: Record<DashboardBreakpoint, number> = {
+  xxl: 2000,
+  xl: 1560,
+  lg: 1180,
+  md: 760,
+  sm: 480,
+  xs: 0,
+}
+export const COLS: Record<DashboardBreakpoint, number> = {
+  xxl: 6,
+  xl: 5,
+  lg: 4,
+  md: 3,
+  sm: 2,
+  xs: 1,
+}
+export const BREAKPOINT_ORDER: DashboardBreakpoint[] = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs']
 
 /**
  * Altura padrão (em linhas) de cada card quando expandido. Cards de conteúdo
@@ -52,6 +70,8 @@ function tilesFor(ids: string[], cols: number): DashboardTile[] {
 /** Layout padrão (todos os breakpoints) derivado da ordem do registro. */
 export function defaultLayouts(ids: string[]): Record<DashboardBreakpoint, DashboardTile[]> {
   return {
+    xxl: tilesFor(ids, COLS.xxl),
+    xl: tilesFor(ids, COLS.xl),
     lg: tilesFor(ids, COLS.lg),
     md: tilesFor(ids, COLS.md),
     sm: tilesFor(ids, COLS.sm),

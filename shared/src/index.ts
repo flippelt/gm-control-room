@@ -529,7 +529,7 @@ export type RandomTableLibrary = RandomTable[]
 // ===================== Layout do painel do mestre =====================
 
 /** Breakpoints do dashboard do Control, do maior pro menor. */
-export type DashboardBreakpoint = 'lg' | 'md' | 'sm' | 'xs'
+export type DashboardBreakpoint = 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
 
 /**
  * Posição/tamanho de um card no grid, por breakpoint. Espelha o formato do

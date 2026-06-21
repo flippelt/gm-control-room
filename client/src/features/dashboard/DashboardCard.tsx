@@ -1,29 +1,19 @@
-import { forwardRef, type HTMLAttributes } from 'react'
 import type { CardDef } from './types'
 
-interface DashboardCardProps extends HTMLAttributes<HTMLDivElement> {
+interface DashboardCardProps {
   card: CardDef
   collapsed: boolean
   onToggleCollapse: (id: string) => void
 }
 
 /**
- * Card do painel: cabeçalho (= handle de arraste, classe `.card__head`) com
- * título, ação opcional e botão de minimizar. Quando minimizado, só o título
- * aparece. Encaminha a ref e TODAS as props que o react-grid-layout injeta
- * (style de posição, onMouseDown/onTouchEnd do drag, e o resize handle como
- * filho) — sem isso o arraste/resize não funciona.
+ * Conteúdo de um card do painel. Vai DENTRO do `<div>` que o react-grid-layout
+ * controla (ver `Dashboard`), então não precisa encaminhar props de drag — o
+ * cabeçalho (`.card__head`) é o handle e os botões levam `.no-drag`.
  */
-export const DashboardCard = forwardRef<HTMLDivElement, DashboardCardProps>(function DashboardCard(
-  { card, collapsed, onToggleCollapse, className, children, ...rest },
-  ref,
-) {
+export function DashboardCard({ card, collapsed, onToggleCollapse }: DashboardCardProps) {
   return (
-    <div
-      ref={ref}
-      className={`card card--dashboard${collapsed ? ' card--collapsed' : ''} ${className ?? ''}`}
-      {...rest}
-    >
+    <div className={`card card--dashboard${collapsed ? ' card--collapsed' : ''}`}>
       <div className="card__head">
         <h2 title={card.title}>{card.title}</h2>
         <div className="card__head-actions no-drag">
@@ -40,8 +30,6 @@ export const DashboardCard = forwardRef<HTMLDivElement, DashboardCardProps>(func
         </div>
       </div>
       {!collapsed && <div className="card__body">{card.body}</div>}
-      {/* react-grid-layout injeta o resize handle aqui via children. */}
-      {children}
     </div>
   )
-})
+}

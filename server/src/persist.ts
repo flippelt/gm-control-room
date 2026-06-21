@@ -175,7 +175,7 @@ export function saveTables(tables: RandomTableLibrary): void {
   }, 500)
 }
 
-const BREAKPOINTS: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
+const BREAKPOINTS: DashboardBreakpoint[] = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs']
 // Teto defensivo: nenhum dashboard real chega perto disso, mas o layout vem
 // do cliente e precisa de limite.
 const LAYOUT_TILES_CAP = 100
