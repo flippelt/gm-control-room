@@ -526,6 +526,35 @@ export interface RandomTable {
 
 export type RandomTableLibrary = RandomTable[]
 
+// ===================== Layout do painel do mestre =====================
+
+/** Breakpoints do dashboard do Control, do maior pro menor. */
+export type DashboardBreakpoint = 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
+
+/**
+ * Posição/tamanho de um card no grid, por breakpoint. Espelha o formato do
+ * `react-grid-layout` (`i` = id do card, `x`/`y` em colunas/linhas, `w`/`h`
+ * em unidades de grid).
+ */
+export interface DashboardTile {
+  i: string
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/**
+ * Layout do painel do mestre (Control). É GLOBAL e do lado do GM apenas — a
+ * tela dos jogadores (`/display`) não usa cards. Persiste em `.layout.json`
+ * pra seguir o mestre entre dispositivos. `collapsed` lista os ids de cards
+ * minimizados (só o título visível).
+ */
+export interface DashboardLayout {
+  layouts: Record<DashboardBreakpoint, DashboardTile[]>
+  collapsed: string[]
+}
+
 // ===================== Estado e eventos da sessão =====================
 
 export interface SessionState {
@@ -578,6 +607,12 @@ export interface SessionState {
    * Tabelas aleatórias do mestre (global). Persiste em `.tables.json`.
    */
   tables: RandomTableLibrary
+  /**
+   * Layout do painel do mestre (posições + cards minimizados). Global, só do
+   * lado do GM; persiste em `.layout.json`. `null` quando ainda não foi
+   * personalizado — o cliente usa o layout padrão derivado do registro.
+   */
+  layout: DashboardLayout | null
 }
 
 /** Eventos emitidos pelo servidor para os clientes. */
@@ -714,6 +749,14 @@ export interface ClientToServerEvents {
   updateTable: (id: string, patch: { name?: string; entries?: string[] }) => void
   /** Remove uma tabela. */
   deleteTable: (id: string) => void
+
+  // --- Layout do painel do mestre ---
+  /**
+   * Salva o layout do dashboard do Control (posições + minimizados). Global e
+   * do lado do GM; o servidor saneia e persiste em `.layout.json`. Passar
+   * `null` reseta pro padrão.
+   */
+  setLayout: (layout: DashboardLayout | null) => void
 }
 
 // Re-export do importer pra que o server e o client peguem por uma única

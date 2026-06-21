@@ -2,6 +2,12 @@ node_modules
 dist
 *.local
 .env
+# Estado global gerado em runtime pelo servidor (não versionar).
 .session.json
+.creatures.json
+.encounters.json
+.scene-music.json
+.tables.json
+.layout.json
 .DS_Store
 npm-debug.log*

@@ -44,6 +44,9 @@ vi.mock('./persist.js', () => ({
   saveSceneMusic: vi.fn(),
   loadTables: () => [],
   saveTables: vi.fn(),
+  loadLayout: () => null,
+  saveLayout: vi.fn(),
+  sanitizeLayout: (x: unknown) => x,
 }))
 
 import { createSession } from './session'

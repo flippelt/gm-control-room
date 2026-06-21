@@ -31,20 +31,17 @@ body {
   gap: 20px;
 }
 
-/* Cards empilham no celular; viram grid responsivo no tablet/desktop. */
+/* Painel arrastável: o react-grid-layout posiciona os cards em colunas
+   (6/5/4/3/2/1 conforme a largura). O container é só o contexto de posição. */
 .control__cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  position: relative;
 }
 
+/* O nº de colunas segue a LARGURA do container (o RGL mede o `.control`), então
+   o container alarga em telas maiores pra liberar mais colunas — até ultrawide. */
 @media (min-width: 760px) {
   .control {
     max-width: 1100px;
-  }
-  .control__cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
   }
 }
 
@@ -52,8 +49,17 @@ body {
   .control {
     max-width: 1320px;
   }
-  .control__cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (min-width: 1600px) {
+  .control {
+    max-width: 1640px;
+  }
+}
+
+@media (min-width: 2100px) {
+  .control {
+    max-width: min(2480px, 96vw);
   }
 }
 
@@ -202,6 +208,79 @@ button:hover {
 
 .card__head h2 {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Painel arrastável (dashboard) ---------- */
+
+/* O RGL dá largura/altura inline ao wrapper `.grid-item`; o card preenche ele,
+   o corpo rola e o cabeçalho fica fixo. */
+.grid-item {
+  height: 100%;
+}
+
+.card--dashboard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* O cabeçalho é o handle de arraste. */
+.card--dashboard .card__head {
+  cursor: grab;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.card--dashboard .card__head:active {
+  cursor: grabbing;
+}
+
+.card--dashboard .card__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Minimizado: o corpo não é renderizado; o cabeçalho perde a margem inferior. */
+.card--collapsed .card__head {
+  margin-bottom: 0;
+}
+
+.card__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.card__collapse {
+  min-height: 0;
+  padding: 4px 9px;
+  line-height: 1;
+  font-size: 0.85rem;
+}
+
+.dashboard-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+/* Sombra-alvo enquanto arrasta. */
+.react-grid-item.react-grid-placeholder {
+  background: #2d2d8a;
+  opacity: 0.25;
+  border-radius: 12px;
+}
+
+/* Pega de resize mais visível no tema escuro. */
+.react-grid-item > .react-resizable-handle::after {
+  border-right-color: #5a5a72;
+  border-bottom-color: #5a5a72;
 }
 
 .btn-ghost {
