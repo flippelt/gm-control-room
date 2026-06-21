@@ -11,7 +11,7 @@ describe('sanitizeLayout', () => {
   it('preenche todos os breakpoints, mesmo ausentes', () => {
     const out = sanitizeLayout({ layouts: { lg: [] } })
     expect(out).not.toBeNull()
-    expect(Object.keys(out!.layouts).sort()).toEqual(['lg', 'md', 'sm', 'xs'])
+    expect(Object.keys(out!.layouts).sort()).toEqual(['lg', 'md', 'sm', 'xl', 'xs', 'xxl'])
     expect(out!.collapsed).toEqual([])
   })
 
