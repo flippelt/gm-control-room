@@ -5,6 +5,7 @@ import type {
   CampaignSummary,
   Clock,
   CreatureLibrary,
+  DashboardLayout,
   DiceRoll,
   EncounterLibrary,
   Lighting,
@@ -33,6 +34,7 @@ interface SessionStore {
   encounters: EncounterLibrary
   sceneMusic: Record<string, SceneMusic>
   tables: RandomTableLibrary
+  layout: DashboardLayout | null
   connected: boolean
 }
 
@@ -53,6 +55,7 @@ export const useSession = create<SessionStore>(() => ({
   encounters: [],
   sceneMusic: {},
   tables: [],
+  layout: null,
   connected: false,
 }))
 
@@ -74,6 +77,7 @@ socket.on('state', (state: SessionState) =>
     encounters: state.encounters ?? [],
     sceneMusic: state.sceneMusic ?? {},
     tables: state.tables ?? [],
+    layout: state.layout ?? null,
   }),
 )
 socket.on('campaigns', (list: CampaignSummary[]) => useSession.setState({ campaigns: list }))

@@ -17,6 +17,8 @@ import { ClocksPanel } from '../features/tools/ClocksPanel'
 import { PartyResourcesPanel } from '../features/tools/PartyResourcesPanel'
 import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
+import { Dashboard } from '../features/dashboard/Dashboard'
+import type { CardDef } from '../features/dashboard/types'
 
 const TREATMENT_LABEL: Record<string, string> = {
   text: 'texto',
@@ -43,6 +45,143 @@ export function Control() {
   const rollHistory = useSession((s) => s.rollHistory)
   const system = useActiveSystem()
   const [editorMode, setEditorMode] = useState<'closed' | 'edit' | 'create'>('closed')
+
+  // Registro de cards do painel. A ordem aqui define o layout padrão; o GM
+  // rearranja/minimiza e o resultado persiste no servidor (global).
+  const cards: CardDef[] = campaign
+    ? [
+        {
+          id: 'campaign',
+          title: campaign.title,
+          body: (
+            <p className="muted">
+              Gênero: <strong>{campaign.genre}</strong> · Época:{' '}
+              <strong>{campaign.era.label ?? campaign.era.startYear}</strong>
+            </p>
+          ),
+        },
+        {
+          id: 'scenes',
+          title: 'Cenas',
+          headerAction: (
+            <button
+              className="btn-ghost no-drag"
+              onClick={() => socket.emit('setActiveScene', null)}
+            >
+              Limpar tela
+            </button>
+          ),
+          body: (
+            <div className="scenes">
+              {campaign.scenes.map((scene) => {
+                const allowed = isTreatmentAllowed(scene.treatment.kind, campaign)
+                const reason = treatmentBlockedReason(scene.treatment.kind, campaign)
+                const active = scene.id === activeSceneId
+                return (
+                  <button
+                    key={scene.id}
+                    className={
+                      'scene-btn' +
+                      (active ? ' scene-btn--active' : '') +
+                      (allowed ? '' : ' scene-btn--blocked')
+                    }
+                    disabled={!allowed}
+                    title={reason ?? ''}
+                    onClick={() => socket.emit('setActiveScene', scene.id)}
+                  >
+                    <span className="scene-btn__name">{scene.name}</span>
+                    <span className="scene-btn__kind">
+                      {TREATMENT_LABEL[scene.treatment.kind] ?? scene.treatment.kind}
+                      {!allowed && ' · bloqueado'}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          ),
+        },
+        {
+          id: 'lighting',
+          title: 'Iluminação / clima',
+          body: (
+            <>
+              <p className="field-label">Lavagem de cor</p>
+              <div className="washes">
+                {WASH_PRESETS.map((preset) => (
+                  <button
+                    key={preset.label}
+                    className={
+                      'wash-btn' +
+                      (lighting.colorWash === preset.color ? ' wash-btn--active' : '')
+                    }
+                    style={preset.color ? { background: preset.color } : undefined}
+                    onClick={() => socket.emit('setLighting', { colorWash: preset.color })}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="field-label">
+                Intensidade: {Math.round(lighting.intensity * 100)}%
+              </p>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(lighting.intensity * 100)}
+                onChange={(e) =>
+                  socket.emit('setLighting', { intensity: Number(e.target.value) / 100 })
+                }
+              />
+
+              <div className="toggles">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={lighting.alert}
+                    onChange={(e) => socket.emit('setLighting', { alert: e.target.checked })}
+                  />
+                  Alerta (pulso)
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={lighting.vignette}
+                    onChange={(e) => socket.emit('setLighting', { vignette: e.target.checked })}
+                  />
+                  Vinheta
+                </label>
+              </div>
+            </>
+          ),
+        },
+        { id: 'dice', title: 'Dados', body: <DiceRoller /> },
+        {
+          id: 'roll-history',
+          title: 'Histórico de rolagens',
+          body: <RollHistory rolls={rollHistory.slice(0, 20)} />,
+        },
+        { id: 'tracker', title: 'Iniciativa / combate', body: <Tracker /> },
+        { id: 'clocks', title: 'Clocks / progresso', body: <ClocksPanel /> },
+        ...(system?.partyResources && system.partyResources.length > 0
+          ? [
+              {
+                id: 'party-resources',
+                title: 'Recursos da party',
+                body: <PartyResourcesPanel />,
+              } satisfies CardDef,
+            ]
+          : []),
+        { id: 'npcgen', title: 'Gerar NPC', body: <NpcGenPanel /> },
+        { id: 'creatures', title: 'Biblioteca de criaturas', body: <CreaturesPanel /> },
+        { id: 'encounters', title: 'Biblioteca de encontros', body: <EncounterLibraryPanel /> },
+        { id: 'tables', title: 'Tabelas aleatórias', body: <TablesPanel /> },
+        { id: 'spotify', title: 'Spotify', body: <SpotifyPanel /> },
+        { id: 'notes', title: 'Notas do mestre', body: <NotesPanel /> },
+        { id: 'shortcuts', title: 'Atalhos', body: <Shortcuts shortcuts={campaign.shortcuts} /> },
+      ]
+    : []
 
   return (
     <div className="control">
@@ -98,166 +237,7 @@ export function Control() {
         <p className="muted">Carregando campanha…</p>
       ) : (
         <>
-          <div className="control__cards">
-          <section className="card">
-            <h2>{campaign.title}</h2>
-            <p className="muted">
-              Gênero: <strong>{campaign.genre}</strong> · Época:{' '}
-              <strong>{campaign.era.label ?? campaign.era.startYear}</strong>
-            </p>
-          </section>
-
-          <section className="card">
-            <div className="card__head">
-              <h2>Cenas</h2>
-              <button className="btn-ghost" onClick={() => socket.emit('setActiveScene', null)}>
-                Limpar tela
-              </button>
-            </div>
-
-            <div className="scenes">
-              {campaign.scenes.map((scene) => {
-                const allowed = isTreatmentAllowed(scene.treatment.kind, campaign)
-                const reason = treatmentBlockedReason(scene.treatment.kind, campaign)
-                const active = scene.id === activeSceneId
-                return (
-                  <button
-                    key={scene.id}
-                    className={
-                      'scene-btn' +
-                      (active ? ' scene-btn--active' : '') +
-                      (allowed ? '' : ' scene-btn--blocked')
-                    }
-                    disabled={!allowed}
-                    title={reason ?? ''}
-                    onClick={() => socket.emit('setActiveScene', scene.id)}
-                  >
-                    <span className="scene-btn__name">{scene.name}</span>
-                    <span className="scene-btn__kind">
-                      {TREATMENT_LABEL[scene.treatment.kind] ?? scene.treatment.kind}
-                      {!allowed && ' · bloqueado'}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-
-          <section className="card">
-            <h2>Iluminação / clima</h2>
-
-            <p className="field-label">Lavagem de cor</p>
-            <div className="washes">
-              {WASH_PRESETS.map((preset) => (
-                <button
-                  key={preset.label}
-                  className={
-                    'wash-btn' +
-                    (lighting.colorWash === preset.color ? ' wash-btn--active' : '')
-                  }
-                  style={preset.color ? { background: preset.color } : undefined}
-                  onClick={() => socket.emit('setLighting', { colorWash: preset.color })}
-                >
-                  {preset.label}
-                </button>
-              ))}
-            </div>
-
-            <p className="field-label">
-              Intensidade: {Math.round(lighting.intensity * 100)}%
-            </p>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={Math.round(lighting.intensity * 100)}
-              onChange={(e) =>
-                socket.emit('setLighting', { intensity: Number(e.target.value) / 100 })
-              }
-            />
-
-            <div className="toggles">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={lighting.alert}
-                  onChange={(e) => socket.emit('setLighting', { alert: e.target.checked })}
-                />
-                Alerta (pulso)
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={lighting.vignette}
-                  onChange={(e) => socket.emit('setLighting', { vignette: e.target.checked })}
-                />
-                Vinheta
-              </label>
-            </div>
-          </section>
-
-          <section className="card">
-            <h2>Dados</h2>
-            <DiceRoller />
-          </section>
-
-          <section className="card">
-            <h2>Histórico de rolagens</h2>
-            <RollHistory rolls={rollHistory.slice(0, 20)} />
-          </section>
-
-          <section className="card">
-            <h2>Iniciativa / combate</h2>
-            <Tracker />
-          </section>
-
-          <section className="card">
-            <h2>Clocks / progresso</h2>
-            <ClocksPanel />
-          </section>
-
-          {system?.partyResources && system.partyResources.length > 0 && (
-            <section className="card">
-              <h2>Recursos da party</h2>
-              <PartyResourcesPanel />
-            </section>
-          )}
-
-          <section className="card">
-            <h2>Gerar NPC</h2>
-            <NpcGenPanel />
-          </section>
-
-          <section className="card">
-            <h2>Biblioteca de criaturas</h2>
-            <CreaturesPanel />
-          </section>
-
-          <section className="card">
-            <h2>Biblioteca de encontros</h2>
-            <EncounterLibraryPanel />
-          </section>
-
-          <section className="card">
-            <h2>Tabelas aleatórias</h2>
-            <TablesPanel />
-          </section>
-
-          <section className="card">
-            <h2>Spotify</h2>
-            <SpotifyPanel />
-          </section>
-
-          <section className="card">
-            <h2>Notas do mestre</h2>
-            <NotesPanel />
-          </section>
-
-          <section className="card">
-            <h2>Atalhos</h2>
-            <Shortcuts shortcuts={campaign.shortcuts} />
-          </section>
-          </div>
+          <Dashboard cards={cards} />
 
           <p className="hint">
             Abra a{' '}

@@ -18,11 +18,14 @@ import { listCampaigns, loadCampaign, loadCampaignById, saveCampaignFile } from 
 import {
   loadCreatures,
   loadEncounters,
+  loadLayout,
   loadPersisted,
   loadSceneMusic,
   loadTables,
+  sanitizeLayout,
   saveCreatures,
   saveEncounters,
+  saveLayout,
   saveSceneMusic,
   savePersisted,
   saveTables,
@@ -69,6 +72,7 @@ export function createSession(io: IO) {
     encounters: loadEncounters(),
     sceneMusic: loadSceneMusic(campaign.id),
     tables: loadTables(),
+    layout: loadLayout(),
   }
 
   const CREATURE_LIBRARY_CAP = 500
@@ -536,6 +540,14 @@ export function createSession(io: IO) {
       if (next.length === state.tables.length) return
       state.tables = next
       saveTables(state.tables)
+      broadcast()
+    })
+
+    // --- Layout do painel do mestre (global, persiste em .layout.json) ---
+    socket.on('setLayout', (layout) => {
+      // null = reset pro padrão; objeto = saneia e persiste.
+      state.layout = layout === null ? null : sanitizeLayout(layout)
+      saveLayout(state.layout)
       broadcast()
     })
 

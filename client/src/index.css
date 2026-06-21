@@ -31,29 +31,21 @@ body {
   gap: 20px;
 }
 
-/* Cards empilham no celular; viram grid responsivo no tablet/desktop. */
+/* Painel arrastável: o react-grid-layout posiciona os cards em colunas
+   (4/3/2/1 conforme a largura). O container é só o contexto de posição. */
 .control__cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  position: relative;
 }
 
 @media (min-width: 760px) {
   .control {
     max-width: 1100px;
   }
-  .control__cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
 }
 
 @media (min-width: 1200px) {
   .control {
     max-width: 1320px;
-  }
-  .control__cards {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -202,6 +194,73 @@ button:hover {
 
 .card__head h2 {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Painel arrastável (dashboard) ---------- */
+
+/* O RGL dá largura/altura inline ao card; o corpo rola, o cabeçalho fica fixo. */
+.card--dashboard {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* O cabeçalho é o handle de arraste. */
+.card--dashboard .card__head {
+  cursor: grab;
+  user-select: none;
+  flex: 0 0 auto;
+}
+
+.card--dashboard .card__head:active {
+  cursor: grabbing;
+}
+
+.card--dashboard .card__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Minimizado: o corpo não é renderizado; o cabeçalho perde a margem inferior. */
+.card--collapsed .card__head {
+  margin-bottom: 0;
+}
+
+.card__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.card__collapse {
+  min-height: 0;
+  padding: 4px 9px;
+  line-height: 1;
+  font-size: 0.85rem;
+}
+
+.dashboard-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+/* Sombra-alvo enquanto arrasta. */
+.react-grid-item.react-grid-placeholder {
+  background: #2d2d8a;
+  opacity: 0.25;
+  border-radius: 12px;
+}
+
+/* Pega de resize mais visível no tema escuro. */
+.react-grid-item > .react-resizable-handle::after {
+  border-right-color: #5a5a72;
+  border-bottom-color: #5a5a72;
 }
 
 .btn-ghost {

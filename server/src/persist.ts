@@ -3,6 +3,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type {
   CreatureLibrary,
+  DashboardBreakpoint,
+  DashboardLayout,
+  DashboardTile,
   EncounterLibrary,
   RandomTableLibrary,
   SceneMusic,
@@ -26,6 +29,10 @@ const SCENE_MUSIC_FILE = path.resolve(__dirname, '../../.scene-music.json')
 
 // Tabelas aleatórias — global, mesma lógica das criaturas/encontros.
 const TABLES_FILE = path.resolve(__dirname, '../../.tables.json')
+
+// Layout do painel do mestre — global e só do lado do GM (a tela dos
+// jogadores não tem cards). Mesma lógica de arquivo separado.
+const LAYOUT_FILE = path.resolve(__dirname, '../../.layout.json')
 
 interface Persisted {
   campaignId: string
@@ -165,5 +172,80 @@ export function saveTables(tables: RandomTableLibrary): void {
   if (tablesTimer) clearTimeout(tablesTimer)
   tablesTimer = setTimeout(() => {
     fs.writeFile(TABLES_FILE, JSON.stringify(tables, null, 2), () => {})
+  }, 500)
+}
+
+const BREAKPOINTS: DashboardBreakpoint[] = ['lg', 'md', 'sm', 'xs']
+// Teto defensivo: nenhum dashboard real chega perto disso, mas o layout vem
+// do cliente e precisa de limite.
+const LAYOUT_TILES_CAP = 100
+
+function finiteInt(v: unknown, fallback = 0): number {
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.trunc(n) : fallback
+}
+
+/** Saneia uma lista de tiles vinda do cliente (descarta entradas inválidas). */
+function sanitizeTiles(raw: unknown): DashboardTile[] {
+  if (!Array.isArray(raw)) return []
+  const tiles: DashboardTile[] = []
+  for (const item of raw.slice(0, LAYOUT_TILES_CAP)) {
+    if (!item || typeof item !== 'object') continue
+    const r = item as Record<string, unknown>
+    if (typeof r.i !== 'string' || !r.i) continue
+    tiles.push({
+      i: r.i.slice(0, 80),
+      x: Math.max(0, finiteInt(r.x)),
+      y: Math.max(0, finiteInt(r.y)),
+      w: Math.max(1, finiteInt(r.w, 1)),
+      h: Math.max(1, finiteInt(r.h, 1)),
+    })
+  }
+  return tiles
+}
+
+/**
+ * Saneia um layout do dashboard vindo do cliente. Retorna `null` se o formato
+ * for irrecuperável (o cliente cai no layout padrão).
+ */
+export function sanitizeLayout(raw: unknown): DashboardLayout | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const layoutsRaw = (r.layouts && typeof r.layouts === 'object' ? r.layouts : {}) as Record<
+    string,
+    unknown
+  >
+  const layouts = {} as DashboardLayout['layouts']
+  for (const bp of BREAKPOINTS) layouts[bp] = sanitizeTiles(layoutsRaw[bp])
+  const collapsed = Array.isArray(r.collapsed)
+    ? r.collapsed
+        .filter((c): c is string => typeof c === 'string')
+        .map((c) => c.slice(0, 80))
+        .slice(0, LAYOUT_TILES_CAP)
+    : []
+  return { layouts, collapsed }
+}
+
+/** Carrega o layout do painel (`.layout.json`). `null` se ausente/corrompido. */
+export function loadLayout(): DashboardLayout | null {
+  try {
+    return sanitizeLayout(JSON.parse(fs.readFileSync(LAYOUT_FILE, 'utf-8')))
+  } catch {
+    return null
+  }
+}
+
+let layoutTimer: ReturnType<typeof setTimeout> | undefined
+
+/** Salva o layout do painel (debounce de 500ms). */
+export function saveLayout(layout: DashboardLayout | null): void {
+  if (layoutTimer) clearTimeout(layoutTimer)
+  layoutTimer = setTimeout(() => {
+    if (layout === null) {
+      // Reset: remove o arquivo pra voltar ao padrão derivado no cliente.
+      fs.rm(LAYOUT_FILE, { force: true }, () => {})
+      return
+    }
+    fs.writeFile(LAYOUT_FILE, JSON.stringify(layout, null, 2), () => {})
   }, 500)
 }
