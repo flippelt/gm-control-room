@@ -1,69 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="d20">
-  <!-- D20 vermelho estilizado. Triângulo central representa a face superior;
-       triângulos laterais representam as faces visíveis adjacentes. -->
-  <defs>
-    <linearGradient id="g-top" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e94545"/>
-      <stop offset="1" stop-color="#a02020"/>
-    </linearGradient>
-    <linearGradient id="g-left" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#7a1313"/>
-      <stop offset="1" stop-color="#c02828"/>
-    </linearGradient>
-    <linearGradient id="g-right" x1="1" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#7a1313"/>
-      <stop offset="1" stop-color="#c02828"/>
-    </linearGradient>
-  </defs>
+  <!-- D20 (icosaedro visto de frente): silhueta hexagonal com 10 faces
+       triangulares visíveis, sombreadas de cima (claras) p/ baixo (escuras),
+       e o "20" na face central. Fundo transparente (favicon / ícone SVG). -->
+  <g stroke="#3a0606" stroke-width="2.5" stroke-linejoin="round">
+    <!-- borda (rim) -->
+    <polygon points="74,151 256,46 256,150"  fill="#c93030"/>
+    <polygon points="256,46 438,151 256,150" fill="#d23434"/>
+    <polygon points="438,151 350,312 438,361" fill="#9c2222"/>
+    <polygon points="438,361 350,312 256,466" fill="#841c1c"/>
+    <polygon points="256,466 162,312 74,361"  fill="#841c1c"/>
+    <polygon points="74,361 162,312 74,151"   fill="#9c2222"/>
+    <!-- 2º anel (adjacentes ao centro) -->
+    <polygon points="438,151 256,150 350,312" fill="#b82a2a"/>
+    <polygon points="256,466 350,312 162,312" fill="#7a1818"/>
+    <polygon points="74,151 162,312 256,150"  fill="#b82a2a"/>
+    <!-- face central (o "20") -->
+    <polygon points="256,150 350,312 162,312" fill="#e23b3b"/>
+  </g>
 
-  <!-- Hexágono externo (silhueta do d20 visto em isométrico) -->
-  <polygon
-    points="256,32 472,160 472,352 256,480 40,352 40,160"
-    fill="#5a0a0a"
-    stroke="#240000"
-    stroke-width="6"
-    stroke-linejoin="round"
-  />
+  <!-- contorno externo do dado p/ definir a silhueta -->
+  <polygon points="256,46 438,151 438,361 256,466 74,361 74,151"
+    fill="none" stroke="#240000" stroke-width="6" stroke-linejoin="round"/>
 
-  <!-- Face superior central (triângulo) -->
-  <polygon
-    points="256,80 416,176 256,272 96,176"
-    fill="url(#g-top)"
-    stroke="#240000"
-    stroke-width="4"
-    stroke-linejoin="round"
-  />
-
-  <!-- Face inferior esquerda -->
-  <polygon
-    points="96,176 256,272 256,448 64,336"
-    fill="url(#g-left)"
-    stroke="#240000"
-    stroke-width="4"
-    stroke-linejoin="round"
-    opacity="0.92"
-  />
-
-  <!-- Face inferior direita -->
-  <polygon
-    points="416,176 256,272 256,448 448,336"
-    fill="url(#g-right)"
-    stroke="#240000"
-    stroke-width="4"
-    stroke-linejoin="round"
-    opacity="0.92"
-  />
-
-  <!-- "20" centralizado na face superior -->
-  <text
-    x="256"
-    y="200"
+  <!-- "20" na face central -->
+  <text x="256" y="266"
     font-family="Georgia, 'Times New Roman', serif"
-    font-size="120"
-    font-weight="700"
-    fill="#fff0d0"
-    text-anchor="middle"
-    dominant-baseline="middle"
-    style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);"
-  >20</text>
+    font-size="108" font-weight="700"
+    fill="#fff2d8" stroke="#5a0a0a" stroke-width="3" paint-order="stroke"
+    text-anchor="middle" dominant-baseline="middle">20</text>
 </svg>
