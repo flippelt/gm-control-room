@@ -13,7 +13,12 @@ export default defineConfig({
     // network-only (real-time).
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/d20.svg'],
+      includeAssets: [
+        'icons/d20.svg',
+        'icons/apple-touch-icon.png',
+        'icons/apple-touch-icon-192.png',
+        'icons/apple-touch-icon-512.png',
+      ],
       manifest: {
         name: 'GM Control Room — Display',
         short_name: 'GMCR Display',
@@ -26,16 +31,30 @@ export default defineConfig({
         background_color: '#0b0b0d',
         theme_color: '#5a0a0a',
         icons: [
+          // SVG escalável (navegadores que suportam) — iOS/Android ignoram.
           {
             src: '/icons/d20.svg',
             sizes: 'any',
             type: 'image/svg+xml',
             purpose: 'any',
           },
+          // PNGs com fundo opaco — exigidos por iOS e Android.
           {
-            src: '/icons/d20.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/icons/apple-touch-icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/apple-touch-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/apple-touch-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'maskable',
           },
         ],
