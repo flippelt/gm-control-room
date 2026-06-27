@@ -226,6 +226,20 @@ button:hover {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  /* Sem seleção de texto ao clicar/arrastar nos cards (o drag por header, e em
+     dev sob StrictMode o drag falha e viraria seleção). Campos de formulário
+     voltam a ser selecionáveis logo abaixo. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Conteúdo editável/selecionável continua selecionável (notas, inputs). */
+.card--dashboard input,
+.card--dashboard textarea,
+.card--dashboard select,
+.card--dashboard [contenteditable='true'] {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* O cabeçalho é o handle de arraste. */
@@ -237,6 +251,13 @@ button:hover {
 
 .card--dashboard .card__head:active {
   cursor: grabbing;
+}
+
+/* Header interno marcado como no-drag (ex.: controles de combate do Tracker)
+   não é alça de arraste — não deve sugerir "grab". */
+.card--dashboard .card__head.no-drag,
+.card--dashboard .card__head.no-drag:active {
+  cursor: default;
 }
 
 .card--dashboard .card__body {
