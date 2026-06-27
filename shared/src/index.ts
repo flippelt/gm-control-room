@@ -28,9 +28,12 @@ export type DisplayTreatmentKind = 'text' | 'color' | 'image' | 'crt'
  * - `typewriter`: papel datilografado com revelação caractere a caractere (épocas modernas/pulp).
  * - `scroll`: pergaminho que desenrola e revela o texto inteiro (fantasia/medieval).
  * - `terminal`: terminal CRT verde-fósforo char-by-char (sci-fi/cyber).
+ * - `sacred`: cartela sagrada — emblema radiante (halo + sunburst + estrela) sobre
+ *   ambiente de capela à luz de velas; 1ª linha = título, demais = subtítulo.
+ *   Só por override explícito (nunca derivado de genre/era).
  * - `auto` (padrão): deriva da campanha (genre + era).
  */
-export type TextVariant = 'typewriter' | 'scroll' | 'terminal' | 'auto'
+export type TextVariant = 'typewriter' | 'scroll' | 'terminal' | 'sacred' | 'auto'
 
 /** Como a cena é renderizada na tela dos jogadores. */
 export type DisplayTreatment =
