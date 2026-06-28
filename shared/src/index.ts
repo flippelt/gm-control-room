@@ -650,6 +650,8 @@ export interface ClientToServerEvents {
     total: number
     notes?: string[]
   }) => void
+  /** Limpa o histórico de rolagens (zera lastRoll e rollHistory). */
+  clearRolls: () => void
   addCombatant: (
     name: string,
     initiative: number,

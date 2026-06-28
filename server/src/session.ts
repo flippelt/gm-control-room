@@ -293,6 +293,11 @@ export function createSession(io: IO) {
       })
       broadcast()
     })
+    socket.on('clearRolls', () => {
+      state.lastRoll = null
+      state.rollHistory = []
+      broadcast()
+    })
     socket.on('addCombatant', (name, initiative, extras, hp, maxHp) => {
       tools.addCombatant(
         state.tracker,
