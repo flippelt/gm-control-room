@@ -180,7 +180,10 @@ export function Tracker() {
 
   return (
     <div>
-      <div className="card__head">
+      {/* `no-drag`: este header interno reutiliza `.card__head`, que é o
+          draggableHandle do dashboard. Sem isto, o react-grid-layout captura o
+          mousedown e engole os cliques dos botões de combate (#47). */}
+      <div className="card__head no-drag">
         <span className="muted">
           {tracker.active ? `Rodada ${tracker.round}` : 'Combate inativo'}
         </span>
