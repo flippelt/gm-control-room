@@ -160,6 +160,15 @@ export function Control() {
         {
           id: 'roll-history',
           title: 'Histórico de rolagens',
+          headerAction:
+            rollHistory.length > 0 ? (
+              <button
+                className="btn-ghost no-drag"
+                onClick={() => socket.emit('clearRolls')}
+              >
+                Limpar
+              </button>
+            ) : undefined,
           body: <RollHistory rolls={rollHistory.slice(0, 20)} />,
         },
         { id: 'tracker', title: 'Iniciativa / combate', body: <Tracker /> },

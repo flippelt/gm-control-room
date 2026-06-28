@@ -1923,7 +1923,11 @@ code {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.85);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-  transition: background 0.4s, box-shadow 0.4s;
+  transition: background 0.4s, box-shadow 0.4s, opacity 1.2s ease-in;
+}
+
+.dice-feed__row--fading {
+  opacity: 0;
 }
 
 .dice-feed__row--new {
