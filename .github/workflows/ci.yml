@@ -17,12 +17,12 @@ jobs:
       # resolve at install time. When @gmcr/srd-* are published to npm,
       # this can collapse back to a single checkout.
       - name: Checkout gm-control-room
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: gm-control-room
 
       - name: "Checkout gmcr-srd-systems (file: deps)"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: flippelt/gmcr-srd-systems
           path: gmcr-srd-systems
