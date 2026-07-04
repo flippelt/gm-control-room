@@ -1,6 +1,6 @@
 # GM Control Room
 
-[![CI](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml/badge.svg)](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml)
+[![CI](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml/badge.svg)](https://github.com/flippelt/gm-control-room/actions/workflows/ci.yml) [![Last commit](https://img.shields.io/github/last-commit/flippelt/gm-control-room)](https://github.com/flippelt/gm-control-room/commits)
 
 Painel de controle de sessão de RPG em tempo real. O mestre opera de qualquer dispositivo (iPad, Android, PC ou Mac) e controla uma **tela dos jogadores** (TV/projetor) — cenas, iluminação, áudio, Spotify, dados, tracker de combate e notas. Funciona offline na rede local.
 
