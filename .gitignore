@@ -5,6 +5,7 @@ dist
 # Estado global gerado em runtime pelo servidor (não versionar).
 .session.json
 .creatures.json
+.creatures/
 .encounters.json
 .scene-music.json
 .tables.json

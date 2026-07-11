@@ -16,10 +16,16 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // __dirname = server/{src,dist} → ../../ é a raiz do monorepo.
 const FILE = path.resolve(__dirname, '../../.session.json')
 
-// Biblioteca de criaturas vive num arquivo separado — é GLOBAL (não muda
+// Biblioteca de criaturas vive fora do .session.json — é GLOBAL (não muda
 // quando troca de campanha) e cresce ao longo do tempo. Ficar no .session.json
 // pioraria o tráfego de broadcast e o snapshot diff.
-const CREATURES_FILE = path.resolve(__dirname, '../../.creatures.json')
+//
+// É particionada POR SISTEMA: cada sistema (dnd5e-2024, wng, ...) tem seu
+// próprio arquivo em `.creatures/<sistema>.json`. Em memória continua um array
+// plano (cada entrada carrega `system`); a partição existe só no disco e na UI.
+const CREATURES_DIR = path.resolve(__dirname, '../../.creatures')
+// Arquivo único legado (pré-partição). Se existir, é migrado no 1º load.
+const LEGACY_CREATURES_FILE = path.resolve(__dirname, '../../.creatures.json')
 
 // Biblioteca de encontros — também global e persistente, mesma lógica.
 const ENCOUNTERS_FILE = path.resolve(__dirname, '../../.encounters.json')
@@ -85,27 +91,104 @@ export function savePersisted(state: SessionState): void {
 }
 
 /**
- * Carrega a biblioteca de criaturas do disco (`.creatures.json`).
- * Retorna `[]` se o arquivo não existir ou estiver corrompido.
+ * Deriva um nome de arquivo seguro pra biblioteca de um sistema. Sistemas vêm
+ * como slugs (`dnd5e-2024`, `wng`, `vampire-v5`), mas saneamos defensivamente
+ * pra nunca escapar do diretório.
  */
-export function loadCreatures(): CreatureLibrary {
+function systemFile(system: string): string {
+  const safe = system.toLowerCase().replace(/[^a-z0-9._-]/g, '_').slice(0, 80) || 'unknown'
+  return path.join(CREATURES_DIR, `${safe}.json`)
+}
+
+/** Lê um arquivo de biblioteca; `[]` se ausente/corrompido. */
+function readCreatureFile(file: string): CreatureLibrary {
   try {
-    const raw = fs.readFileSync(CREATURES_FILE, 'utf-8')
-    const data = JSON.parse(raw)
-    if (Array.isArray(data)) return data as CreatureLibrary
-    return []
+    const data = JSON.parse(fs.readFileSync(file, 'utf-8'))
+    return Array.isArray(data) ? (data as CreatureLibrary) : []
   } catch {
     return []
   }
 }
 
+/** Grava as bibliotecas particionadas por sistema (síncrono). */
+function writeCreaturesSync(creatures: CreatureLibrary): void {
+  fs.mkdirSync(CREATURES_DIR, { recursive: true })
+  const bySystem = new Map<string, CreatureLibrary>()
+  for (const c of creatures) {
+    const key = (c.system || 'unknown').slice(0, 80)
+    const list = bySystem.get(key)
+    if (list) list.push(c)
+    else bySystem.set(key, [c])
+  }
+  // Escreve o arquivo de cada sistema presente.
+  const wanted = new Set<string>()
+  for (const [system, list] of bySystem) {
+    const file = systemFile(system)
+    wanted.add(path.basename(file))
+    fs.writeFileSync(file, JSON.stringify(list, null, 2) + '\n')
+  }
+  // Remove arquivos de sistemas que ficaram sem criaturas (mantém o disco em sincronia).
+  try {
+    for (const name of fs.readdirSync(CREATURES_DIR)) {
+      if (name.endsWith('.json') && !wanted.has(name)) {
+        fs.rmSync(path.join(CREATURES_DIR, name), { force: true })
+      }
+    }
+  } catch {
+    /* diretório recém-criado ou vazio — nada a limpar */
+  }
+}
+
+/**
+ * Carrega a biblioteca global de criaturas, mesclando todas as partições
+ * `.creatures/<sistema>.json` num único array plano.
+ *
+ * Migração: se o arquivo único legado `.creatures.json` ainda existir, ele é
+ * incorporado, reescrito particionado por sistema e removido.
+ */
+export function loadCreatures(): CreatureLibrary {
+  const merged: CreatureLibrary = []
+  try {
+    for (const name of fs.readdirSync(CREATURES_DIR)) {
+      if (name.endsWith('.json')) merged.push(...readCreatureFile(path.join(CREATURES_DIR, name)))
+    }
+  } catch {
+    /* diretório ainda não existe */
+  }
+
+  // Migra o arquivo único legado, se houver.
+  let migrate = false
+  try {
+    if (fs.existsSync(LEGACY_CREATURES_FILE)) {
+      merged.push(...readCreatureFile(LEGACY_CREATURES_FILE))
+      migrate = true
+    }
+  } catch {
+    /* ignora */
+  }
+  if (migrate) {
+    writeCreaturesSync(merged)
+    try {
+      fs.rmSync(LEGACY_CREATURES_FILE, { force: true })
+    } catch {
+      /* ignora */
+    }
+  }
+
+  return merged
+}
+
 let creaturesTimer: ReturnType<typeof setTimeout> | undefined
 
-/** Salva a biblioteca (debounce de 500ms). */
+/** Salva as bibliotecas particionadas por sistema (debounce de 500ms). */
 export function saveCreatures(creatures: CreatureLibrary): void {
   if (creaturesTimer) clearTimeout(creaturesTimer)
   creaturesTimer = setTimeout(() => {
-    fs.writeFile(CREATURES_FILE, JSON.stringify(creatures, null, 2), () => {})
+    try {
+      writeCreaturesSync(creatures)
+    } catch {
+      /* falha de I/O não deve derrubar o servidor */
+    }
   }, 500)
 }
 

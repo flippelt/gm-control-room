@@ -7,9 +7,10 @@ import { useSession } from '../../store'
  * Painel de gerência da biblioteca de criaturas. Duas funções principais:
  *
  * 1. Importar do 5etools — cola o JSON de um monstro e o servidor parseia +
- *    persiste em `.creatures.json` (global, sobrevive a trocas de campanha).
- * 2. Listar e reutilizar — mostra todas as criaturas salvas, com botão pra
- *    despachar pro tracker como combatente (com iniciativa rolada).
+ *    persiste na biblioteca do sistema (global, particionada por sistema em
+ *    `.creatures/<sistema>.json`, sobrevive a trocas de campanha).
+ * 2. Listar e reutilizar — mostra a biblioteca do sistema em foco (default: o
+ *    da campanha ativa), com botão pra despachar pro tracker como combatente.
  *
  * O parsing acontece no server (validação + storage atômico); o cliente só
  * envia a string crua via socket.
@@ -23,22 +24,48 @@ export function CreaturesPanel() {
   const [selected, setSelected] = useState<string | null>(null)
   const [initiative, setInitiative] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // Biblioteca em foco. `null` = seguir o sistema da campanha ativa.
+  const [systemView, setSystemView] = useState<string | null>(null)
 
   const selectedEntry: CreatureLibraryEntry | undefined = useMemo(
     () => creatures.find((c) => c.id === selected),
     [creatures, selected],
   )
 
+  // Contagem por sistema (todas as bibliotecas globais existentes) + garante que
+  // o sistema da campanha ativa sempre apareça, mesmo com a biblioteca vazia.
+  const systemCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const c of creatures) counts.set(c.system, (counts.get(c.system) ?? 0) + 1)
+    if (campaignSystem && !counts.has(campaignSystem)) counts.set(campaignSystem, 0)
+    return counts
+  }, [creatures, campaignSystem])
+
+  const systems = useMemo(
+    () => [...systemCounts.keys()].sort((a, b) => a.localeCompare(b)),
+    [systemCounts],
+  )
+
+  // Sistema efetivamente exibido: o escolhido (se ainda existir), senão o da
+  // campanha, senão o primeiro disponível.
+  const activeSystem =
+    (systemView && systemCounts.has(systemView) ? systemView : null) ??
+    (campaignSystem && systemCounts.has(campaignSystem) ? campaignSystem : null) ??
+    systems[0] ??
+    null
+
+  const inSystem = useMemo(
+    () => creatures.filter((c) => c.system === activeSystem),
+    [creatures, activeSystem],
+  )
+
   const filtered = useMemo(() => {
     const q = filter.trim().toLowerCase()
-    if (!q) return creatures
-    return creatures.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.system.toLowerCase().includes(q) ||
-        (c.type ?? '').toLowerCase().includes(q),
+    if (!q) return inSystem
+    return inSystem.filter(
+      (c) => c.name.toLowerCase().includes(q) || (c.type ?? '').toLowerCase().includes(q),
     )
-  }, [creatures, filter])
+  }, [inSystem, filter])
 
   const importPaste = () => {
     setError(null)
@@ -113,12 +140,32 @@ export function CreaturesPanel() {
         <GenericCreatureForm system={campaignSystem ?? 'generic'} />
       )}
 
+      <div className="row" style={{ gap: 6, marginBottom: '0.5rem', alignItems: 'center' }}>
+        <label className="muted" style={{ fontSize: '0.85rem' }}>
+          Biblioteca:
+        </label>
+        <select
+          value={activeSystem ?? ''}
+          onChange={(e) => setSystemView(e.target.value || null)}
+          style={{ maxWidth: 200 }}
+          disabled={systems.length === 0}
+        >
+          {systems.length === 0 && <option value="">— nenhuma —</option>}
+          {systems.map((sys) => (
+            <option key={sys} value={sys}>
+              {sys} ({systemCounts.get(sys) ?? 0})
+              {sys === campaignSystem ? ' • campanha' : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div className="row" style={{ gap: 6, marginBottom: '0.5rem' }}>
         <input
           type="text"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder={`Filtrar (${creatures.length} salva${creatures.length === 1 ? '' : 's'})`}
+          placeholder={`Filtrar (${inSystem.length} salva${inSystem.length === 1 ? '' : 's'})`}
           style={{ flex: 1 }}
         />
       </div>
