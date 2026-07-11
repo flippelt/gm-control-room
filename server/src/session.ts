@@ -75,7 +75,7 @@ export function createSession(io: IO) {
     layout: loadLayout(),
   }
 
-  const CREATURE_LIBRARY_CAP = 500
+  const CREATURE_LIBRARY_CAP = 500 // por sistema (biblioteca é particionada por sistema)
   const ENCOUNTER_LIBRARY_CAP = 300
   const ENCOUNTER_COMBATANTS_CAP = 40
   const TABLE_LIBRARY_CAP = 300
@@ -93,6 +93,23 @@ export function createSession(io: IO) {
 
   function persistCreatures() {
     saveCreatures(state.creatures)
+  }
+
+  /**
+   * Aplica o teto de biblioteca POR SISTEMA. A ordem geral (mais nova primeiro)
+   * é preservada; para cada sistema, mantém só as `CREATURE_LIBRARY_CAP` mais
+   * recentes, descartando as mais antigas daquele sistema.
+   */
+  function capCreaturesPerSystem(list: CreatureLibraryEntry[]): CreatureLibraryEntry[] {
+    const counts = new Map<string, number>()
+    const out: CreatureLibraryEntry[] = []
+    for (const c of list) {
+      const n = counts.get(c.system) ?? 0
+      if (n >= CREATURE_LIBRARY_CAP) continue
+      counts.set(c.system, n + 1)
+      out.push(c)
+    }
+    return out
   }
 
   /** Saneia um combatente salvo (limites defensivos no limite de confiança). */
@@ -390,7 +407,7 @@ export function createSession(io: IO) {
       state.notes = text.slice(0, 16384)
       broadcast()
     })
-    // --- Biblioteca de criaturas (global, persiste em .creatures.json) ---
+    // --- Biblioteca de criaturas (global, particionada por sistema em .creatures/) ---
     socket.on('importCreature5e', (rawJson, systemOverride) => {
       if (typeof rawJson !== 'string' || rawJson.length === 0) return
       if (rawJson.length > 200_000) return // ~200KB de JSON é um teto generoso
@@ -409,7 +426,7 @@ export function createSession(io: IO) {
         id: crypto.randomUUID(),
         createdAt: Date.now(),
       }
-      state.creatures = [entry, ...state.creatures].slice(0, CREATURE_LIBRARY_CAP)
+      state.creatures = capCreaturesPerSystem([entry, ...state.creatures])
       persistCreatures()
       broadcast()
     })
@@ -425,7 +442,7 @@ export function createSession(io: IO) {
         id: crypto.randomUUID(),
         createdAt: Date.now(),
       }
-      state.creatures = [stored, ...state.creatures].slice(0, CREATURE_LIBRARY_CAP)
+      state.creatures = capCreaturesPerSystem([stored, ...state.creatures])
       persistCreatures()
       broadcast()
     })

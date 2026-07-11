@@ -590,9 +590,10 @@ export interface SessionState {
   /** Notas livres do mestre (markdown leve, persiste com a sessão). */
   notes: string
   /**
-   * Biblioteca de criaturas salvas (NPCs/monstros). Persiste num arquivo
-   * global (`.creatures.json`), separado de campanha — pra que o mestre
-   * possa reaproveitar a Lich de uma sessão na próxima.
+   * Biblioteca de criaturas salvas (NPCs/monstros). Global e separada de
+   * campanha — pra que o mestre reaproveite a Lich de uma sessão na próxima.
+   * Em memória é um array plano (cada entrada tem `system`); no disco é
+   * particionada por sistema em `.creatures/<sistema>.json`.
    */
   creatures: CreatureLibrary
   /**
