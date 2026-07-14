@@ -2655,6 +2655,17 @@ body.skin--neon {
   background: #ff6b6b;
   border-color: #ff6b6b;
 }
+/* Contador de Medo (Daggerheart) — tema caveira: pips carmesim/osso. */
+.clk--skull .clk__pip {
+  border-color: #c0392b;
+}
+.clk--skull .clk__pip--on {
+  background: #c0392b;
+  border-color: #c0392b;
+}
+.clk--skull .clk__name {
+  color: #e8c9c0;
+}
 
 /* ===================== Recursos de party (pools de sessão do sistema) ===================== */
 

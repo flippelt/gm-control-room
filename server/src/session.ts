@@ -359,11 +359,12 @@ export function createSession(io: IO) {
     })
 
     // --- Clocks / contadores de progresso ---
-    socket.on('addClock', (name, segments) => {
+    socket.on('addClock', (name, segments, icon) => {
       state.clocks = tools.addClock(
         state.clocks,
         typeof name === 'string' ? name : '',
         toFiniteInt(segments),
+        icon === 'skull' ? 'skull' : undefined,
       )
       broadcast()
     })
@@ -378,6 +379,7 @@ export function createSession(io: IO) {
         if (patch.color === null || patch.color === '') clean.color = undefined
         else if (isSafeCssColor(patch.color)) clean.color = patch.color
       }
+      if (patch.icon !== undefined) clean.icon = patch.icon === 'skull' ? 'skull' : undefined
       state.clocks = tools.updateClock(state.clocks, id, clean)
       broadcast()
     })

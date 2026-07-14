@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import type { Clock, Combatant, DiceRoll, Tracker } from '@gmcr/shared'
+import type { Clock, ClockIcon, Combatant, DiceRoll, Tracker } from '@gmcr/shared'
 import { CLOCK_MAX_SEGMENTS, CLOCK_MIN_SEGMENTS, parseDiceNotation } from '@gmcr/shared'
 
 const clampInt = (n: number, lo: number, hi: number) =>
@@ -117,22 +117,33 @@ export function clearCombat(tracker: Tracker): void {
 
 const clampSegments = (n: number) => clampInt(n, CLOCK_MIN_SEGMENTS, CLOCK_MAX_SEGMENTS)
 
+/** Só aceita ícones conhecidos; 'ring' (default) volta como undefined. */
+const sanitizeIcon = (icon: unknown): ClockIcon | undefined =>
+  icon === 'skull' ? 'skull' : undefined
+
 /** Cria um clock e devolve a nova lista (estilo funcional). */
-export function addClock(clocks: Clock[], name: string, segments: number): Clock[] {
+export function addClock(
+  clocks: Clock[],
+  name: string,
+  segments: number,
+  icon?: ClockIcon,
+): Clock[] {
+  const sanitized = sanitizeIcon(icon)
   const clock: Clock = {
     id: crypto.randomUUID(),
     name: (name ?? '').slice(0, 60) || 'Relógio',
     segments: clampSegments(segments),
     filled: 0,
+    ...(sanitized ? { icon: sanitized } : {}),
   }
   return [...clocks, clock]
 }
 
-/** Atualiza um clock (nome/segmentos/preenchidos/cor). Devolve a nova lista. */
+/** Atualiza um clock (nome/segmentos/preenchidos/cor/ícone). Devolve a nova lista. */
 export function updateClock(
   clocks: Clock[],
   id: string,
-  patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color'>>,
+  patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color' | 'icon'>>,
 ): Clock[] {
   return clocks.map((c) => {
     if (c.id !== id) return c
@@ -143,6 +154,7 @@ export function updateClock(
     if (patch.filled !== undefined) next.filled = clampInt(patch.filled, 0, next.segments)
     else next.filled = clampInt(next.filled, 0, next.segments)
     if (patch.color !== undefined) next.color = patch.color || undefined
+    if (patch.icon !== undefined) next.icon = sanitizeIcon(patch.icon)
     return next
   })
 }
