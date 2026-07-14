@@ -16,11 +16,20 @@ export function ClocksPanel() {
   const clocks = useSession((s) => s.clocks)
   const [name, setName] = useState('')
   const [segments, setSegments] = useState<number>(6)
+  const [skull, setSkull] = useState(false)
 
   const add = () => {
-    socket.emit('addClock', name.trim() || 'Relógio', segments)
+    socket.emit(
+      'addClock',
+      name.trim() || (skull ? 'Medo' : 'Relógio'),
+      segments,
+      skull ? 'skull' : undefined,
+    )
     setName('')
   }
+
+  /** Atalho: contador de Medo (Daggerheart) — caveira, 12 segmentos. */
+  const addFear = () => socket.emit('addClock', 'Medo', 12, 'skull')
 
   // Clicar no segmento i: preenche até i+1; clicar no último cheio esvazia 1.
   const setFilled = (id: string, current: number, i: number) => {
@@ -42,7 +51,19 @@ export function ClocksPanel() {
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && add()}
         />
+        <button
+          type="button"
+          className={'clocks__preset' + (skull ? ' clocks__preset--on' : '')}
+          title="Ícone de caveira (ex.: contador de Medo)"
+          aria-pressed={skull}
+          onClick={() => setSkull((v) => !v)}
+        >
+          💀
+        </button>
         <button onClick={add}>+ clock</button>
+        <button type="button" title="Contador de Medo (Daggerheart): caveira, 12" onClick={addFear}>
+          + Medo
+        </button>
       </div>
 
       <div className="row" style={{ gap: 6, alignItems: 'center' }}>
@@ -74,7 +95,10 @@ export function ClocksPanel() {
         clocks.map((c) => (
           <div className="clock-row" key={c.id}>
             <div className="clock-row__head">
-              <span className="clock-row__name">{c.name}</span>
+              <span className="clock-row__name">
+                {c.icon === 'skull' && <span aria-hidden="true">💀 </span>}
+                {c.name}
+              </span>
               <span className="muted clock-row__count">{c.filled}/{c.segments}</span>
               <span className="spacer" />
               <button

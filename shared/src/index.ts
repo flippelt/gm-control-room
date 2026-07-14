@@ -393,6 +393,12 @@ export const STATUS_PRESETS = [
  * Candela Obscura e Daggerheart). Um anel de `segments` que enche conforme a
  * tensão/contagem avança. Útil pra ameaças, contagens regressivas, projetos.
  */
+/**
+ * Ícone/motivo visual do clock. `ring` (padrão) = anel de progresso clássico;
+ * `skull` = caveira (ex.: contador de Medo do Daggerheart).
+ */
+export type ClockIcon = 'ring' | 'skull'
+
 export interface Clock {
   id: string
   name: string
@@ -402,6 +408,8 @@ export interface Clock {
   filled: number
   /** Cor CSS opcional do anel (sanitizada no servidor). */
   color?: string
+  /** Motivo visual (default 'ring'). 'skull' = caveira (contador de Medo). */
+  icon?: ClockIcon
 }
 
 /** Tamanhos comuns de clock pra UI. */
@@ -670,12 +678,12 @@ export interface ClientToServerEvents {
   clearCombat: () => void
 
   // --- Clocks / contadores de progresso ---
-  /** Cria um clock com nome e nº de segmentos. */
-  addClock: (name: string, segments: number) => void
-  /** Atualiza nome/segmentos/preenchidos/cor de um clock. */
+  /** Cria um clock com nome, nº de segmentos e ícone opcional ('ring'|'skull'). */
+  addClock: (name: string, segments: number, icon?: ClockIcon) => void
+  /** Atualiza nome/segmentos/preenchidos/cor/ícone de um clock. */
   updateClock: (
     id: string,
-    patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color'>>,
+    patch: Partial<Pick<Clock, 'name' | 'segments' | 'filled' | 'color' | 'icon'>>,
   ) => void
   /** Remove um clock. */
   removeClock: (id: string) => void

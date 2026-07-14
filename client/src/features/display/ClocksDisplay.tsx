@@ -27,10 +27,17 @@ export function ClocksDisplay({ clocks }: { clocks: Clock[] }) {
       </div>
       {clocks.map((c) => {
         const done = c.filled >= c.segments
+        const skull = c.icon === 'skull'
         return (
-          <div className={'clk' + (done ? ' clk--done' : '')} key={c.id}>
+          <div
+            className={'clk' + (done ? ' clk--done' : '') + (skull ? ' clk--skull' : '')}
+            key={c.id}
+          >
             <div className="clk__head">
-              <span className="clk__name">{c.name}</span>
+              <span className="clk__name">
+                {skull && <span aria-hidden="true">💀 </span>}
+                {c.name}
+              </span>
               <span className="clk__count">{c.filled}/{c.segments}</span>
             </div>
             <div className="clk__pips">

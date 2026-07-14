@@ -185,6 +185,25 @@ describe('clocks', () => {
     expect(clocks[0].filled).toBe(4) // reclampado de 8 para 4
   })
 
+  it('icon: addClock aceita skull; ausente ou inválido não define ícone', () => {
+    // sem ícone → campo ausente (default 'ring' visual)
+    expect(addClock([], 'C', 4)[0].icon).toBeUndefined()
+    // skull explícito → gravado
+    expect(addClock([], 'Medo', 12, 'skull')[0].icon).toBe('skull')
+    // valor inválido → ignorado (undefined)
+    expect(addClock([], 'x', 4, 'foo' as unknown as 'skull')[0].icon).toBeUndefined()
+  })
+
+  it('icon: updateClock alterna e sanitiza', () => {
+    let clocks = addClock([], 'C', 6)
+    const id = clocks[0].id
+    clocks = updateClock(clocks, id, { icon: 'skull' })
+    expect(clocks[0].icon).toBe('skull')
+    // 'ring'/qualquer não-skull limpa o ícone
+    clocks = updateClock(clocks, id, { icon: 'ring' })
+    expect(clocks[0].icon).toBeUndefined()
+  })
+
   it('removeClock tira só o alvo', () => {
     let clocks = addClock(addClock([], 'A', 4), 'B', 6)
     const idA = clocks[0].id
