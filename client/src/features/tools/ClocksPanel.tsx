@@ -5,6 +5,7 @@ import {
   CLOCK_SEGMENT_PRESETS,
 } from '@gmcr/shared'
 import { socket } from '../../lib/socket'
+import { SkullMark } from '../../lib/SkullMark'
 import { useSession } from '../../store'
 
 /**
@@ -58,7 +59,7 @@ export function ClocksPanel() {
           aria-pressed={skull}
           onClick={() => setSkull((v) => !v)}
         >
-          💀
+          <SkullMark />
         </button>
         <button onClick={add}>+ clock</button>
         <button type="button" title="Contador de Medo (Daggerheart): caveira, 12" onClick={addFear}>
@@ -96,7 +97,7 @@ export function ClocksPanel() {
           <div className="clock-row" key={c.id}>
             <div className="clock-row__head">
               <span className="clock-row__name">
-                {c.icon === 'skull' && <span aria-hidden="true">💀 </span>}
+                {c.icon === 'skull' && <SkullMark className="clock-row__skull" />}
                 {c.name}
               </span>
               <span className="muted clock-row__count">{c.filled}/{c.segments}</span>
@@ -126,15 +127,24 @@ export function ClocksPanel() {
               </button>
             </div>
             <div className="clock-pips" role="group" aria-label={c.name}>
-              {Array.from({ length: c.segments }, (_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={'clock-pip' + (i < c.filled ? ' clock-pip--on' : '')}
-                  title={`${i + 1}/${c.segments}`}
-                  onClick={() => setFilled(c.id, c.filled, i)}
-                />
-              ))}
+              {Array.from({ length: c.segments }, (_, i) => {
+                const on = i < c.filled
+                const isSkull = c.icon === 'skull'
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    className={
+                      (isSkull ? 'clock-pip clock-pip--skull' : 'clock-pip') +
+                      (on ? ' clock-pip--on' : '')
+                    }
+                    title={`${i + 1}/${c.segments}`}
+                    onClick={() => setFilled(c.id, c.filled, i)}
+                  >
+                    {isSkull && <SkullMark />}
+                  </button>
+                )
+              })}
             </div>
           </div>
         ))
