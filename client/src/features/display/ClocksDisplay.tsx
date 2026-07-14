@@ -1,4 +1,5 @@
 import type { Clock } from '@gmcr/shared'
+import { SkullMark } from '../../lib/SkullMark'
 import { useMovablePanel } from './useMovablePanel'
 
 /**
@@ -35,19 +36,30 @@ export function ClocksDisplay({ clocks }: { clocks: Clock[] }) {
           >
             <div className="clk__head">
               <span className="clk__name">
-                {skull && <span aria-hidden="true">💀 </span>}
+                {skull && <SkullMark className="clk__name-skull" />}
                 {c.name}
               </span>
               <span className="clk__count">{c.filled}/{c.segments}</span>
             </div>
             <div className="clk__pips">
-              {Array.from({ length: c.segments }, (_, i) => (
-                <span
-                  key={i}
-                  className={'clk__pip' + (i < c.filled ? ' clk__pip--on' : '')}
-                  style={c.color && i < c.filled ? { background: c.color } : undefined}
-                />
-              ))}
+              {Array.from({ length: c.segments }, (_, i) => {
+                const on = i < c.filled
+                if (skull) {
+                  return (
+                    <SkullMark
+                      key={i}
+                      className={'clk__skull' + (on ? ' clk__skull--on' : '')}
+                    />
+                  )
+                }
+                return (
+                  <span
+                    key={i}
+                    className={'clk__pip' + (on ? ' clk__pip--on' : '')}
+                    style={c.color && on ? { background: c.color } : undefined}
+                  />
+                )
+              })}
             </div>
           </div>
         )

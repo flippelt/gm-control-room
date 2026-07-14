@@ -2507,6 +2507,28 @@ body.skin--neon {
 .clocks .clock-pip--on:hover {
   background: #a3a3ff;
 }
+/* Pips-caveira do painel (clock com icon 'skull'): sem caixa, só o SVG. */
+.clocks .clock-pip--skull,
+.clocks .clock-pip--skull.clock-pip--on,
+.clocks .clock-pip--skull:hover {
+  width: auto;
+  height: auto;
+  border: none;
+  background: transparent;
+  border-radius: 0;
+  font-size: 22px;
+  line-height: 0;
+  color: #5a2521;
+}
+.clocks .clock-pip--skull.clock-pip--on {
+  color: #e23b2e;
+}
+.clock-row__skull {
+  font-size: 1em;
+  color: #e23b2e;
+  margin-right: 5px;
+  vertical-align: -0.12em;
+}
 .clocks__clear {
   align-self: flex-start;
 }
@@ -2655,16 +2677,24 @@ body.skin--neon {
   background: #ff6b6b;
   border-color: #ff6b6b;
 }
-/* Contador de Medo (Daggerheart) — tema caveira: pips carmesim/osso. */
-.clk--skull .clk__pip {
-  border-color: #c0392b;
-}
-.clk--skull .clk__pip--on {
-  background: #c0392b;
-  border-color: #c0392b;
-}
+/* Contador de Medo (Daggerheart) — marcadores de caveira pixel-art (2ª tela).
+   Os marcadores são SVGs (SkullMark) que herdam `color`; tamanho via font-size. */
 .clk--skull .clk__name {
-  color: #e8c9c0;
+  color: #f0c9c2;
+}
+.clk__name-skull {
+  font-size: 1em;
+  color: #e23b2e;
+  margin-right: 5px;
+  vertical-align: -0.12em;
+}
+.clk__skull {
+  font-size: 24px; /* controla o tamanho do SVG (width/height = 1em) */
+  color: #5a2521; /* vazio: carmesim escuro/apagado */
+  transition: color 0.1s ease;
+}
+.clk__skull--on {
+  color: #e23b2e; /* cheio: carmesim vivo */
 }
 
 /* ===================== Recursos de party (pools de sessão do sistema) ===================== */
