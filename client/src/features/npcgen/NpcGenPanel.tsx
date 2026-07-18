@@ -13,6 +13,7 @@ import {
   generateNpc,
   encounterToCodexMarkdown,
   encounterToTrackerCombatants,
+  npcToLibraryEntry,
   toCodexMarkdown,
   toTrackerCombatant,
 } from '@lippelt/srd-npcgen'
@@ -139,6 +140,7 @@ export function NpcGenPanel() {
 
   const handleGenerate = () => {
     try {
+      setSavedName(null)
       const generated = generateNpc({
         systemId,
         level,
@@ -212,6 +214,24 @@ export function NpcGenPanel() {
       await navigator.clipboard.writeText(previewMarkdown)
     } catch {
       // Em browsers que bloqueiam clipboard sem permissão, fallback no-op.
+    }
+  }
+
+  // NPC gerado → biblioteca de criaturas, sem redigitar: salva direto
+  // (o servidor gera id/createdAt) ou copia o JSON da entrada pra colar
+  // onde quiser. Conversão única pro formato da biblioteca no npcgen.
+  const [savedName, setSavedName] = useState<string | null>(null)
+  const handleSaveToLibrary = () => {
+    if (!npc) return
+    socket.emit('saveCreature', npcToLibraryEntry(npc))
+    setSavedName(npc.name)
+  }
+  const handleCopyJson = async () => {
+    if (!npc) return
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(npcToLibraryEntry(npc), null, 2))
+    } catch {
+      // clipboard bloqueado — no-op
     }
   }
 
@@ -367,8 +387,22 @@ export function NpcGenPanel() {
               <button className="btn-ghost" onClick={handleAddToTracker}>
                 ➕ Adicionar ao tracker
               </button>
+              <button
+                className="btn-ghost"
+                onClick={handleSaveToLibrary}
+                title="Salvar na biblioteca de criaturas"
+              >
+                {savedName === npc.name ? '✓ Salva' : '💾 Salvar criatura'}
+              </button>
               <button className="btn-ghost" onClick={handleCopyMarkdown} title="Copiar markdown">
                 📋 Copiar
+              </button>
+              <button
+                className="btn-ghost"
+                onClick={handleCopyJson}
+                title="Copiar JSON da entrada de biblioteca"
+              >
+                🧾 JSON
               </button>
             </>
           )}
