@@ -635,6 +635,12 @@ export interface ServerToClientEvents {
   campaigns: (list: CampaignSummary[]) => void
 }
 
+/** Resultado de um `saveCampaign` (ack). `ok:false` traz o motivo pra UI. */
+export interface SaveResult {
+  ok: boolean
+  error?: string
+}
+
 /** Eventos emitidos pelos clientes (controle) para o servidor. */
 export interface ClientToServerEvents {
   /** Define a cena ativa (ou null para limpar). */
@@ -713,8 +719,12 @@ export interface ClientToServerEvents {
    * Salva uma campanha no disco (sobrescreve `campaigns/<id>.json`).
    * Loopback-only no server. Após salvar, o `fs.watch` recarrega
    * automaticamente e dispara broadcast.
+   *
+   * O `ack` opcional devolve sucesso/erro pro cliente — sem ele, uma falha
+   * (bloqueio loopback, validação, payload grande derrubando a conexão) some
+   * em silêncio e a edição se perde sem aviso.
    */
-  saveCampaign: (campaign: Campaign) => void
+  saveCampaign: (campaign: Campaign, ack?: (res: SaveResult) => void) => void
 
   // --- Biblioteca de criaturas ---
   /**

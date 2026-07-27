@@ -41,6 +41,11 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   // Em dev o Vite faz proxy de /socket.io; em prod é mesma origem. CORS aberto
   // cobre o acesso direto pela LAN durante o desenvolvimento.
   cors: { origin: true },
+  // O default é 1 MB. Um `saveCampaign` com JSON de campanha rico (várias
+  // cenas/atalhos) pode passar disso; acima do limite o Socket.io DERRUBA a
+  // conexão em silêncio. Damos folga — mas imagens devem ser referenciadas por
+  // `/assets/…`, nunca coladas como data URI (o client bloqueia isso).
+  maxHttpBufferSize: 5e6,
 })
 
 const session = createSession(io)
@@ -90,6 +95,31 @@ app.post('/spotify/command', async (req, res) => {
   } catch (err) {
     res.status(500).json({ ok: false, error: (err as Error).message })
   }
+})
+
+// Lista as imagens disponíveis em assets/ (recursivo) como caminhos /assets/…
+// Alimenta o autocomplete do editor de cena, pra o mestre escolher o arquivo
+// em vez de digitar o caminho na mão (e nunca colar a imagem como data URI).
+app.get('/system/list-assets', (_req, res) => {
+  const IMG = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i
+  const images: string[] = []
+  const walk = (dir: string, prefix: string) => {
+    let entries: fs.Dirent[]
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true })
+    } catch {
+      return
+    }
+    for (const e of entries) {
+      if (e.name.startsWith('.')) continue
+      const rel = prefix ? `${prefix}/${e.name}` : e.name
+      if (e.isDirectory()) walk(path.join(dir, e.name), rel)
+      else if (IMG.test(e.name)) images.push(`/assets/${rel}`)
+    }
+  }
+  walk(assetsDir, '')
+  images.sort()
+  res.json({ images })
 })
 
 // Abre a pasta de assets do servidor no file manager nativo. Útil pro mestre
