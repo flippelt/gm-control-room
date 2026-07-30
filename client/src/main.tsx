@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Control } from './routes/Control'
 import { Display } from './routes/Display'
+import { ErrorBoundary } from './ErrorBoundary'
 import { registerSystems } from './features/systems/registerSystems'
 
 // Registra sistemas RPG (D&D 5e, etc) antes da UI montar — getSystem(id)
@@ -40,6 +41,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
   </StrictMode>,
 )

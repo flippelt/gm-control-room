@@ -75,6 +75,30 @@ const TABS: { key: TabKey; label: string }[] = [
 // Treatment editor (sub-form por kind)
 // ============================================================================
 
+// Cache de módulo: a lista de imagens em assets/ muda pouco; busca uma vez e
+// compartilha entre todos os campos de cena abertos.
+let assetImagesCache: string[] | null = null
+function useAssetImages(): string[] {
+  const [images, setImages] = useState<string[]>(assetImagesCache ?? [])
+  useEffect(() => {
+    if (assetImagesCache) return
+    let alive = true
+    fetch('/system/list-assets')
+      .then((r) => (r.ok ? r.json() : { images: [] }))
+      .then((d: { images?: string[] }) => {
+        assetImagesCache = d.images ?? []
+        if (alive) setImages(assetImagesCache)
+      })
+      .catch(() => {
+        /* offline/erro: segue sem autocomplete */
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+  return images
+}
+
 function TreatmentEditor({
   value,
   onChange,
@@ -83,6 +107,7 @@ function TreatmentEditor({
   onChange: (next: DisplayTreatment) => void
 }) {
   const kind = value.kind
+  const assetImages = useAssetImages()
 
   const setKind = (newKind: DisplayTreatment['kind']) => {
     if (newKind === kind) return
@@ -156,8 +181,27 @@ function TreatmentEditor({
             <input
               value={value.src}
               onChange={(e) => onChange({ ...value, src: e.target.value })}
-              placeholder="/assets/mapas/arkham.svg"
+              placeholder="/assets/maps/arkham.svg"
+              list="asset-images"
             />
+            {assetImages.length > 0 && (
+              <datalist id="asset-images">
+                {assetImages.map((p) => (
+                  <option key={p} value={p} />
+                ))}
+              </datalist>
+            )}
+            {value.src.trim().startsWith('data:') ? (
+              <small style={{ color: 'var(--danger, #e0645b)' }}>
+                ⚠ Não cole a imagem aqui. Coloque o arquivo em <code>assets/</code> e use o
+                caminho, ex.: <code>/assets/seraph.jpg</code>.
+              </small>
+            ) : (
+              <small className="muted">
+                Caminho a partir de <code>/assets</code>. Solte o arquivo em <code>assets/</code>{' '}
+                e escolha na lista.
+              </small>
+            )}
           </label>
           <label className="rule-field">
             <span>alt</span>
@@ -505,6 +549,8 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   const [draft, setDraft] = useState<Campaign>(() => campaign ?? emptyCampaign())
   const [tab, setTab] = useState<TabKey>('meta')
   const [presetsOpen, setPresetsOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const system = useActiveSystem()
 
   // Quando abrir/trocar de campanha, reseta o draft.
@@ -512,6 +558,8 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
     if (open) {
       setDraft(campaign ? structuredClone(campaign) : emptyCampaign())
       setTab('meta')
+      setSaveError(null)
+      setSaving(false)
     }
   }, [open, campaign?.id])
 
@@ -522,11 +570,60 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   const patch = (p: Partial<Campaign>) => setDraft((d) => ({ ...d, ...p }))
 
   const save = () => {
-    if (!canSave) return
-    socket.emit('saveCampaign', draft)
-    // Se criou agora, troca pra ela. Em edição também troca pra recarregar.
-    socket.emit('selectCampaign', draft.id)
-    onClose()
+    if (!canSave || saving) return
+    setSaveError(null)
+
+    // Guarda contra o erro clássico: colar a imagem no `src` (data URI) em vez
+    // de referenciar por caminho. Isso incha a campanha, estoura o limite do
+    // socket e derruba a conexão no meio do save. Barra antes de emitir.
+    const pastedImage = draft.scenes.find(
+      (s) => s.treatment.kind === 'image' && s.treatment.src.trim().startsWith('data:'),
+    )
+    if (pastedImage) {
+      setSaveError(
+        `A cena "${pastedImage.name || pastedImage.id}" tem a imagem colada no campo src. ` +
+          'Coloque o arquivo em assets/ e referencie por caminho, ex.: /assets/seraph.jpg.',
+      )
+      setTab('scenes')
+      return
+    }
+    // Rede de segurança: qualquer payload muito grande também é bloqueado com
+    // mensagem clara (o servidor aceita até ~5 MB; avisamos bem antes disso).
+    const size = JSON.stringify(draft).length
+    if (size > 4_000_000) {
+      setSaveError(
+        `Campanha grande demais (${(size / 1e6).toFixed(1)} MB) para salvar. ` +
+          'Provavelmente há imagem/base64 embutida — referencie mídias por /assets/…',
+      )
+      return
+    }
+
+    setSaving(true)
+    // Timeout manual: cobre o caso da conexão cair (ex.: payload gigante) — em
+    // vez de travar em silêncio, mostramos erro se o ack não voltar a tempo.
+    let done = false
+    const timer = setTimeout(() => {
+      if (done) return
+      done = true
+      setSaving(false)
+      setSaveError(
+        'Sem resposta do servidor — a conexão pode ter caído. Nada foi salvo. ' +
+          'Confira se alguma cena tem imagem colada (use /assets/…).',
+      )
+    }, 6000)
+    socket.emit('saveCampaign', draft, (res) => {
+      if (done) return
+      done = true
+      clearTimeout(timer)
+      setSaving(false)
+      if (!res?.ok) {
+        setSaveError(res?.error || 'Não foi possível salvar a campanha.')
+        return
+      }
+      // Sucesso: troca pra ela (cria→abre; edição→recarrega) e fecha.
+      socket.emit('selectCampaign', draft.id)
+      onClose()
+    })
   }
 
   // Sistema da campanha em edição pode ser diferente do ativo — pra
@@ -593,18 +690,22 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
           </div>
 
           <footer className="modal__foot">
-            <span className="muted" style={{ flex: 1, fontSize: '0.8rem' }}>
-              {!canSave && (
-                <>
-                  ⚠ {!idIsValid && 'ID inválido'}
-                  {!idIsValid && !titleIsValid && ' · '}
-                  {!titleIsValid && 'Título obrigatório'}
-                </>
+            <span style={{ flex: 1, fontSize: '0.8rem' }}>
+              {saveError ? (
+                <span style={{ color: 'var(--danger, #e0645b)' }}>⚠ {saveError}</span>
+              ) : (
+                !canSave && (
+                  <span className="muted">
+                    ⚠ {!idIsValid && 'ID inválido'}
+                    {!idIsValid && !titleIsValid && ' · '}
+                    {!titleIsValid && 'Título obrigatório'}
+                  </span>
+                )
               )}
             </span>
-            <button className="btn-ghost" onClick={onClose}>Cancelar</button>
-            <button onClick={save} disabled={!canSave}>
-              {mode === 'edit' ? 'Salvar' : 'Criar e abrir'}
+            <button className="btn-ghost" onClick={onClose} disabled={saving}>Cancelar</button>
+            <button onClick={save} disabled={!canSave || saving}>
+              {saving ? 'Salvando…' : mode === 'edit' ? 'Salvar' : 'Criar e abrir'}
             </button>
           </footer>
         </div>

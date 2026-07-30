@@ -575,13 +575,21 @@ export function createSession(io: IO) {
       broadcast()
     })
 
-    socket.on('saveCampaign', (campaign) => {
+    socket.on('saveCampaign', (campaign, ack) => {
+      // ack opcional: devolve sucesso/erro pro cliente em vez de falhar mudo.
+      const respond = (res: { ok: boolean; error?: string }) => {
+        if (typeof ack === 'function') ack(res)
+      }
       // Loopback-only: ignora se vier de aparelho remoto da LAN.
       const ip = socket.handshake.address ?? ''
       const isLoopback =
         ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('localhost')
       if (!isLoopback) {
         console.warn(`[campaign] saveCampaign de ${ip} bloqueado (loopback-only)`)
+        respond({
+          ok: false,
+          error: 'Edição de campanha só é permitida no dispositivo host (localhost).',
+        })
         return
       }
       try {
@@ -589,8 +597,10 @@ export function createSession(io: IO) {
         // O fs.watch recarrega quando a campanha ativa muda; refresca a lista
         // pra todos os clients (campanhas novas aparecem no seletor).
         io.emit('campaigns', listCampaigns())
+        respond({ ok: true })
       } catch (err) {
         console.warn(`[campaign] saveCampaign falhou: ${(err as Error).message}`)
+        respond({ ok: false, error: (err as Error).message })
       }
     })
   }
