@@ -1,6 +1,18 @@
 version: 2
 updates:
   # npm — agrupa atualizações por workspace para reduzir ruído de PRs.
+  #
+  # VERSION UPDATES PAUSADOS: `open-pull-requests-limit: 0` desliga os PRs de
+  # atualização de rotina. Os PRs de SEGURANÇA continuam vindo normalmente —
+  # a doc do Dependabot diz que "security update pull requests are not subject
+  # to this limit and do not count toward it", e eles dependem da chave
+  # `dependabot_security_updates` do repo, não deste arquivo.
+  #
+  # Para religar: trocar o 0 por 5. Os `groups` abaixo ficam preservados.
+  #
+  # Não usar `ignore` de semver-major como alternativa: `ignore` suprime
+  # também os security updates da dependência, e já tivemos dois fixes de
+  # segurança que EXIGIAM major (react-router 6->7, eslint 9->10).
   - package-ecosystem: npm
     directories:
       - "/"
@@ -9,7 +21,7 @@ updates:
       - "/shared"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     groups:
       dev-dependencies:
         dependency-type: development
