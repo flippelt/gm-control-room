@@ -41,6 +41,7 @@ const CARD_H: Record<string, number> = {
   dice: 7,
   'roll-history': 8,
   tracker: 9,
+  party: 9,
   clocks: 7,
   'party-resources': 6,
   npcgen: 8,

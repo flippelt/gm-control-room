@@ -9,6 +9,7 @@ import type {
   DiceRoll,
   EncounterLibrary,
   Lighting,
+  PartyMember,
   RandomTableLibrary,
   Scene,
   SceneMusic,
@@ -30,6 +31,7 @@ interface SessionStore {
   clocks: Clock[]
   partyResources: Record<string, number>
   notes: string
+  party: PartyMember[]
   creatures: CreatureLibrary
   encounters: EncounterLibrary
   sceneMusic: Record<string, SceneMusic>
@@ -51,6 +53,7 @@ export const useSession = create<SessionStore>(() => ({
   clocks: [],
   partyResources: {},
   notes: '',
+  party: [],
   creatures: [],
   encounters: [],
   sceneMusic: {},
@@ -73,6 +76,7 @@ socket.on('state', (state: SessionState) =>
     clocks: state.clocks ?? [],
     partyResources: state.partyResources ?? {},
     notes: state.notes ?? '',
+    party: state.party ?? [],
     creatures: state.creatures ?? [],
     encounters: state.encounters ?? [],
     sceneMusic: state.sceneMusic ?? {},

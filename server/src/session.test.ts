@@ -47,6 +47,8 @@ vi.mock('./persist.js', () => ({
   loadLayout: () => null,
   saveLayout: vi.fn(),
   sanitizeLayout: (x: unknown) => x,
+  loadParty: () => [],
+  saveParty: vi.fn(),
 }))
 
 import { createSession } from './session'
@@ -349,6 +351,52 @@ describe('createSession / handleConnection', () => {
       const after = lastBroadcast().tables
       expect(after).toHaveLength(1)
       expect(after[0].id).toBe(tables[1].id)
+    })
+  })
+
+  describe('party da mesa', () => {
+    it('setParty guarda a lista saneada', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setParty([
+        { id: 'pj-1', name: 'Thorin', player: 'Felipe', hp: 40, initiativeMod: 2, ac: 18 },
+      ])
+      expect(lastBroadcast().party).toEqual([
+        { id: 'pj-1', name: 'Thorin', player: 'Felipe', initiativeMod: 2, hp: 40, ac: 18 },
+      ])
+    })
+
+    it('descarta entradas sem nome e gera id quando falta', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setParty([{ name: '  ' }, { name: 'Ana' }, null, 'nope'])
+      const party = lastBroadcast().party
+      expect(party).toHaveLength(1)
+      expect(party[0].name).toBe('Ana')
+      expect(party[0].id).toBeTruthy()
+    })
+
+    it('faz clamp dos números e corta strings longas', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setParty([
+        { name: 'x'.repeat(200), hp: 1e9, initiativeMod: 999, ac: -5, summary: 's'.repeat(300) },
+      ])
+      const m = lastBroadcast().party[0]
+      expect(m.name).toHaveLength(60)
+      expect(m.hp).toBe(100000)
+      expect(m.initiativeMod).toBe(50)
+      expect(m.ac).toBe(0)
+      expect(m.summary).toHaveLength(120)
+    })
+
+    it('ignora payload que não é array', () => {
+      const { handlers, ioEmit } = setup()
+      handlers.setParty('nope')
+      expect(ioEmit).not.toHaveBeenCalled()
+    })
+
+    it('aplica o teto de 20 PJs', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setParty(Array.from({ length: 30 }, (_, i) => ({ name: `PJ ${i}` })))
+      expect(lastBroadcast().party).toHaveLength(20)
     })
   })
 })

@@ -10,6 +10,7 @@ import helmet from 'helmet'
 import { Server } from 'socket.io'
 import qrcode from 'qrcode-terminal'
 import type { ClientToServerEvents, ServerToClientEvents, SpotifyCommand } from '@gmcr/shared'
+import { extractCharacterId, parseDdbPartyMember } from '@gmcr/shared'
 import { createSession } from './session.js'
 import { getLanUrls } from './lib/lan.js'
 import { buildAuthorizeUrl, handleCallback, isConfigured } from './spotify/auth.js'
@@ -141,6 +142,38 @@ app.get('/system/list-assets', (_req, res) => {
   walk(assetsDir, '')
   images.sort()
   res.json({ images })
+})
+
+// Busca a ficha pública do D&D Beyond e devolve já convertida em membro da
+// party. A busca é feita AQUI, no servidor: o endpoint do DDB não manda
+// cabeçalho de CORS, então no navegador só funcionaria via proxy de terceiro
+// (é o que o guild-briefings faz, por ser um site estático). Tendo servidor
+// próprio, buscamos direto — nada de mandar a ficha pra um proxy alheio.
+app.get('/system/ddb-character', async (req, res) => {
+  const id = extractCharacterId(String(req.query.id ?? ''))
+  if (!id) {
+    res.status(400).json({ ok: false, error: 'Link/ID não reconhecido. Cole o endereço do personagem no D&D Beyond.' })
+    return
+  }
+  try {
+    const upstream = await fetch(
+      `https://character-service.dndbeyond.com/character/v5/character/${id}`,
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10_000) },
+    )
+    if (!upstream.ok) {
+      res.status(502).json({
+        ok: false,
+        error:
+          upstream.status === 403 || upstream.status === 404
+            ? 'Ficha não encontrada ou privada — marque o personagem como público no D&D Beyond.'
+            : `O D&D Beyond respondeu HTTP ${upstream.status}.`,
+      })
+      return
+    }
+    res.json({ ok: true, member: parseDdbPartyMember(await upstream.json()) })
+  } catch (err) {
+    res.status(502).json({ ok: false, error: `Falha ao buscar a ficha: ${(err as Error).message}` })
+  }
 })
 
 // Abre a pasta de assets do servidor no file manager nativo. Útil pro mestre

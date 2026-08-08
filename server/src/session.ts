@@ -7,6 +7,7 @@ import type {
   ClientToServerEvents,
   CreatureLibraryEntry,
   Lighting,
+  PartyMember,
   RandomTable,
   SavedCombatant,
   SavedEncounter,
@@ -19,6 +20,7 @@ import {
   loadCreatures,
   loadEncounters,
   loadLayout,
+  loadParty,
   loadPersisted,
   loadSceneMusic,
   loadTables,
@@ -26,6 +28,7 @@ import {
   saveCreatures,
   saveEncounters,
   saveLayout,
+  saveParty,
   saveSceneMusic,
   savePersisted,
   saveTables,
@@ -68,6 +71,7 @@ export function createSession(io: IO) {
     clocks: saved?.clocks ?? [],
     partyResources: saved?.partyResources ?? {},
     notes: saved?.notes ?? '',
+    party: loadParty(campaign.id),
     creatures: loadCreatures(),
     encounters: loadEncounters(),
     sceneMusic: loadSceneMusic(campaign.id),
@@ -79,6 +83,7 @@ export function createSession(io: IO) {
   const ENCOUNTER_LIBRARY_CAP = 300
   const ENCOUNTER_COMBATANTS_CAP = 40
   const TABLE_LIBRARY_CAP = 300
+  const PARTY_CAP = 20 // uma mesa; o teto é só defensivo
   const TABLE_ENTRIES_CAP = 300
 
   /** Saneia entradas de uma tabela (string[] com limites). */
@@ -161,6 +166,8 @@ export function createSession(io: IO) {
     state.partyResources = persisted?.partyResources ?? {}
     state.notes = persisted?.notes ?? ''
     state.sceneMusic = loadSceneMusic(next.id)
+    // A party é da MESA, não da sessão: troca junto com a campanha.
+    state.party = loadParty(next.id)
     broadcast()
   }
 
@@ -417,6 +424,32 @@ export function createSession(io: IO) {
       )
       broadcast()
     })
+    // --- Elenco fixo da mesa (PJs), por campanha ---
+    socket.on('setParty', (party) => {
+      if (!Array.isArray(party)) return
+      const limpa: PartyMember[] = []
+      for (const raw of party.slice(0, PARTY_CAP)) {
+        if (!raw || typeof raw !== 'object') continue
+        const r = raw as unknown as Record<string, unknown>
+        if (typeof r.name !== 'string' || !r.name.trim()) continue
+        const m: PartyMember = {
+          id: typeof r.id === 'string' && r.id ? r.id.slice(0, 60) : crypto.randomUUID(),
+          name: r.name.slice(0, 60),
+        }
+        if (typeof r.player === 'string' && r.player.trim()) m.player = r.player.slice(0, 60)
+        if (r.initiativeMod !== undefined) {
+          m.initiativeMod = clamp(toFiniteInt(r.initiativeMod), -50, 50)
+        }
+        if (r.hp !== undefined) m.hp = clamp(toFiniteInt(r.hp), 0, 100000)
+        if (r.ac !== undefined) m.ac = clamp(toFiniteInt(r.ac), 0, 100)
+        if (typeof r.summary === 'string' && r.summary.trim()) m.summary = r.summary.slice(0, 120)
+        limpa.push(m)
+      }
+      state.party = limpa
+      saveParty(state.campaign.id, limpa)
+      broadcast()
+    })
+
     socket.on('setNotes', (text) => {
       if (typeof text !== 'string') return
       // Limite defensivo: ~16KB (16384 chars).

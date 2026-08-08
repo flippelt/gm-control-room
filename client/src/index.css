@@ -1808,6 +1808,47 @@ code {
   background: var(--accent-soft);
 }
 
+/* ===== Party da mesa (elenco fixo) ===== */
+.party__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.party__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.party__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.party__acoes {
+  display: flex;
+  gap: 4px;
+}
+.party__edit {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #2c2c34;
+}
+.party__edit input {
+  min-width: 0;
+}
+.party__edit input:not([type='number']) {
+  flex: 1;
+}
+
 /* ===== Tracker (painel) ===== */
 .cbts {
   display: flex;
