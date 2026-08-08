@@ -1797,32 +1797,15 @@ code {
 
 /* ===== Biblioteca de criaturas (linha da lista) ===== */
 .creature-row {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
+  display: block;
+  width: 100%;
+  text-align: left;
   padding: 0.5rem 0.75rem;
   background: transparent;
+  cursor: pointer;
 }
 .creature-row--on {
   background: var(--accent-soft);
-}
-.creature-row__pick {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-  background: transparent;
-  border: none;
-  color: inherit;
-  font: inherit;
-  padding: 0;
-  cursor: pointer;
-}
-.creature-row__add {
-  align-self: center;
-  flex: 0 0 auto;
-  font-size: 0.8rem;
-  padding: 4px 10px;
-  white-space: nowrap;
 }
 
 /* ===== Tracker (painel) ===== */

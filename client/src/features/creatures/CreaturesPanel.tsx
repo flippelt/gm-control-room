@@ -15,6 +15,22 @@ import { useSession } from '../../store'
  * O parsing acontece no server (validação + storage atômico); o cliente só
  * envia a string crua via socket.
  */
+/** Modificador no padrão d20 (10–11 = +0). Sem DES na ficha, vale 0. */
+function modificador(valor?: number): number {
+  return typeof valor === 'number' ? Math.floor((valor - 10) / 2) : 0
+}
+
+/**
+ * Rola a iniciativa da criatura ao mandá-la pro tracker: d20 + mod. de DES.
+ * Sem isso ela entrava com 0 e ia sempre pro fim da ordem, obrigando o mestre
+ * a digitar o número no meio do combate. O valor continua editável na linha
+ * do tracker, e quem quiser um número específico usa o campo do card de
+ * detalhe.
+ */
+function rolarIniciativa(c: CreatureLibraryEntry): number {
+  return 1 + Math.floor(Math.random() * 20) + modificador(c.abilities?.dex)
+}
+
 export function CreaturesPanel() {
   const creatures = useSession((s) => s.creatures)
   const campaignSystem = useSession((s) => s.campaign?.system)
@@ -91,9 +107,14 @@ export function CreaturesPanel() {
   // (formulário mínimo) que salva via `saveCreature`.
   const is5e = campaignSystem === 'dnd5e-2024' || campaignSystem === 'dnd5e-2014'
 
+  // Campo vazio = rola igual ao clique na lista; preenchido = respeita o número
+  // (o mestre que já rolou na mesa digita o valor dele).
   const spawn = () => {
-    if (!selected) return
-    const init = Number(initiative) || 0
+    if (!selected || !selectedEntry) return
+    const digitado = Number(initiative)
+    const init = initiative.trim() && Number.isFinite(digitado)
+      ? digitado
+      : rolarIniciativa(selectedEntry)
     socket.emit('spawnCombatantFromCreature', selected, init)
     setInitiative('')
   }
@@ -177,36 +198,33 @@ export function CreaturesPanel() {
           </p>
         )}
         {filtered.map((c) => (
-          <div
+          // Um clique faz as DUAS coisas: abre a ficha e joga a criatura na
+          // iniciativa, com o d20 já rolado. Antes o clique só abria, e mandar
+          // pro tracker exigia achar o botão no card de detalhe — que costuma
+          // cair abaixo da rolagem do painel. Clicar de novo põe outra cópia
+          // (com iniciativa própria), que é o caso de 4 goblins iguais.
+          <button
             key={c.id}
+            type="button"
             className={'creature-row card' + (selected === c.id ? ' creature-row--on' : '')}
+            title={`Abrir a ficha de ${c.name} e pôr na iniciativa (d20 + DES)`}
+            onClick={() => {
+              setSelected(c.id)
+              socket.emit('spawnCombatantFromCreature', c.id, rolarIniciativa(c))
+            }}
           >
-            {/* Clicar no corpo da linha abre o statblock; o "+ Tracker" ao lado
-                despacha direto. Antes o clique só selecionava, e o único jeito
-                de mandar pro tracker era achar o botão no card de detalhe — que
-                costuma cair abaixo da rolagem do painel. */}
-            <button type="button" className="creature-row__pick" onClick={() => setSelected(c.id)}>
-              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <strong>{c.name}</strong>
-                <span className="muted" style={{ fontSize: '0.8rem' }}>
-                  {c.cr ? `CR ${c.cr}` : ''} {c.system}
-                </span>
-              </div>
-              <div className="muted" style={{ fontSize: '0.8rem' }}>
-                {[c.size, c.type, c.alignment].filter(Boolean).join(' · ')}
-                {c.hp?.average ? ` · HP ${c.hp.average}` : ''}
-                {c.ac?.value ? ` · CA ${c.ac.value}` : ''}
-              </div>
-            </button>
-            <button
-              type="button"
-              className="creature-row__add"
-              title={`Mandar ${c.name} pro tracker (iniciativa 0 — ajuste na linha dele)`}
-              onClick={() => socket.emit('spawnCombatantFromCreature', c.id, 0)}
-            >
-              + Tracker
-            </button>
-          </div>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <strong>{c.name}</strong>
+              <span className="muted" style={{ fontSize: '0.8rem' }}>
+                {c.cr ? `CR ${c.cr}` : ''} {c.system}
+              </span>
+            </div>
+            <div className="muted" style={{ fontSize: '0.8rem' }}>
+              {[c.size, c.type, c.alignment].filter(Boolean).join(' · ')}
+              {c.hp?.average ? ` · HP ${c.hp.average}` : ''}
+              {c.ac?.value ? ` · CA ${c.ac.value}` : ''}
+            </div>
+          </button>
         ))}
       </div>
 
@@ -238,6 +256,7 @@ export function CreaturesPanel() {
               value={initiative}
               onChange={(e) => setInitiative(e.target.value)}
               placeholder="Iniciativa"
+              title="Vazio = rola d20 + DES"
               style={{ width: 100 }}
             />
             <button type="submit">+ Tracker</button>
