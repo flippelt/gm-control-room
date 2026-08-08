@@ -10,5 +10,6 @@ dist
 .scene-music.json
 .tables.json
 .layout.json
+.crash.log
 .DS_Store
 npm-debug.log*

@@ -21,6 +21,27 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 const PORT = Number(process.env.PORT ?? 4000)
 
+// Rede de segurança: no meio de uma sessão, o servidor morrer é o pior desfecho
+// possível — a TV congela e todo mundo para de jogar. Node derruba o processo
+// por padrão em exceção não capturada e em promise rejeitada; aqui registramos
+// o stack em .crash.log (com hora) e SEGUIMOS servindo. O arquivo é o que
+// permite diagnosticar depois, já que a janela do Terminal costuma sumir junto.
+const CRASH_LOG = path.resolve(__dirname, '../../.crash.log')
+
+function registrarFalha(origem: string, err: unknown): void {
+  const stack = err instanceof Error ? (err.stack ?? err.message) : String(err)
+  const linha = `\n[${new Date().toISOString()}] ${origem}\n${stack}\n`
+  console.error(`[crash] ${origem}: ${stack}`)
+  try {
+    fs.appendFileSync(CRASH_LOG, linha, 'utf-8')
+  } catch {
+    /* sem disco pra logar: o console acima já registrou */
+  }
+}
+
+process.on('uncaughtException', (err) => registrarFalha('uncaughtException', err))
+process.on('unhandledRejection', (reason) => registrarFalha('unhandledRejection', reason))
+
 const app = express()
 
 // Cabeçalhos de segurança. CSP desligada porque o app carrega estilos/imagens
@@ -169,6 +190,21 @@ if (fs.existsSync(clientDist)) {
   // SPA fallback: qualquer rota que não seja arquivo cai no index.html.
   app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')))
 }
+
+// Falha de bind precisa continuar sendo fatal e legível: com o handler de
+// uncaughtException acima, um EADDRINUSE viraria um processo vivo que não
+// serve nada. Aqui morremos na hora, dizendo o que houve.
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `\n  A porta ${PORT} já está em uso — a mesa provavelmente já está aberta ` +
+        'em outra janela do Terminal. Use aquela, ou feche-a antes de subir de novo.\n',
+    )
+  } else {
+    console.error(`\n  Falha ao subir o servidor: ${err.message}\n`)
+  }
+  process.exit(1)
+})
 
 server.listen(PORT, '0.0.0.0', () => {
   const urls = getLanUrls(PORT)

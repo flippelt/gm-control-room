@@ -73,8 +73,14 @@ export default defineConfig({
             },
           },
           // Assets de campanha (servidos pelo Node) — network-first com fallback.
+          // Matcher por FUNÇÃO de propósito: o Workbox testa RegExp contra a URL
+          // COMPLETA (http://host:4000/assets/…), então /^\/assets\// nunca
+          // casava e esta regra ficava morta — mapa/retrato sem cache nenhum,
+          // e a tela dos jogadores mostrava imagem quebrada a cada oscilação
+          // da rede local. (O navigateFallbackDenylist acima é outro caso: lá o
+          // Workbox testa o pathname, então o RegExp está correto.)
           {
-            urlPattern: /^\/assets\//,
+            urlPattern: ({ url }) => url.pathname.startsWith('/assets/'),
             handler: 'NetworkFirst',
             options: {
               cacheName: 'campaign-assets',

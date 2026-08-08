@@ -274,6 +274,20 @@ export function createSession(io: IO) {
   }
 
   function handleConnection(socket: IOSocket) {
+    // O Socket.io NÃO captura exceções dos listeners: um throw em qualquer
+    // handler vira uncaughtException e mataria a sessão inteira no meio do
+    // jogo. Envolvemos todos de uma vez — a mensagem problemática é descartada
+    // com log, e a mesa continua de pé.
+    const onOriginal = socket.on.bind(socket)
+    socket.on = ((evento: string, listener: (...args: unknown[]) => void) =>
+      onOriginal(evento as never, ((...args: unknown[]) => {
+        try {
+          return listener(...args)
+        } catch (err) {
+          console.error(`[socket] handler "${evento}" falhou: ${(err as Error).stack}`)
+        }
+      }) as never)) as typeof socket.on
+
     // Snapshot completo para quem acabou de conectar.
     socket.emit('state', state)
     socket.emit('campaigns', listCampaigns())
