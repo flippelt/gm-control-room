@@ -7,6 +7,7 @@ import type {
   DashboardLayout,
   DashboardTile,
   EncounterLibrary,
+  PartyMember,
   RandomTableLibrary,
   SceneMusic,
   SessionState,
@@ -35,6 +36,10 @@ const SCENE_MUSIC_FILE = path.resolve(__dirname, '../../.scene-music.json')
 
 // Tabelas aleatórias — global, mesma lógica das criaturas/encontros.
 const TABLES_FILE = path.resolve(__dirname, '../../.tables.json')
+
+// Elenco fixo da mesa (PJs) — indexado por campanha, como a trilha por cena:
+// cada mesa tem a sua party e ela sobrevive a trocas de campanha.
+const PARTY_FILE = path.resolve(__dirname, '../../.party.json')
 
 // Layout do painel do mestre — global e só do lado do GM (a tela dos
 // jogadores não tem cards). Mesma lógica de arquivo separado.
@@ -256,6 +261,31 @@ export function saveTables(tables: RandomTableLibrary): void {
   tablesTimer = setTimeout(() => {
     fs.writeFile(TABLES_FILE, JSON.stringify(tables, null, 2), () => {})
   }, 500)
+}
+
+type PartyFile = Record<string, PartyMember[]>
+
+function readPartyFile(): PartyFile {
+  try {
+    const data = JSON.parse(fs.readFileSync(PARTY_FILE, 'utf-8'))
+    return data && typeof data === 'object' ? (data as PartyFile) : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Elenco fixo da campanha (PJs). `[]` quando a mesa ainda não tem party. */
+export function loadParty(campaignId: string): PartyMember[] {
+  const list = readPartyFile()[campaignId]
+  return Array.isArray(list) ? list : []
+}
+
+/** Salva a party da campanha, preservando a das demais. */
+export function saveParty(campaignId: string, party: PartyMember[]): void {
+  const all = readPartyFile()
+  all[campaignId] = party
+  // Volume baixo (uma mesa tem meia dúzia de PJs) — escrita direta serve.
+  fs.writeFile(PARTY_FILE, JSON.stringify(all, null, 2), () => {})
 }
 
 const BREAKPOINTS: DashboardBreakpoint[] = ['xxl', 'xl', 'lg', 'md', 'sm', 'xs']

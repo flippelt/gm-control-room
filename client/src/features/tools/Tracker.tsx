@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Combatant } from '@gmcr/shared'
 import { STATUS_PRESETS } from '@gmcr/shared'
 import type { System, TrackerField } from '@lippelt/srd-core'
@@ -61,7 +61,26 @@ function ExtraField({
   )
 }
 
-function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
+/** Ancestral que realmente rola (no painel é o `.card__body` do card). */
+function caixaDeRolagem(el: HTMLElement): HTMLElement | null {
+  let p = el.parentElement
+  while (p) {
+    const overflow = getComputedStyle(p).overflowY
+    if ((overflow === 'auto' || overflow === 'scroll') && p.scrollHeight > p.clientHeight) return p
+    p = p.parentElement
+  }
+  return null
+}
+
+function CombatantRow({
+  c,
+  active,
+  rowRef,
+}: {
+  c: Combatant
+  active: boolean
+  rowRef?: React.Ref<HTMLDivElement>
+}) {
   const system = useActiveSystem()
   const statusOptions: { value: string; label: string; title?: string }[] = system
     ? system.conditions.map((cond) => ({
@@ -91,7 +110,10 @@ function CombatantRow({ c, active }: { c: Combatant; active: boolean }) {
   const toggleDead = () => socket.emit('updateCombatant', c.id, { dead: !c.dead })
 
   return (
-    <div className={'cbt' + (active ? ' cbt--active' : '') + (c.dead ? ' cbt--dead' : '')}>
+    <div
+      ref={rowRef}
+      className={'cbt' + (active ? ' cbt--active' : '') + (c.dead ? ' cbt--dead' : '')}
+    >
       <div className="cbt__top">
         <input
           className="cbt__init"
@@ -160,6 +182,26 @@ export function Tracker() {
   const [init, setInit] = useState('')
   const [hp, setHp] = useState('')
 
+  // Mantém quem está no turno CENTRALIZADO na rolagem do card. Com muitos
+  // combatentes o ativo saía de vista a cada "próximo turno" e era preciso
+  // caçar a borda azul na lista. Centralizar (em vez de só trazer à vista)
+  // mostra quem vem antes e quem vem depois na mesma olhada.
+  const ativoRef = useRef<HTMLDivElement>(null)
+  const { active, turnIndex, round } = tracker
+  const totalCombatentes = tracker.combatants.length
+  useEffect(() => {
+    const linha = ativoRef.current
+    if (!active || !linha) return
+    const caixa = caixaDeRolagem(linha)
+    if (!caixa) return
+    const r = linha.getBoundingClientRect()
+    const b = caixa.getBoundingClientRect()
+    const delta = r.top + r.height / 2 - (b.top + b.height / 2)
+    if (Math.abs(delta) < 1) return
+    const suave = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    caixa.scrollTo({ top: caixa.scrollTop + delta, behavior: suave ? 'smooth' : 'auto' })
+  }, [active, turnIndex, round, totalCombatentes])
+
   const add = (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) return
@@ -213,9 +255,17 @@ export function Tracker() {
         {tracker.combatants.length === 0 ? (
           <p className="muted">Nenhum combatente. Adicione abaixo.</p>
         ) : (
-          tracker.combatants.map((c, i) => (
-            <CombatantRow key={c.id} c={c} active={tracker.active && i === tracker.turnIndex} />
-          ))
+          tracker.combatants.map((c, i) => {
+            const noTurno = tracker.active && i === tracker.turnIndex
+            return (
+              <CombatantRow
+                key={c.id}
+                c={c}
+                active={noTurno}
+                rowRef={noTurno ? ativoRef : undefined}
+              />
+            )
+          })
         )}
       </div>
 

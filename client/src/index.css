@@ -219,6 +219,24 @@ button:hover {
    o corpo rola e o cabeçalho fica fixo. */
 .grid-item {
   height: 100%;
+  position: relative;
+}
+
+/* Selo de tamanho durante o resize: quantas colunas/fileiras o card ocupa. */
+.grid-item__medida {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 4;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(20, 20, 30, 0.92);
+  border: 1px solid #5a5a72;
+  color: #e8e8ef;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .card--dashboard {
@@ -302,6 +320,61 @@ button:hover {
 .react-grid-item > .react-resizable-handle::after {
   border-right-color: #5a5a72;
   border-bottom-color: #5a5a72;
+}
+
+/* As pegas ficam ACIMA do card (que preenche o grid item inteiro e tem fundo
+   próprio), senão o clique cai no conteúdo em vez do resize. */
+.react-grid-item > .react-resizable-handle {
+  z-index: 3;
+}
+
+/* Bordas de baixo/direita como faixa arrastável inteira: o padrão do
+   react-resizable é um quadradinho de 20px no meio da borda (com glifo de
+   canto rotacionado), difícil de acertar. Aparecem no hover do card pra não
+   poluir o painel. Atenção ao nome da classe: é `-s`/`-e`, um traço só.
+
+   Precisa repetir as DUAS classes no seletor: o react-grid-layout estiliza
+   `.react-grid-item > .react-resizable-handle.react-resizable-handle-s` e
+   rotaciona a pega em 45°. Com um seletor mais fraco, a rotação vencia e a
+   faixa ficava atravessada no meio do card — clicável em lugar nenhum. */
+.react-grid-item > .react-resizable-handle.react-resizable-handle-s,
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e {
+  background-image: none;
+  background-color: transparent;
+  transform: none;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.react-grid-item:hover > .react-resizable-handle.react-resizable-handle-s,
+.react-grid-item:hover > .react-resizable-handle.react-resizable-handle-e {
+  opacity: 1;
+  background-color: rgba(139, 139, 255, 0.35);
+}
+.react-grid-item > .react-resizable-handle.react-resizable-handle-s {
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  width: auto;
+  height: 6px;
+  border-radius: 3px;
+  cursor: ns-resize;
+}
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e {
+  right: 0;
+  top: 14px;
+  bottom: 14px;
+  height: auto;
+  width: 6px;
+  border-radius: 3px;
+  cursor: ew-resize;
+}
+/* O ::after (vem do CSS do react-grid-layout) desenha o "cantinho" — só faz
+   sentido na pega diagonal. */
+.react-grid-item > .react-resizable-handle.react-resizable-handle-s::after,
+.react-grid-item > .react-resizable-handle.react-resizable-handle-e::after {
+  content: none;
 }
 
 .btn-ghost {
@@ -1720,6 +1793,60 @@ code {
   font-size: clamp(0.9rem, 2vw, 1.4rem);
   color: rgba(255, 255, 255, 0.7);
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* ===== Biblioteca de criaturas (linha da lista) ===== */
+.creature-row {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  cursor: pointer;
+}
+.creature-row--on {
+  background: var(--accent-soft);
+}
+
+/* ===== Party da mesa (elenco fixo) ===== */
+.party__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.party__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+  background: #0e0e11;
+  border: 1px solid #2c2c34;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.party__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.party__acoes {
+  display: flex;
+  gap: 4px;
+}
+.party__edit {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #2c2c34;
+}
+.party__edit input {
+  min-width: 0;
+}
+.party__edit input:not([type='number']) {
+  flex: 1;
 }
 
 /* ===== Tracker (painel) ===== */

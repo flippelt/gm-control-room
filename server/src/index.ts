@@ -10,6 +10,7 @@ import helmet from 'helmet'
 import { Server } from 'socket.io'
 import qrcode from 'qrcode-terminal'
 import type { ClientToServerEvents, ServerToClientEvents, SpotifyCommand } from '@gmcr/shared'
+import { extractCharacterId, parseDdbPartyMember } from '@gmcr/shared'
 import { createSession } from './session.js'
 import { getLanUrls } from './lib/lan.js'
 import { buildAuthorizeUrl, handleCallback, isConfigured } from './spotify/auth.js'
@@ -20,6 +21,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 const PORT = Number(process.env.PORT ?? 4000)
+
+// Rede de segurança: no meio de uma sessão, o servidor morrer é o pior desfecho
+// possível — a TV congela e todo mundo para de jogar. Node derruba o processo
+// por padrão em exceção não capturada e em promise rejeitada; aqui registramos
+// o stack em .crash.log (com hora) e SEGUIMOS servindo. O arquivo é o que
+// permite diagnosticar depois, já que a janela do Terminal costuma sumir junto.
+const CRASH_LOG = path.resolve(__dirname, '../../.crash.log')
+
+function registrarFalha(origem: string, err: unknown): void {
+  const stack = err instanceof Error ? (err.stack ?? err.message) : String(err)
+  const linha = `\n[${new Date().toISOString()}] ${origem}\n${stack}\n`
+  console.error(`[crash] ${origem}: ${stack}`)
+  try {
+    fs.appendFileSync(CRASH_LOG, linha, 'utf-8')
+  } catch {
+    /* sem disco pra logar: o console acima já registrou */
+  }
+}
+
+process.on('uncaughtException', (err) => registrarFalha('uncaughtException', err))
+process.on('unhandledRejection', (reason) => registrarFalha('unhandledRejection', reason))
 
 const app = express()
 
@@ -122,6 +144,38 @@ app.get('/system/list-assets', (_req, res) => {
   res.json({ images })
 })
 
+// Busca a ficha pública do D&D Beyond e devolve já convertida em membro da
+// party. A busca é feita AQUI, no servidor: o endpoint do DDB não manda
+// cabeçalho de CORS, então no navegador só funcionaria via proxy de terceiro
+// (é o que o guild-briefings faz, por ser um site estático). Tendo servidor
+// próprio, buscamos direto — nada de mandar a ficha pra um proxy alheio.
+app.get('/system/ddb-character', async (req, res) => {
+  const id = extractCharacterId(String(req.query.id ?? ''))
+  if (!id) {
+    res.status(400).json({ ok: false, error: 'Link/ID não reconhecido. Cole o endereço do personagem no D&D Beyond.' })
+    return
+  }
+  try {
+    const upstream = await fetch(
+      `https://character-service.dndbeyond.com/character/v5/character/${id}`,
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(10_000) },
+    )
+    if (!upstream.ok) {
+      res.status(502).json({
+        ok: false,
+        error:
+          upstream.status === 403 || upstream.status === 404
+            ? 'Ficha não encontrada ou privada — marque o personagem como público no D&D Beyond.'
+            : `O D&D Beyond respondeu HTTP ${upstream.status}.`,
+      })
+      return
+    }
+    res.json({ ok: true, member: parseDdbPartyMember(await upstream.json()) })
+  } catch (err) {
+    res.status(502).json({ ok: false, error: `Falha ao buscar a ficha: ${(err as Error).message}` })
+  }
+})
+
 // Abre a pasta de assets do servidor no file manager nativo. Útil pro mestre
 // soltar mapas/handouts na pasta sem sair do painel. Funciona apenas quando o
 // servidor roda na mesma máquina do operador (loopback, sem efeito em remoto).
@@ -169,6 +223,21 @@ if (fs.existsSync(clientDist)) {
   // SPA fallback: qualquer rota que não seja arquivo cai no index.html.
   app.get('*', (_req, res) => res.sendFile(path.join(clientDist, 'index.html')))
 }
+
+// Falha de bind precisa continuar sendo fatal e legível: com o handler de
+// uncaughtException acima, um EADDRINUSE viraria um processo vivo que não
+// serve nada. Aqui morremos na hora, dizendo o que houve.
+server.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `\n  A porta ${PORT} já está em uso — a mesa provavelmente já está aberta ` +
+        'em outra janela do Terminal. Use aquela, ou feche-a antes de subir de novo.\n',
+    )
+  } else {
+    console.error(`\n  Falha ao subir o servidor: ${err.message}\n`)
+  }
+  process.exit(1)
+})
 
 server.listen(PORT, '0.0.0.0', () => {
   const urls = getLanUrls(PORT)

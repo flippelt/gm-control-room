@@ -568,6 +568,25 @@ export interface DashboardLayout {
 
 // ===================== Estado e eventos da sessão =====================
 
+/**
+ * Personagem jogador do elenco fixo da mesa. Guarda o mínimo pra entrar no
+ * combate sem redigitar toda sessão; o resto da ficha vive com o jogador.
+ */
+export interface PartyMember {
+  id: string
+  name: string
+  /** Nome do jogador (aparece só no painel do mestre). */
+  player?: string
+  /** Modificador de iniciativa — o d20 é rolado ao entrar no combate. */
+  initiativeMod?: number
+  /** HP máximo; vira HP atual e máximo ao entrar no tracker. */
+  hp?: number
+  /** CA/defesa, só como consulta rápida no painel. */
+  ac?: number
+  /** Linha de identificação (ex.: "Elfo · Ladino 3 / Bruxo 2"). */
+  summary?: string
+}
+
 export interface SessionState {
   /** Campanha carregada no servidor. */
   campaign: Campaign
@@ -597,6 +616,12 @@ export interface SessionState {
   partyResources: Record<string, number>
   /** Notas livres do mestre (markdown leve, persiste com a sessão). */
   notes: string
+  /**
+   * Elenco fixo da mesa (os PJs). Por CAMPANHA — cada mesa tem a sua party —
+   * e persiste em `.party.json`, fora do tracker: o tracker é o combate de
+   * agora, a party é quem senta à mesa toda semana.
+   */
+  party: PartyMember[]
   /**
    * Biblioteca de criaturas salvas (NPCs/monstros). Global e separada de
    * campanha — pra que o mestre reaproveite a Lich de uma sessão na próxima.
@@ -704,6 +729,14 @@ export interface ClientToServerEvents {
    */
   setPartyResource: (key: string, value: number) => void
 
+  // --- Elenco fixo da mesa (PJs) ---
+  /**
+   * Substitui a party inteira da campanha ativa. A lista é curta (uma mesa) e
+   * o mestre edita de uma vez, então mandar tudo evita um evento por campo —
+   * mesma escolha do `setLayout`. O servidor saneia e persiste.
+   */
+  setParty: (party: PartyMember[]) => void
+
   // --- Gerência de campanha ---
   /** Solicita a lista atual de campanhas disponíveis. */
   listCampaigns: () => void
@@ -786,3 +819,4 @@ export interface ClientToServerEvents {
 // Re-export do importer pra que o server e o client peguem por uma única
 // origem (@gmcr/shared).
 export * from './creatureImporter.js'
+export * from './ddbCharacter.js'

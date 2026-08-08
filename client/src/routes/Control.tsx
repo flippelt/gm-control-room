@@ -14,6 +14,7 @@ import { NotesPanel } from '../features/tools/NotesPanel'
 import { RollHistory } from '../features/tools/RollHistory'
 import { Tracker } from '../features/tools/Tracker'
 import { ClocksPanel } from '../features/tools/ClocksPanel'
+import { PartyPanel } from '../features/tools/PartyPanel'
 import { PartyResourcesPanel } from '../features/tools/PartyResourcesPanel'
 import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
@@ -172,6 +173,7 @@ export function Control() {
           body: <RollHistory rolls={rollHistory.slice(0, 20)} />,
         },
         { id: 'tracker', title: 'Iniciativa / combate', body: <Tracker /> },
+        { id: 'party', title: 'Party da mesa', body: <PartyPanel /> },
         { id: 'clocks', title: 'Clocks / progresso', body: <ClocksPanel /> },
         ...(system?.partyResources && system.partyResources.length > 0
           ? [
