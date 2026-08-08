@@ -177,30 +177,36 @@ export function CreaturesPanel() {
           </p>
         )}
         {filtered.map((c) => (
-          <button
+          <div
             key={c.id}
-            type="button"
-            className={selected === c.id ? 'card card--shiny' : 'card'}
-            style={{
-              textAlign: 'left',
-              padding: '0.5rem 0.75rem',
-              cursor: 'pointer',
-              background: selected === c.id ? 'var(--accent-soft)' : 'transparent',
-            }}
-            onClick={() => setSelected(c.id)}
+            className={'creature-row card' + (selected === c.id ? ' creature-row--on' : '')}
           >
-            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <strong>{c.name}</strong>
-              <span className="muted" style={{ fontSize: '0.8rem' }}>
-                {c.cr ? `CR ${c.cr}` : ''} {c.system}
-              </span>
-            </div>
-            <div className="muted" style={{ fontSize: '0.8rem' }}>
-              {[c.size, c.type, c.alignment].filter(Boolean).join(' · ')}
-              {c.hp?.average ? ` · HP ${c.hp.average}` : ''}
-              {c.ac?.value ? ` · CA ${c.ac.value}` : ''}
-            </div>
-          </button>
+            {/* Clicar no corpo da linha abre o statblock; o "+ Tracker" ao lado
+                despacha direto. Antes o clique só selecionava, e o único jeito
+                de mandar pro tracker era achar o botão no card de detalhe — que
+                costuma cair abaixo da rolagem do painel. */}
+            <button type="button" className="creature-row__pick" onClick={() => setSelected(c.id)}>
+              <div className="row" style={{ justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <strong>{c.name}</strong>
+                <span className="muted" style={{ fontSize: '0.8rem' }}>
+                  {c.cr ? `CR ${c.cr}` : ''} {c.system}
+                </span>
+              </div>
+              <div className="muted" style={{ fontSize: '0.8rem' }}>
+                {[c.size, c.type, c.alignment].filter(Boolean).join(' · ')}
+                {c.hp?.average ? ` · HP ${c.hp.average}` : ''}
+                {c.ac?.value ? ` · CA ${c.ac.value}` : ''}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="creature-row__add"
+              title={`Mandar ${c.name} pro tracker (iniciativa 0 — ajuste na linha dele)`}
+              onClick={() => socket.emit('spawnCombatantFromCreature', c.id, 0)}
+            >
+              + Tracker
+            </button>
+          </div>
         ))}
       </div>
 

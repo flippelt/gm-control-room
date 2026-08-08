@@ -3,7 +3,7 @@ import type { Layout, Layouts } from 'react-grid-layout'
 import type { DashboardBreakpoint, DashboardLayout, DashboardTile } from '@gmcr/shared'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
-import { BREAKPOINT_ORDER, COLLAPSED_H, defaultLayouts, mergeLayouts } from './layout'
+import { BREAKPOINT_ORDER, COLLAPSED_H, COLS, cardWidth, defaultLayouts, mergeLayouts } from './layout'
 
 type LayoutMap = Record<DashboardBreakpoint, DashboardTile[]>
 
@@ -68,11 +68,15 @@ export function useDashboard(cardIds: string[]) {
   const rendered = useMemo<Layouts>(() => {
     const out: Layouts = {}
     for (const bp of BREAKPOINT_ORDER) {
-      out[bp] = (layouts[bp] ?? []).map((t) =>
-        collapsed.has(t.i)
-          ? { ...t, h: COLLAPSED_H, minH: COLLAPSED_H, maxH: COLLAPSED_H, isResizable: false }
-          : t,
-      )
+      out[bp] = (layouts[bp] ?? []).map((t) => {
+        // `minW` faz o RGL respeitar a largura mínima no próprio arraste do
+        // resize — sem isso dava pra encolher o tracker abaixo de 2 colunas e
+        // só o merge (no reload) corrigiria.
+        const base = { ...t, minW: cardWidth(t.i, COLS[bp]) }
+        return collapsed.has(t.i)
+          ? { ...base, h: COLLAPSED_H, minH: COLLAPSED_H, maxH: COLLAPSED_H, isResizable: false }
+          : base
+      })
     }
     return out
   }, [layouts, collapsed])

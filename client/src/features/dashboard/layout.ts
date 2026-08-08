@@ -56,15 +56,46 @@ export function cardHeight(id: string): number {
   return CARD_H[id] ?? DEFAULT_H
 }
 
-/** Gera tiles padrão pra uma lista ordenada de cards num dado nº de colunas. */
+/**
+ * Largura MÍNIMA (em colunas) de cada card. O tracker é o card que a mesa mais
+ * olha durante o combate — numa coluna só, cada combatente vira três linhas
+ * empilhadas (HP, campos do sistema, status) e a ordem de turno some na
+ * rolagem. Em duas colunas cabe tudo lado a lado.
+ *
+ * É mínimo, não fixo: dá pra alargar mais no painel, e o valor é limitado ao
+ * número de colunas do breakpoint (no celular, 1 coluna continua sendo 1).
+ */
+const CARD_W: Record<string, number> = {
+  tracker: 2,
+}
+
+export function cardWidth(id: string, cols: number): number {
+  return Math.min(CARD_W[id] ?? 1, cols)
+}
+
+/**
+ * Gera tiles padrão pra uma lista ordenada de cards num dado nº de colunas,
+ * respeitando a largura de cada um (um card de 2 colunas quebra a linha quando
+ * não cabe no resto dela).
+ */
 function tilesFor(ids: string[], cols: number): DashboardTile[] {
-  return ids.map((id, i) => ({
-    i: id,
-    x: i % cols,
-    y: Math.floor(i / cols),
-    w: 1,
-    h: cardHeight(id),
-  }))
+  const out: DashboardTile[] = []
+  let x = 0
+  let y = 0
+  for (const id of ids) {
+    const w = cardWidth(id, cols)
+    if (x + w > cols) {
+      x = 0
+      y += 1
+    }
+    out.push({ i: id, x, y, w, h: cardHeight(id) })
+    x += w
+    if (x >= cols) {
+      x = 0
+      y += 1
+    }
+  }
+  return out
 }
 
 /** Layout padrão (todos os breakpoints) derivado da ordem do registro. */
@@ -94,9 +125,19 @@ export function mergeLayouts(
   if (!saved) return base
   const merged = {} as Record<DashboardBreakpoint, DashboardTile[]>
   for (const bp of BREAKPOINT_ORDER) {
+    const cols = COLS[bp]
     const savedBy: Record<string, DashboardTile> = {}
     for (const t of saved[bp] ?? []) savedBy[t.i] = t
-    merged[bp] = base[bp].map((def) => savedBy[def.i] ?? def)
+    merged[bp] = base[bp].map((def) => {
+      const tile = savedBy[def.i]
+      if (!tile) return def
+      // A largura mínima do card vale também sobre layout já salvo — senão um
+      // `.layout.json` antigo (tracker com 1 coluna) prenderia o card no
+      // tamanho velho pra sempre. Alargar além do mínimo continua valendo.
+      const w = Math.max(tile.w, cardWidth(def.i, cols))
+      if (w === tile.w) return tile
+      return { ...tile, w, x: Math.min(tile.x, Math.max(0, cols - w)) }
+    })
   }
   return merged
 }
