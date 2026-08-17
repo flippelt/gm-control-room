@@ -197,7 +197,16 @@ export function Control() {
   return (
     <div className="control">
       <header className="control__header">
-        <h1>GM Control Room</h1>
+        <h1 className="control__brand">
+          <img
+            className="control__logo"
+            src="/icons/d20.svg"
+            alt=""
+            width={28}
+            height={28}
+          />
+          GM Control Room
+        </h1>
         <div className="control__header-right">
           {system && (
             <span

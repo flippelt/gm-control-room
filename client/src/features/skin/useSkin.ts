@@ -10,7 +10,7 @@ export type SkinPref = ResolvedSkin | 'auto'
 
 export const SKIN_OPTIONS: { id: SkinPref; label: string; description: string }[] = [
   { id: 'auto', label: 'Auto', description: 'Derivado do gênero da campanha ativa.' },
-  { id: 'crt', label: 'CRT', description: 'Dark vermelho retro (default).' },
+  { id: 'crt', label: 'CRT', description: 'Dark vermelho retro — sala de controle.' },
   { id: 'magick', label: 'Magick', description: 'Pergaminho/fantasia.' },
   { id: 'noir', label: 'Noir', description: 'Alto contraste P&B.' },
   { id: 'neon', label: 'Neon', description: 'Cyberpunk magenta/cyan.' },

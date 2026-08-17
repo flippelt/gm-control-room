@@ -21,10 +21,10 @@ import '@fontsource/pirata-one/latin-400.css'
 import '@fontsource/pirata-one/latin-ext-400.css'
 import '@fontsource/caveat/latin-400.css'
 import '@fontsource/caveat/latin-ext-400.css'
-// Fontes das skins alternativas (carregadas sempre — ~30KB extra é trivial):
-// - Spectral: skin "magick" (corpo serifa quente, fantasy/medieval)
-// - Courier Prime: skin "noir" (alto contraste P&B)
-// - JetBrains Mono: skin "neon" (sci-fi cyberpunk)
+// Fontes das skins (carregadas sempre — ~30KB extra é trivial):
+// - JetBrains Mono: CRT (títulos) + neon (chrome inteiro)
+// - Spectral / IM Fell: skin "magick"
+// - Courier Prime: skin "noir"
 import '@fontsource/spectral/latin.css'
 import '@fontsource/spectral/latin-ext.css'
 import '@fontsource/courier-prime/latin.css'
