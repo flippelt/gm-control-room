@@ -1,4 +1,3 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { Control } from './routes/Control'
@@ -39,10 +38,12 @@ const router = createBrowserRouter([
   { path: '/display', element: <Display /> },
 ])
 
+// Sem StrictMode: em DEV ele monta/desmonta cada árvore duas vezes e o
+// react-grid-layout (react-draggable) perde os listeners — cards não
+// arrastam nem redimensionam no Vite. Em produção o StrictMode nem faz
+// esse ciclo; o painel da mesa (npm start) já funcionava. Ver Dashboard.
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <RouterProvider router={router} />
-    </ErrorBoundary>
-  </StrictMode>,
+  <ErrorBoundary>
+    <RouterProvider router={router} />
+  </ErrorBoundary>,
 )

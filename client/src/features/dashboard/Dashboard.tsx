@@ -15,9 +15,9 @@ const ResponsiveGridLayout = WidthProvider(Responsive)
  * (6/5/4/3/2/1 colunas conforme a largura), sem sobreposição. Cada card é
  * arrastado pelo cabeçalho; o layout persiste no servidor (global, lado do GM).
  *
- * ⚠️ O drag do react-grid-layout NÃO funciona sob `React.StrictMode` em modo
- * dev (o double-mount desconecta os listeners do react-draggable). É só artefato
- * de dev — o build de produção (como o GM roda self-hosted) arrasta normal.
+ * Drag/resize no Vite exigem duas coisas: sem StrictMode (double-mount
+ * mata os listeners do react-draggable) e `process.env.DRAGGABLE_DEBUG`
+ * definido no vite.config (senão o browser estoura no handleDragStart).
  */
 export function Dashboard({ cards }: { cards: CardDef[] }) {
   const ids = useMemo(() => cards.map((c) => c.id), [cards])

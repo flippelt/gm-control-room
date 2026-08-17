@@ -5,6 +5,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 const SERVER_PORT = process.env.PORT ?? '4000'
 
 export default defineConfig({
+  // react-draggable lê `process.env.DRAGGABLE_DEBUG` no handleDragStart.
+  // No Vite/browser `process` não existe — o throw aborta o arraste/resize
+  // antes de `this.dragging = true`. O build de produção substitui isso.
+  define: {
+    'process.env.DRAGGABLE_DEBUG': 'undefined',
+  },
   plugins: [
     react(),
     // PWA — instalável standalone (TV/tablet), com manifest apontando
