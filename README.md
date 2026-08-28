@@ -37,17 +37,25 @@ npm run build && npm start   # produção: tudo na porta 4000
 
 Documentação completa na **[Wiki](https://github.com/flippelt/gm-control-room/wiki)**:
 
-- [Quick Start](https://github.com/flippelt/gm-control-room/wiki/Quick-Start) — setup, dev vs produção, `.env`
-- [Architecture](https://github.com/flippelt/gm-control-room/wiki/Architecture) · [Development](https://github.com/flippelt/gm-control-room/wiki/Development) · [Socket Events](https://github.com/flippelt/gm-control-room/wiki/Socket-Events)
-- [Campaigns](https://github.com/flippelt/gm-control-room/wiki/Campaigns) · [Scenes and Treatments](https://github.com/flippelt/gm-control-room/wiki/Scenes-and-Treatments) · [Lighting](https://github.com/flippelt/gm-control-room/wiki/Lighting-and-Atmosphere) · [Audio](https://github.com/flippelt/gm-control-room/wiki/Audio-Mixer)
-- [Combat Tracker](https://github.com/flippelt/gm-control-room/wiki/Combat-Tracker) · [Dice](https://github.com/flippelt/gm-control-room/wiki/Dice-and-Roll-History) · [Notes](https://github.com/flippelt/gm-control-room/wiki/GM-Notes)
-- [Spotify](https://github.com/flippelt/gm-control-room/wiki/Spotify) — OAuth, playlists, shuffle/repeat
-- [RPG Systems](https://github.com/flippelt/gm-control-room/wiki/RPG-Systems) · [Display and PWA](https://github.com/flippelt/gm-control-room/wiki/Display-and-PWA) · [Shortcuts and Assets](https://github.com/flippelt/gm-control-room/wiki/Shortcuts-and-Assets) · [Persistence](https://github.com/flippelt/gm-control-room/wiki/Persistence)
+**Setup:** [Quick Start](https://github.com/flippelt/gm-control-room/wiki/Quick-Start) · [Spotify](https://github.com/flippelt/gm-control-room/wiki/Spotify) · [Development](https://github.com/flippelt/gm-control-room/wiki/Development)
 
-## Repositórios relacionados
+**Conteúdo:** [Campaigns](https://github.com/flippelt/gm-control-room/wiki/Campaigns) · [Scenes](https://github.com/flippelt/gm-control-room/wiki/Scenes-and-Treatments) · [Lighting](https://github.com/flippelt/gm-control-room/wiki/Lighting-and-Atmosphere) · [Audio](https://github.com/flippelt/gm-control-room/wiki/Audio-Mixer) · [Shortcuts](https://github.com/flippelt/gm-control-room/wiki/Shortcuts-and-Assets)
 
-- [`gmcr-srd-systems`](https://github.com/flippelt/gmcr-srd-systems) — Sistemas SRD públicos (`@lippelt/srd-*`)
-- [`rpg-prop-kit`](https://github.com/flippelt/rpg-prop-kit) — Componentes CRT retrô usados nas cenas
+**Ferramentas:** [Combat Tracker](https://github.com/flippelt/gm-control-room/wiki/Combat-Tracker) · [Creature Library](https://github.com/flippelt/gm-control-room/wiki/Creature-Library) · [Encounter Library](https://github.com/flippelt/gm-control-room/wiki/Encounter-Library) · [Clocks](https://github.com/flippelt/gm-control-room/wiki/Clocks) · [Party Resources](https://github.com/flippelt/gm-control-room/wiki/Party-Resources) · [Random Tables](https://github.com/flippelt/gm-control-room/wiki/Random-Tables) · [Dice](https://github.com/flippelt/gm-control-room/wiki/Dice-and-Roll-History) · [Notes](https://github.com/flippelt/gm-control-room/wiki/GM-Notes) · [RPG Systems](https://github.com/flippelt/gm-control-room/wiki/RPG-Systems)
+
+**Display:** [Display and PWA](https://github.com/flippelt/gm-control-room/wiki/Display-and-PWA) · [Skins](https://github.com/flippelt/gm-control-room/wiki/Skins-and-Themes) · [Persistence](https://github.com/flippelt/gm-control-room/wiki/Persistence)
+
+**Arquitetura:** [Architecture](https://github.com/flippelt/gm-control-room/wiki/Architecture) · [Socket Events](https://github.com/flippelt/gm-control-room/wiki/Socket-Events)
+
+## Família
+
+| Projeto | Papel |
+|---|---|
+| [gmcr-srd-systems](https://github.com/flippelt/gmcr-srd-systems) | regras SRD (`@lippelt/srd-*`) |
+| [rpg-prop-kit](https://github.com/flippelt/rpg-prop-kit) | CRT nas cenas |
+| [session-kit](https://github.com/flippelt/session-kit) | YAML de sessão → campanha/cenas deste painel |
+| [Campaign Codex](https://github.com/flippelt/campaign-codex) | wiki da campanha · [demo](https://flippelt.github.io/campaign-codex/) |
+| [Immersive Terminal](https://github.com/flippelt/Immersive-Terminal-for-RPGs) | prop CRT na mesa · [demo](https://flippelt.github.io/Immersive-Terminal-for-RPGs/) |
 
 ## Licença
 
