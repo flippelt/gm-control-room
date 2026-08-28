@@ -8,11 +8,13 @@ Painel de controle de sessão de RPG em tempo real. O mestre opera de qualquer d
 
 ## Screenshots
 
-![Painel do mestre (cards arrastáveis)](docs/screenshots/master-dashboard.png)
+Clique para ver em 1080p.
 
-![Tela dos jogadores — typewriter](docs/screenshots/scene-typewriter.png)
+[<img src="docs/screenshots/master-dashboard.png" width="720" alt="Painel do mestre (cards arrastáveis)">](docs/screenshots/master-dashboard.png)
 
-![Tracker de iniciativa / combate](docs/screenshots/combat-tracker.png)
+[<img src="docs/screenshots/scene-typewriter.png" width="720" alt="Tela dos jogadores — typewriter">](docs/screenshots/scene-typewriter.png)
+
+[<img src="docs/screenshots/combat-tracker.png" width="720" alt="Tracker de iniciativa / combate">](docs/screenshots/combat-tracker.png)
 
 ## Início rápido
 
