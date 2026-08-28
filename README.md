@@ -6,6 +6,14 @@ Painel de controle de sessão de RPG em tempo real. O mestre opera de qualquer d
 
 **Motor agnóstico de sistema**: nada de regras embutidas no servidor; sistemas RPG vêm do monorepo [`@lippelt/srd-*`](https://github.com/flippelt/gmcr-srd-systems) (D&D 5e, Pathfinder, Lancer, GUMSHOE, Daggerheart, Candela Obscura e mais).
 
+## Screenshots
+
+![Painel do mestre (cards arrastáveis)](docs/screenshots/master-dashboard.png)
+
+![Tela dos jogadores — typewriter](docs/screenshots/scene-typewriter.png)
+
+![Tracker de iniciativa / combate](docs/screenshots/combat-tracker.png)
+
 ## Início rápido
 
 ```bash
