@@ -9,9 +9,15 @@ import type {
   TextVariant,
 } from '@gmcr/shared'
 import { socket } from '../../lib/socket'
+import { useSession } from '../../store'
 import { PresetEditor } from '../tools/PresetEditor'
 import { useActiveSystem } from '../systems/useActiveSystem'
 import { systemSelectOptions } from '../systems/systemOptions'
+import {
+  duplicateCampaignIdError,
+  slugifyCampaignId,
+  VALID_CAMPAIGN_ID,
+} from './campaignId'
 
 type Mode = 'edit' | 'create'
 
@@ -26,9 +32,6 @@ const GENRES: { value: Genre; label: string }[] = [
 
 const TREATMENT_KINDS: DisplayTreatment['kind'][] = ['text', 'color', 'image', 'crt']
 const TEXT_VARIANTS: TextVariant[] = ['auto', 'typewriter', 'scroll', 'terminal']
-
-/** IDs válidos: minúsculas/dígitos/dash, começa com letra/dígito, 1-64 chars. */
-const VALID_ID = /^[a-z0-9][a-z0-9-_]{0,63}$/
 
 function emptyCampaign(): Campaign {
   return {
@@ -249,37 +252,59 @@ function TreatmentEditor({
 function MetaTab({
   draft,
   mode,
+  idTaken,
+  idTouched,
   onChange,
+  onIdTouch,
   onOpenPresets,
 }: {
   draft: Campaign
   mode: Mode
+  idTaken: boolean
+  idTouched: boolean
   onChange: (patch: Partial<Campaign>) => void
+  onIdTouch: () => void
   onOpenPresets: () => void
 }) {
-  const idIsValid = VALID_ID.test(draft.id)
+  const idIsValid = VALID_CAMPAIGN_ID.test(draft.id)
   return (
     <div className="rule-form" style={{ flexDirection: 'column' }}>
-      <label className="rule-field">
-        <span>ID {mode === 'edit' && <em className="muted">(não editável)</em>}</span>
-        <input
-          value={draft.id}
-          onChange={(e) => onChange({ id: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-') })}
-          disabled={mode === 'edit'}
-          placeholder="ex.: arkham-1923"
-          aria-invalid={!idIsValid}
-        />
-        {!idIsValid && draft.id && (
-          <small className="muted">só letras minúsculas, números, hífen ou underscore</small>
-        )}
-      </label>
       <label className="rule-field">
         <span>Título</span>
         <input
           value={draft.title}
-          onChange={(e) => onChange({ title: e.target.value })}
+          onChange={(e) => {
+            const title = e.target.value
+            const next: Partial<Campaign> = { title }
+            if (mode === 'create' && !idTouched) next.id = slugifyCampaignId(title)
+            onChange(next)
+          }}
           placeholder="Ex.: O Chamado em Arkham"
         />
+      </label>
+      <label className="rule-field">
+        <span>ID {mode === 'edit' && <em className="muted">(não editável)</em>}</span>
+        <input
+          value={draft.id}
+          onChange={(e) => {
+            onIdTouch()
+            onChange({ id: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, '-') })
+          }}
+          disabled={mode === 'edit'}
+          placeholder="gerado do título"
+          aria-invalid={!idIsValid || idTaken}
+        />
+        {mode === 'create' && !draft.id && (
+          <small className="muted">o id sai do título (acentos viram letra simples)</small>
+        )}
+        {idTaken && (
+          <small style={{ color: 'var(--err, #e0645b)' }}>
+            Já existe uma campanha com esse id. Mude o título ou o id.
+          </small>
+        )}
+        {!idIsValid && draft.id && !idTaken && (
+          <small className="muted">só letras minúsculas, números, hífen ou underscore</small>
+        )}
       </label>
       <div className="row">
         <label className="rule-field" style={{ flex: 1 }}>
@@ -553,7 +578,10 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   const [presetsOpen, setPresetsOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [idTouched, setIdTouched] = useState(false)
   const system = useActiveSystem()
+  const existingIds = useSession((s) => s.campaigns).map((c) => c.id)
+  const idTaken = mode === 'create' && Boolean(duplicateCampaignIdError(draft.id, existingIds))
 
   // Quando abrir/trocar de campanha, reseta o draft.
   useEffect(() => {
@@ -562,12 +590,13 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
       setTab('meta')
       setSaveError(null)
       setSaving(false)
+      setIdTouched(false)
     }
   }, [open, campaign?.id])
 
-  const idIsValid = VALID_ID.test(draft.id)
+  const idIsValid = VALID_CAMPAIGN_ID.test(draft.id)
   const titleIsValid = draft.title.trim().length > 0
-  const canSave = idIsValid && titleIsValid
+  const canSave = idIsValid && titleIsValid && !idTaken
 
   const patch = (p: Partial<Campaign>) => setDraft((d) => ({ ...d, ...p }))
 
@@ -600,6 +629,13 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
       return
     }
 
+    const taken = mode === 'create' ? duplicateCampaignIdError(draft.id, existingIds) : null
+    if (taken) {
+      setSaveError(taken)
+      setTab('meta')
+      return
+    }
+
     setSaving(true)
     // Timeout manual: cobre o caso da conexão cair (ex.: payload gigante) — em
     // vez de travar em silêncio, mostramos erro se o ack não voltar a tempo.
@@ -613,7 +649,8 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
           'Confira se alguma cena tem imagem colada (use /assets/…).',
       )
     }, 6000)
-    socket.emit('saveCampaign', draft, (res) => {
+
+    socket.emit('saveCampaign', { campaign: draft, create: mode === 'create' }, (res) => {
       if (done) return
       done = true
       clearTimeout(timer)
@@ -673,7 +710,10 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
               <MetaTab
                 draft={draft}
                 mode={mode}
+                idTaken={idTaken}
+                idTouched={idTouched}
                 onChange={patch}
+                onIdTouch={() => setIdTouched(true)}
                 onOpenPresets={() => setPresetsOpen(true)}
               />
             )}

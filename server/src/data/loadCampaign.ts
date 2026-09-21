@@ -65,11 +65,14 @@ export function loadCampaignById(id: string): Campaign {
  *
  * O `fs.watch()` da sessão captura a mudança e recarrega automaticamente.
  */
-export function saveCampaignFile(campaign: Campaign): void {
+export function saveCampaignFile(campaign: Campaign, opts: { create?: boolean } = {}): void {
   if (!campaign || typeof campaign !== 'object') {
     throw new Error('campanha inválida')
   }
   const file = fileForId(campaign.id) // valida id
+  if (opts.create && fs.existsSync(file)) {
+    throw new Error(`Já existe uma campanha com o id "${campaign.id}". Mude o título ou o id.`)
+  }
   if (typeof campaign.title !== 'string' || !campaign.title.trim()) {
     throw new Error('título obrigatório')
   }
