@@ -11,6 +11,7 @@ import type {
 import { socket } from '../../lib/socket'
 import { PresetEditor } from '../tools/PresetEditor'
 import { useActiveSystem } from '../systems/useActiveSystem'
+import { systemSelectOptions } from '../systems/systemOptions'
 
 type Mode = 'edit' | 'create'
 
@@ -311,14 +312,15 @@ function MetaTab({
       </div>
       <label className="rule-field">
         <span>Sistema RPG</span>
-        <input
+        <select
           value={draft.system ?? ''}
           onChange={(e) => onChange({ system: e.target.value.trim() || undefined })}
-          placeholder="Ex.: dnd5e-2014, lancer, daggerheart (vazio = sem sistema)"
-        />
-        <small className="muted">
-          ID de um sistema registrado em <code>@lippelt/srd-core</code>. Veja os pacotes <code>@lippelt/srd-*</code> ou <code>@lippelt-private/srd-*</code>.
-        </small>
+        >
+          <option value="">— sem sistema —</option>
+          {systemSelectOptions(draft.system).map((s) => (
+            <option key={s.id} value={s.id}>{s.label}</option>
+          ))}
+        </select>
       </label>
 
       <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #2c2c34' }}>
