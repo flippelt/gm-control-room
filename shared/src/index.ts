@@ -749,15 +749,21 @@ export interface ClientToServerEvents {
 
   // --- Edição de campanha ---
   /**
-   * Salva uma campanha no disco (sobrescreve `campaigns/<id>.json`).
+   * Salva uma campanha no disco (`campaigns/<id>.json`).
    * Loopback-only no server. Após salvar, o `fs.watch` recarrega
    * automaticamente e dispara broadcast.
+   *
+   * `create: true` recusa se o arquivo já existe. Payload legado (só o
+   * objeto Campaign) continua válido e sobrescreve.
    *
    * O `ack` opcional devolve sucesso/erro pro cliente — sem ele, uma falha
    * (bloqueio loopback, validação, payload grande derrubando a conexão) some
    * em silêncio e a edição se perde sem aviso.
    */
-  saveCampaign: (campaign: Campaign, ack?: (res: SaveResult) => void) => void
+  saveCampaign: (
+    payload: Campaign | { campaign: Campaign; create?: boolean },
+    ack?: (res: SaveResult) => void,
+  ) => void
 
   // --- Biblioteca de criaturas ---
   /**

@@ -165,6 +165,18 @@ body.skin--neon .control__logo {
   white-space: nowrap;
 }
 
+.campaign-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.campaign-select-wrap > span {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
 .campaign-select {
   background: var(--sunken);
   border: 1px solid var(--border);

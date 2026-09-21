@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
@@ -20,6 +21,7 @@ import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
 import { Dashboard } from '../features/dashboard/Dashboard'
 import type { CardDef } from '../features/dashboard/types'
+import { editorModeFromSearch, type EditorMode } from './controlSearch'
 
 const TREATMENT_LABEL: Record<string, string> = {
   text: 'texto',
@@ -45,7 +47,18 @@ export function Control() {
   const connected = useSession((s) => s.connected)
   const rollHistory = useSession((s) => s.rollHistory)
   const system = useActiveSystem()
-  const [editorMode, setEditorMode] = useState<'closed' | 'edit' | 'create'>('closed')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [editorMode, setEditorMode] = useState<EditorMode>(() =>
+    editorModeFromSearch(searchParams.toString()),
+  )
+
+  useEffect(() => {
+    if (searchParams.get('nova') !== '1') return
+    setEditorMode('create')
+    const next = new URLSearchParams(searchParams)
+    next.delete('nova')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, setSearchParams])
 
   // Registro de cards do painel. A ordem aqui define o layout padrão; o GM
   // rearranja/minimiza e o resultado persiste no servidor (global).
@@ -217,18 +230,22 @@ export function Control() {
             </span>
           )}
           {campaigns.length > 0 && (
-            <select
-              className="campaign-select"
-              value={campaign?.id ?? ''}
-              onChange={(e) => socket.emit('selectCampaign', e.target.value)}
-              title="Trocar campanha"
-            >
-              {campaigns.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title}
-                </option>
-              ))}
-            </select>
+            <label className="campaign-select-wrap">
+              <span>Campanha</span>
+              <select
+                className="campaign-select"
+                value={campaign?.id ?? ''}
+                onChange={(e) => socket.emit('selectCampaign', e.target.value)}
+                aria-label="Campanha"
+                title="Trocar campanha"
+              >
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title}
+                  </option>
+                ))}
+              </select>
+            </label>
           )}
           {campaign && (
             <button
@@ -236,7 +253,7 @@ export function Control() {
               onClick={() => setEditorMode('edit')}
               title="Editar campanha atual"
             >
-              ✎ Editar
+              Editar campanha
             </button>
           )}
           <button
@@ -244,7 +261,7 @@ export function Control() {
             onClick={() => setEditorMode('create')}
             title="Criar nova campanha"
           >
-            + Nova
+            Nova campanha
           </button>
           <SkinToggle />
           <span className={connected ? 'status status--on' : 'status'}>

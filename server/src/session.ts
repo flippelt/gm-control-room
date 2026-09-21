@@ -622,11 +622,14 @@ export function createSession(io: IO) {
       broadcast()
     })
 
-    socket.on('saveCampaign', (campaign, ack) => {
+    socket.on('saveCampaign', (payload, ack) => {
       // ack opcional: devolve sucesso/erro pro cliente em vez de falhar mudo.
       const respond = (res: { ok: boolean; error?: string }) => {
         if (typeof ack === 'function') ack(res)
       }
+      const wrapped = payload && typeof payload === 'object' && 'campaign' in payload
+      const campaign = wrapped ? payload.campaign : payload
+      const create = wrapped ? payload.create === true : false
       // Loopback-only: ignora se vier de aparelho remoto da LAN.
       const ip = socket.handshake.address ?? ''
       const isLoopback =
@@ -640,7 +643,7 @@ export function createSession(io: IO) {
         return
       }
       try {
-        saveCampaignFile(campaign)
+        saveCampaignFile(campaign, { create })
         // O fs.watch recarrega quando a campanha ativa muda; refresca a lista
         // pra todos os clients (campanhas novas aparecem no seletor).
         io.emit('campaigns', listCampaigns())
