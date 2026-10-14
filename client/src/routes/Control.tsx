@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
+import { AMBIENT_KINDS, isTreatmentAllowed, treatmentBlockedReason } from '@gmcr/shared'
 import { socket } from '../lib/socket'
 import { useSession } from '../store'
 import { CampaignEditor } from '../features/campaign/CampaignEditor'
@@ -19,6 +19,7 @@ import { PartyPanel } from '../features/tools/PartyPanel'
 import { PartyResourcesPanel } from '../features/tools/PartyResourcesPanel'
 import { TablesPanel } from '../features/tables/TablesPanel'
 import { useActiveSystem } from '../features/systems/useActiveSystem'
+import { AMBIENT_LABELS } from '../features/display/ambient/ambientParams'
 import { Dashboard } from '../features/dashboard/Dashboard'
 import type { CardDef } from '../features/dashboard/types'
 import { editorModeFromSearch, type EditorMode } from './controlSearch'
@@ -167,6 +168,39 @@ export function Control() {
                   Vinheta
                 </label>
               </div>
+
+              <p className="field-label">Ambiente animado</p>
+              <div className="washes">
+                {AMBIENT_KINDS.map((kind) => (
+                  <button
+                    key={kind}
+                    className={
+                      'wash-btn' + (lighting.ambient.kind === kind ? ' wash-btn--active' : '')
+                    }
+                    onClick={() => socket.emit('setLighting', { ambient: { kind } })}
+                  >
+                    {AMBIENT_LABELS[kind]}
+                  </button>
+                ))}
+              </div>
+              {lighting.ambient.kind !== 'none' && (
+                <>
+                  <p className="field-label">
+                    Força do ambiente: {Math.round(lighting.ambient.intensity * 100)}%
+                  </p>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={Math.round(lighting.ambient.intensity * 100)}
+                    onChange={(e) =>
+                      socket.emit('setLighting', {
+                        ambient: { intensity: Number(e.target.value) / 100 },
+                      })
+                    }
+                  />
+                </>
+              )}
             </>
           ),
         },

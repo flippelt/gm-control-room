@@ -120,6 +120,26 @@ describe('createSession / handleConnection', () => {
       handlers.setLighting({ colorWash: null })
       expect(lastBroadcast().lighting.colorWash).toBeNull()
     })
+
+    it('começa sem ambiente', () => {
+      const { socketEmit } = setup()
+      const state = socketEmit.mock.calls.find((c) => c[0] === 'state')![1]
+      expect(state.lighting.ambient).toEqual({ kind: 'none', intensity: 0.5 })
+    })
+
+    it('aceita ambiente parcial e faz clamp da intensidade', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setLighting({ ambient: { kind: 'rain' } })
+      handlers.setLighting({ ambient: { intensity: -3 } })
+      expect(lastBroadcast().lighting.ambient).toEqual({ kind: 'rain', intensity: 0 })
+    })
+
+    it('ignora tipo de ambiente desconhecido', () => {
+      const { handlers, lastBroadcast } = setup()
+      handlers.setLighting({ ambient: { kind: 'sea' } })
+      handlers.setLighting({ ambient: { kind: 'lava', intensity: 'x' } })
+      expect(lastBroadcast().lighting.ambient).toEqual({ kind: 'sea', intensity: 0.5 })
+    })
   })
 
   describe('setAudioLayer', () => {

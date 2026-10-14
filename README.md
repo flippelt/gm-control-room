@@ -34,6 +34,7 @@ npm run build && npm start   # produção: tudo na porta 4000
 
 - 🎬 **Cenas** — texto (typewriter/scroll/terminal), cor, imagem, CRT — com gating de gênero/época
 - 🌗 **Iluminação** — washes, alerta pulsante, vinheta
+- 🌧️ **Ambiente animado** (WebGPU) — mar, chuva, neblina, brasas e neve por cima da cena; fade lento, sem flashes, quadro parado com movimento reduzido e botão para desligar em cada tela
 - 🔊 **Mixer de áudio** — multi-camada na tela dos jogadores (autoplay-safe)
 - 🎵 **Spotify** — transport, shuffle/repeat, dispositivos Connect, playlists
 - 🎲 **Dados** — notação livre + presets do sistema + histórico

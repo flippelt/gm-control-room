@@ -1027,6 +1027,75 @@ button:focus-visible {
   .lighting__alert { animation: none; opacity: 0.6; }
 }
 
+/* ===== Ambiente animado (WebGPU) — entre a cena e a iluminação ===== */
+.ambient,
+.ambient-fallback {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.ambient--screen {
+  mix-blend-mode: screen;
+}
+
+/* Sem WebGPU: gradiente parado, só para dar o clima. */
+.ambient-fallback {
+  transition: opacity 1.2s ease;
+}
+
+.ambient-fallback--sea {
+  mix-blend-mode: screen;
+  background: radial-gradient(ellipse at 50% 20%, rgba(150, 230, 255, 0.35), transparent 70%);
+}
+
+.ambient-fallback--rain {
+  background: linear-gradient(180deg, rgba(90, 110, 140, 0.35), rgba(60, 75, 95, 0.2));
+}
+
+.ambient-fallback--fog {
+  background: linear-gradient(0deg, rgba(210, 214, 220, 0.85), rgba(210, 214, 220, 0.15) 70%, transparent);
+}
+
+.ambient-fallback--embers {
+  mix-blend-mode: screen;
+  background: linear-gradient(0deg, rgba(255, 110, 30, 0.45), transparent 45%);
+}
+
+.ambient-fallback--snow {
+  background: linear-gradient(180deg, rgba(240, 245, 255, 0.35), rgba(240, 245, 255, 0.1));
+}
+
+.ambient-toggle {
+  position: fixed;
+  bottom: 16px;
+  right: 128px;
+  z-index: 70;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #e7e7ea;
+  font-size: 1.1rem;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.ambient-toggle:hover {
+  opacity: 1;
+}
+
+.ambient-toggle--on {
+  border-color: rgba(139, 139, 255, 0.7);
+  opacity: 0.85;
+}
+
 /* ===== Controles de iluminação (painel) ===== */
 .field-label {
   font-size: 0.78rem;
