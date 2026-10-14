@@ -6,7 +6,7 @@ import type { Server, Socket } from 'socket.io'
 import type {
   ClientToServerEvents,
   CreatureLibraryEntry,
-  Lighting,
+  LightingPatch,
   PartyMember,
   RandomTable,
   SavedCombatant,
@@ -14,7 +14,7 @@ import type {
   ServerToClientEvents,
   SessionState,
 } from '@gmcr/shared'
-import { DEFAULT_LIGHTING, DEFAULT_TRACKER, isTreatmentAllowed, parseCreatureFrom5etools } from '@gmcr/shared'
+import { DEFAULT_TRACKER, isAmbientKind, isTreatmentAllowed, normalizeLighting, parseCreatureFrom5etools } from '@gmcr/shared'
 import { listCampaigns, loadCampaign, loadCampaignById, saveCampaignFile } from './data/loadCampaign.js'
 import {
   loadCreatures,
@@ -62,7 +62,7 @@ export function createSession(io: IO) {
   const state: SessionState = {
     campaign,
     activeSceneId: saved?.activeSceneId ?? campaign.scenes[0]?.id ?? null,
-    lighting: saved?.lighting ?? { ...DEFAULT_LIGHTING },
+    lighting: normalizeLighting(saved?.lighting),
     // Semeia o áudio do catálogo da campanha (cópia), ou retoma o persistido.
     audio: saved?.audio ?? campaign.audio.map((layer) => ({ ...layer })),
     lastRoll: null,
@@ -158,7 +158,7 @@ export function createSession(io: IO) {
     const persisted = loadPersisted(next.id)
     state.campaign = next
     state.activeSceneId = persisted?.activeSceneId ?? next.scenes[0]?.id ?? null
-    state.lighting = persisted?.lighting ?? { ...DEFAULT_LIGHTING }
+    state.lighting = normalizeLighting(persisted?.lighting)
     state.audio = persisted?.audio ?? next.audio.map((layer) => ({ ...layer }))
     state.lastRoll = null
     state.tracker = persisted?.tracker ?? { ...DEFAULT_TRACKER, combatants: [] }
@@ -208,7 +208,7 @@ export function createSession(io: IO) {
     broadcast()
   }
 
-  function setLighting(patch: Partial<Lighting>) {
+  function setLighting(patch: LightingPatch) {
     if (!patch || typeof patch !== 'object') return
     if ('colorWash' in patch) {
       // Aceita só null ou cor CSS segura; ignora valores suspeitos.
@@ -221,6 +221,14 @@ export function createSession(io: IO) {
     }
     if (typeof patch.alert === 'boolean') state.lighting.alert = patch.alert
     if (typeof patch.vignette === 'boolean') state.lighting.vignette = patch.vignette
+    const amb = patch.ambient
+    if (amb && typeof amb === 'object') {
+      if (isAmbientKind(amb.kind)) state.lighting.ambient.kind = amb.kind
+      if (amb.intensity !== undefined) {
+        const v = Number(amb.intensity)
+        if (Number.isFinite(v)) state.lighting.ambient.intensity = clamp(v, 0, 1)
+      }
+    }
     broadcast()
   }
 

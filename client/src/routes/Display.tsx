@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSession, useActiveScene } from '../store'
 import { SceneView } from '../features/display/SceneView'
 import { LightingOverlay } from '../features/display/LightingOverlay'
+import { AmbientLayer } from '../features/display/ambient/AmbientLayer'
+import { AmbientToggle, readAmbientPref } from '../features/display/ambient/AmbientToggle'
 import { DiceFeed } from '../features/display/DiceFeed'
 import { TrackerPanel } from '../features/display/TrackerPanel'
 import { ClocksDisplay } from '../features/display/ClocksDisplay'
@@ -26,6 +28,7 @@ export function Display() {
   // Estado inicial respeita a preferência salva; mas só conta como
   // "destravado" depois que o usuário clica (autoplay policy).
   const [audioEnabled, setAudioEnabled] = useState(() => readAudioPref())
+  const [ambientEnabled, setAmbientEnabled] = useState(() => readAmbientPref())
 
   // Pré-carrega o sample assim que o display monta — não precisa de
   // gesto pra fetch+decode. Só o resume() precisa de gesto (no toggle).
@@ -48,12 +51,16 @@ export function Display() {
         <SceneView scene={scene} campaign={campaign} audioEnabled={audioEnabled} />
       </div>
 
+      <AmbientLayer ambient={lighting.ambient} enabled={ambientEnabled} />
       <LightingOverlay lighting={lighting} />
       <TrackerPanel tracker={tracker} />
       <ClocksDisplay clocks={clocks} />
       <PartyResourcesDisplay />
       <DiceFeed rolls={rollHistory} highlightId={lastRoll?.id ?? null} />
       <AudioToggle enabled={audioEnabled} onToggle={setAudioEnabled} />
+      {lighting.ambient.kind !== 'none' && (
+        <AmbientToggle enabled={ambientEnabled} onToggle={setAmbientEnabled} />
+      )}
       <HistoryButton rolls={rollHistory} />
     </>
   )

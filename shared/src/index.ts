@@ -242,6 +242,30 @@ export interface Lighting {
   alert: boolean
   /** Vinheta escurecendo as bordas. */
   vignette: boolean
+  /** Ambiente animado (WebGPU) sobreposto à cena. */
+  ambient: Ambient
+}
+
+/**
+ * Efeitos de ambiente desenhados por cima da cena, sem tapá-la. `sea` é luz
+ * de água (cáusticas de uma simulação de ondas), não um fundo opaco.
+ */
+export const AMBIENT_KINDS = ['none', 'sea', 'rain', 'fog', 'embers', 'snow'] as const
+export type AmbientKind = (typeof AMBIENT_KINDS)[number]
+
+export interface Ambient {
+  kind: AmbientKind
+  /** Força do efeito (0..1). */
+  intensity: number
+}
+
+/** Patch aceito por `setLighting`: `ambient` também pode vir parcial. */
+export type LightingPatch = Partial<Omit<Lighting, 'ambient'>> & { ambient?: Partial<Ambient> }
+
+export const DEFAULT_AMBIENT: Ambient = { kind: 'none', intensity: 0.5 }
+
+export function isAmbientKind(v: unknown): v is AmbientKind {
+  return typeof v === 'string' && (AMBIENT_KINDS as readonly string[]).includes(v)
 }
 
 export const DEFAULT_LIGHTING: Lighting = {
@@ -249,6 +273,24 @@ export const DEFAULT_LIGHTING: Lighting = {
   intensity: 0.4,
   alert: false,
   vignette: false,
+  ambient: { ...DEFAULT_AMBIENT },
+}
+
+/**
+ * Completa uma iluminação salva antes de existir `ambient` (ou com campos
+ * faltando) com os padrões.
+ */
+export function normalizeLighting(saved: Partial<Lighting> | null | undefined): Lighting {
+  const base: Lighting = { ...DEFAULT_LIGHTING, ...(saved ?? {}) }
+  const amb = saved?.ambient
+  base.ambient = {
+    kind: isAmbientKind(amb?.kind) ? amb.kind : DEFAULT_AMBIENT.kind,
+    intensity:
+      typeof amb?.intensity === 'number' && Number.isFinite(amb.intensity)
+        ? Math.min(1, Math.max(0, amb.intensity))
+        : DEFAULT_AMBIENT.intensity,
+  }
+  return base
 }
 
 // ===================== Spotify (controlado via REST no servidor) =====================
@@ -671,7 +713,7 @@ export interface ClientToServerEvents {
   /** Define a cena ativa (ou null para limpar). */
   setActiveScene: (sceneId: string | null) => void
   /** Atualiza parcialmente a camada de iluminação/clima. */
-  setLighting: (patch: Partial<Lighting>) => void
+  setLighting: (patch: LightingPatch) => void
   /** Atualiza play/pause e/ou volume de uma camada de áudio. */
   setAudioLayer: (id: string, patch: { playing?: boolean; volume?: number }) => void
 
