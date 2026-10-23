@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type {
   AudioLayer,
   Campaign,
@@ -14,6 +14,8 @@ import { useSession } from '../../store'
 import { PresetEditor } from '../tools/PresetEditor'
 import { useActiveSystem } from '../systems/useActiveSystem'
 import { ScenePreview } from './ScenePreview'
+import { EditorBlock } from 'rpg-prop-kit'
+import 'rpg-prop-kit/styles.css'
 import { systemSelectOptions } from '../systems/systemOptions'
 import {
   duplicateCampaignIdError,
@@ -89,32 +91,6 @@ function treatmentSummary(t: DisplayTreatment): string {
           ? t.src.split('/').pop() || ''
           : t.theme ?? 'phosphor'
   return [KIND_LABEL[t.kind], detail].filter(Boolean).join(' · ')
-}
-
-/** Bloco do painel. Começa fechado; `sub` diz o que há dentro. */
-function Block({
-  title,
-  sub,
-  open,
-  name,
-  children,
-}: {
-  title: string
-  sub: string
-  open?: boolean
-  /** Para achar o bloco a partir da prévia (data-block). */
-  name?: string
-  children: ReactNode
-}) {
-  return (
-    <details className="panel-group" open={open} data-block={name}>
-      <summary>
-        <span className="panel-group__title">{title}</span>
-        <small className="panel-group__sub">{sub}</small>
-      </summary>
-      <div className="panel-group__body">{children}</div>
-    </details>
-  )
 }
 
 // ============================================================================
@@ -416,7 +392,7 @@ function SceneStep({
           ? '⚠ CRT bloqueado para este gênero/época: a cena não abre na mesa.'
           : 'Na tela dos jogadores. Clique para editar a tela.'}
       </p>
-      <Block title="Nome" sub={scene.id || '—'}>
+      <EditorBlock title="Nome" sub={scene.id || '—'}>
         <div className="row">
           <label className="rule-field" style={{ flex: 1 }}>
             <span>ID</span>
@@ -427,10 +403,10 @@ function SceneStep({
             <input value={scene.name} onChange={(e) => onChange({ name: e.target.value })} />
           </label>
         </div>
-      </Block>
-      <Block title="Tela" sub={treatmentSummary(scene.treatment)} name="tela">
+      </EditorBlock>
+      <EditorBlock title="Tela" sub={treatmentSummary(scene.treatment)} name="tela">
         <TreatmentEditor value={scene.treatment} onChange={(t) => onChange({ treatment: t })} />
-      </Block>
+      </EditorBlock>
     </div>
   )
 }
@@ -761,7 +737,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
                 <SceneStep scene={scene} campaign={draft} onChange={(p) => updateScene(step, p)} />
               ) : (
                 <>
-                  <Block
+                  <EditorBlock
                     title="Campanha"
                     sub={[genreLabel, draft.era.label || draft.era.startYear, draft.system].filter(Boolean).join(' · ') || 'Título, id, gênero, época e sistema'}
                     open={mode === 'create'}
@@ -774,8 +750,8 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
                       onChange={patch}
                       onIdTouch={() => setIdTouched(true)}
                     />
-                  </Block>
-                  <Block
+                  </EditorBlock>
+                  <EditorBlock
                     title="Dados"
                     sub={
                       draft.dicePresets && draft.dicePresets.length > 0
@@ -786,16 +762,16 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
                     <button type="button" className="btn-ghost" onClick={() => setPresetsOpen(true)}>
                       ✎ Editar presets de dados desta campanha
                     </button>
-                  </Block>
-                  <Block title="Áudio" sub={`${draft.audio.length} camada(s)`}>
+                  </EditorBlock>
+                  <EditorBlock title="Áudio" sub={`${draft.audio.length} camada(s)`}>
                     <AudioTab audio={draft.audio} onChange={(audio) => patch({ audio })} />
-                  </Block>
-                  <Block title="Atalhos" sub={`${draft.shortcuts.length} atalho(s)`}>
+                  </EditorBlock>
+                  <EditorBlock title="Atalhos" sub={`${draft.shortcuts.length} atalho(s)`}>
                     <ShortcutsTab
                       shortcuts={draft.shortcuts}
                       onChange={(shortcuts) => patch({ shortcuts })}
                     />
-                  </Block>
+                  </EditorBlock>
                 </>
               )}
 
