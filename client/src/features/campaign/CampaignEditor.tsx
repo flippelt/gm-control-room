@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type {
   AudioLayer,
   Campaign,
@@ -63,17 +63,54 @@ function nextId(existing: string[], prefix: string): string {
 }
 
 // ============================================================================
-// TabBar
+// Menu (⚙ Geral + uma entrada por cena) e blocos
 // ============================================================================
 
-type TabKey = 'meta' | 'scenes' | 'audio' | 'shortcuts'
+/** Passo aberto no editor: -1 = ⚙ Geral; 0..n = índice da cena. */
+const GERAL = -1
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'meta', label: 'Metadados' },
-  { key: 'scenes', label: 'Cenas' },
-  { key: 'audio', label: 'Áudio' },
-  { key: 'shortcuts', label: 'Atalhos' },
-]
+const KIND_LABEL: Record<DisplayTreatment['kind'], string> = {
+  text: 'texto',
+  color: 'cor',
+  image: 'imagem',
+  crt: 'CRT',
+}
+
+/** Uma linha do que a cena mostra, para o menu e para o bloco fechado. */
+function treatmentSummary(t: DisplayTreatment): string {
+  const detail =
+    t.kind === 'text'
+      ? t.variant ?? 'auto'
+      : t.kind === 'color'
+        ? t.label || t.color
+        : t.kind === 'image'
+          ? t.src.split('/').pop() || ''
+          : t.theme ?? 'phosphor'
+  return [KIND_LABEL[t.kind], detail].filter(Boolean).join(' · ')
+}
+
+/** Bloco do painel. Começa fechado; `sub` diz o que há dentro. */
+function Block({
+  title,
+  sub,
+  open,
+  children,
+}: {
+  title: string
+  sub: string
+  open?: boolean
+  children: ReactNode
+}) {
+  return (
+    <details className="panel-group" open={open}>
+      <summary>
+        <span className="panel-group__title">{title}</span>
+        <small className="panel-group__sub">{sub}</small>
+      </summary>
+      <div className="panel-group__body">{children}</div>
+    </details>
+  )
+}
 
 // ============================================================================
 // Treatment editor (sub-form por kind)
@@ -256,7 +293,6 @@ function MetaTab({
   idTouched,
   onChange,
   onIdTouch,
-  onOpenPresets,
 }: {
   draft: Campaign
   mode: Mode
@@ -264,7 +300,6 @@ function MetaTab({
   idTouched: boolean
   onChange: (patch: Partial<Campaign>) => void
   onIdTouch: () => void
-  onOpenPresets: () => void
 }) {
   const idIsValid = VALID_CAMPAIGN_ID.test(draft.id)
   return (
@@ -347,93 +382,35 @@ function MetaTab({
           ))}
         </select>
       </label>
-
-      <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #2c2c34' }}>
-        <button type="button" className="btn-ghost" onClick={onOpenPresets}>
-          ✎ Editar presets de dados desta campanha
-        </button>
-        <small className="muted" style={{ display: 'block', marginTop: 4 }}>
-          {draft.dicePresets && draft.dicePresets.length > 0
-            ? `${draft.dicePresets.length} preset(s) customizado(s)`
-            : 'sem customizações (usa só os do sistema)'}
-        </small>
-      </div>
     </div>
   )
 }
 
-function ScenesTab({
-  scenes,
+function SceneStep({
+  scene,
   onChange,
 }: {
-  scenes: Scene[]
-  onChange: (next: Scene[]) => void
+  scene: Scene
+  onChange: (patch: Partial<Scene>) => void
 }) {
-  const updateAt = (idx: number, patch: Partial<Scene>) =>
-    onChange(scenes.map((s, i) => (i === idx ? { ...s, ...patch } : s)))
-  const removeAt = (idx: number) => onChange(scenes.filter((_, i) => i !== idx))
-  const moveUp = (idx: number) => {
-    if (idx === 0) return
-    const next = [...scenes]
-    ;[next[idx - 1], next[idx]] = [next[idx]!, next[idx - 1]!]
-    onChange(next)
-  }
-  const moveDown = (idx: number) => {
-    if (idx === scenes.length - 1) return
-    const next = [...scenes]
-    ;[next[idx + 1], next[idx]] = [next[idx]!, next[idx + 1]!]
-    onChange(next)
-  }
-  const add = () => {
-    const id = nextId(scenes.map((s) => s.id), 'cena')
-    onChange([...scenes, { id, name: 'Nova cena', treatment: { kind: 'text', text: '' } }])
-  }
-
   return (
-    <div>
-      {scenes.length === 0 && <p className="muted">Sem cenas. Adicione abaixo.</p>}
-      {scenes.map((scene, idx) => (
-        <details key={scene.id} className="editor-item" open={idx === scenes.length - 1}>
-          <summary>
-            <span className="editor-item__title">
-              <strong>{scene.name || '(sem nome)'}</strong>{' '}
-              <code className="muted">{scene.id}</code>{' '}
-              <span className="muted">— {scene.treatment.kind}</span>
-            </span>
-            <span className="row" style={{ gap: 4 }}>
-              <button type="button" className="btn-ghost" onClick={() => moveUp(idx)} title="Mover pra cima" disabled={idx === 0}>↑</button>
-              <button type="button" className="btn-ghost" onClick={() => moveDown(idx)} title="Mover pra baixo" disabled={idx === scenes.length - 1}>↓</button>
-              <button type="button" className="btn-ghost" onClick={() => removeAt(idx)} title="Remover cena">✕</button>
-            </span>
-          </summary>
-          <div className="editor-item__body">
-            <div className="row">
-              <label className="rule-field" style={{ flex: 1 }}>
-                <span>ID</span>
-                <input
-                  value={scene.id}
-                  onChange={(e) => updateAt(idx, { id: e.target.value })}
-                />
-              </label>
-              <label className="rule-field" style={{ flex: 2 }}>
-                <span>Nome</span>
-                <input
-                  value={scene.name}
-                  onChange={(e) => updateAt(idx, { name: e.target.value })}
-                />
-              </label>
-            </div>
-            <TreatmentEditor
-              value={scene.treatment}
-              onChange={(t) => updateAt(idx, { treatment: t })}
-            />
-          </div>
-        </details>
-      ))}
-      <button type="button" className="btn-ghost" onClick={add} style={{ marginTop: 10 }}>
-        + Nova cena
-      </button>
-    </div>
+    <>
+      <Block title="Nome" sub={scene.id || '—'}>
+        <div className="row">
+          <label className="rule-field" style={{ flex: 1 }}>
+            <span>ID</span>
+            <input value={scene.id} onChange={(e) => onChange({ id: e.target.value })} />
+          </label>
+          <label className="rule-field" style={{ flex: 2 }}>
+            <span>Nome</span>
+            <input value={scene.name} onChange={(e) => onChange({ name: e.target.value })} />
+          </label>
+        </div>
+      </Block>
+      <Block title="Tela" sub={treatmentSummary(scene.treatment)}>
+        <TreatmentEditor value={scene.treatment} onChange={(t) => onChange({ treatment: t })} />
+      </Block>
+    </>
   )
 }
 
@@ -574,7 +551,7 @@ interface Props {
 export function CampaignEditor({ open, onClose, campaign }: Props) {
   const mode: Mode = campaign ? 'edit' : 'create'
   const [draft, setDraft] = useState<Campaign>(() => campaign ?? emptyCampaign())
-  const [tab, setTab] = useState<TabKey>('meta')
+  const [step, setStep] = useState<number>(GERAL)
   const [presetsOpen, setPresetsOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -587,7 +564,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   useEffect(() => {
     if (open) {
       setDraft(campaign ? structuredClone(campaign) : emptyCampaign())
-      setTab('meta')
+      setStep(GERAL)
       setSaveError(null)
       setSaving(false)
       setIdTouched(false)
@@ -599,6 +576,30 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   const canSave = idIsValid && titleIsValid && !idTaken
 
   const patch = (p: Partial<Campaign>) => setDraft((d) => ({ ...d, ...p }))
+
+  const scenes = draft.scenes
+  const scene = step >= 0 ? scenes[step] : undefined
+  const updateScene = (idx: number, p: Partial<Scene>) =>
+    patch({ scenes: scenes.map((s, i) => (i === idx ? { ...s, ...p } : s)) })
+  const moveScene = (idx: number, dir: -1 | 1) => {
+    const to = idx + dir
+    if (to < 0 || to >= scenes.length) return
+    const next = [...scenes]
+    ;[next[to], next[idx]] = [next[idx]!, next[to]!]
+    patch({ scenes: next })
+    setStep(to)
+  }
+  const removeScene = (idx: number) => {
+    patch({ scenes: scenes.filter((_, i) => i !== idx) })
+    setStep(idx > 0 ? idx - 1 : scenes.length > 1 ? 0 : GERAL)
+  }
+  const addScene = () => {
+    const id = nextId(scenes.map((s) => s.id), 'cena')
+    patch({ scenes: [...scenes, { id, name: 'Nova cena', treatment: { kind: 'text', text: '' } }] })
+    setStep(scenes.length)
+  }
+  const stepLabel = (i: number) => (i === GERAL ? '⚙ Geral' : scenes[i]?.name || scenes[i]?.id || `Cena ${i + 1}`)
+  const genreLabel = GENRES.find((g) => g.value === draft.genre)?.label
 
   const save = () => {
     if (!canSave || saving) return
@@ -615,7 +616,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
         `A cena "${pastedImage.name || pastedImage.id}" tem a imagem colada no campo src. ` +
           'Coloque o arquivo em assets/ e referencie por caminho, ex.: /assets/seraph.jpg.',
       )
-      setTab('scenes')
+      setStep(draft.scenes.indexOf(pastedImage))
       return
     }
     // Rede de segurança: qualquer payload muito grande também é bloqueado com
@@ -632,7 +633,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
     const taken = mode === 'create' ? duplicateCampaignIdError(draft.id, existingIds) : null
     if (taken) {
       setSaveError(taken)
-      setTab('meta')
+      setStep(GERAL)
       return
     }
 
@@ -676,7 +677,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
   return (
     <>
       <div className="modal" role="dialog" aria-modal="true" onClick={onClose}>
-        <div className="modal__panel modal__panel--wide" onClick={(e) => e.stopPropagation()}>
+        <div className="modal__panel modal__panel--editor" onClick={(e) => e.stopPropagation()}>
           <header className="modal__head">
             <h3>
               {mode === 'edit' ? `Editar campanha — ${draft.title || draft.id}` : 'Nova campanha'}
@@ -684,51 +685,108 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
             <button className="btn-ghost" onClick={onClose} aria-label="Fechar">✕</button>
           </header>
 
-          <nav className="modal__tabs">
-            {TABS.map((t) => (
+          <div className="campaign-editor">
+            <nav className="campaign-editor__menu" aria-label="Passos">
               <button
-                key={t.key}
-                className={'tab-btn' + (tab === t.key ? ' tab-btn--active' : '')}
-                onClick={() => setTab(t.key)}
+                type="button"
+                className={'step-btn' + (step === GERAL ? ' step-btn--active' : '')}
+                onClick={() => setStep(GERAL)}
               >
-                {t.label}
-                {t.key === 'scenes' && draft.scenes.length > 0 && (
-                  <span className="tab-btn__count">{draft.scenes.length}</span>
-                )}
-                {t.key === 'audio' && draft.audio.length > 0 && (
-                  <span className="tab-btn__count">{draft.audio.length}</span>
-                )}
-                {t.key === 'shortcuts' && draft.shortcuts.length > 0 && (
-                  <span className="tab-btn__count">{draft.shortcuts.length}</span>
-                )}
+                <span className="step-btn__title">⚙ Geral</span>
+                <small className="step-btn__sub">Campanha, dados, áudio e atalhos</small>
               </button>
-            ))}
-          </nav>
+              <p className="campaign-editor__label">
+                Cenas <span className="tab-btn__count">{scenes.length}</span>
+              </p>
+              {scenes.map((sc, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={'step-btn' + (step === idx ? ' step-btn--active' : '')}
+                  onClick={() => setStep(idx)}
+                >
+                  <span className="step-btn__title">{sc.name || '(sem nome)'}</span>
+                  <small className="step-btn__sub">{treatmentSummary(sc.treatment)}</small>
+                </button>
+              ))}
+              <button type="button" className="btn-ghost campaign-editor__add" onClick={addScene}>
+                + Nova cena
+              </button>
+            </nav>
 
-          <div className="modal__body">
-            {tab === 'meta' && (
-              <MetaTab
-                draft={draft}
-                mode={mode}
-                idTaken={idTaken}
-                idTouched={idTouched}
-                onChange={patch}
-                onIdTouch={() => setIdTouched(true)}
-                onOpenPresets={() => setPresetsOpen(true)}
-              />
-            )}
-            {tab === 'scenes' && (
-              <ScenesTab scenes={draft.scenes} onChange={(scenes) => patch({ scenes })} />
-            )}
-            {tab === 'audio' && (
-              <AudioTab audio={draft.audio} onChange={(audio) => patch({ audio })} />
-            )}
-            {tab === 'shortcuts' && (
-              <ShortcutsTab
-                shortcuts={draft.shortcuts}
-                onChange={(shortcuts) => patch({ shortcuts })}
-              />
-            )}
+            <div className="campaign-editor__panel" key={step}>
+              <div className="campaign-editor__head">
+                <div>
+                  <p className="campaign-editor__kicker">
+                    Passo {step + 2} de {scenes.length + 1}
+                  </p>
+                  <h4>{stepLabel(step)}</h4>
+                  <p className="muted campaign-editor__hint">
+                    {scene
+                      ? 'O que esta cena mostra na tela dos jogadores.'
+                      : 'O que vale para a campanha inteira.'}
+                  </p>
+                </div>
+                {scene && (
+                  <span className="row" style={{ gap: 4 }}>
+                    <button type="button" className="btn-ghost" onClick={() => moveScene(step, -1)} title="Mover pra cima" disabled={step === 0}>↑</button>
+                    <button type="button" className="btn-ghost" onClick={() => moveScene(step, 1)} title="Mover pra baixo" disabled={step === scenes.length - 1}>↓</button>
+                    <button type="button" className="btn-ghost" onClick={() => removeScene(step)} title="Remover cena">✕</button>
+                  </span>
+                )}
+              </div>
+
+              {scene ? (
+                <SceneStep scene={scene} onChange={(p) => updateScene(step, p)} />
+              ) : (
+                <>
+                  <Block
+                    title="Campanha"
+                    sub={[genreLabel, draft.era.label || draft.era.startYear, draft.system].filter(Boolean).join(' · ') || 'Título, id, gênero, época e sistema'}
+                    open={mode === 'create'}
+                  >
+                    <MetaTab
+                      draft={draft}
+                      mode={mode}
+                      idTaken={idTaken}
+                      idTouched={idTouched}
+                      onChange={patch}
+                      onIdTouch={() => setIdTouched(true)}
+                    />
+                  </Block>
+                  <Block
+                    title="Dados"
+                    sub={
+                      draft.dicePresets && draft.dicePresets.length > 0
+                        ? `${draft.dicePresets.length} preset(s) próprio(s)`
+                        : 'Só os presets do sistema'
+                    }
+                  >
+                    <button type="button" className="btn-ghost" onClick={() => setPresetsOpen(true)}>
+                      ✎ Editar presets de dados desta campanha
+                    </button>
+                  </Block>
+                  <Block title="Áudio" sub={`${draft.audio.length} camada(s)`}>
+                    <AudioTab audio={draft.audio} onChange={(audio) => patch({ audio })} />
+                  </Block>
+                  <Block title="Atalhos" sub={`${draft.shortcuts.length} atalho(s)`}>
+                    <ShortcutsTab
+                      shortcuts={draft.shortcuts}
+                      onChange={(shortcuts) => patch({ shortcuts })}
+                    />
+                  </Block>
+                </>
+              )}
+
+              <nav className="campaign-editor__nav" aria-label="Anterior e próximo">
+                <button type="button" className="btn-ghost" disabled={step === GERAL} onClick={() => setStep(step - 1)}>
+                  ← {step === GERAL ? 'Início' : stepLabel(step - 1)}
+                </button>
+                <button type="button" className="btn-ghost" disabled={step >= scenes.length - 1} onClick={() => setStep(step + 1)}>
+                  {step >= scenes.length - 1 ? 'Fim' : stepLabel(step + 1)} →
+                </button>
+              </nav>
+            </div>
           </div>
 
           <footer className="modal__foot">
