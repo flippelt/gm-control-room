@@ -1958,6 +1958,46 @@ code {
   font-size: 0.7rem;
   line-height: 1.5;
 }
+.scene-preview {
+  position: relative;
+  display: block;
+  width: min(100%, 520px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: #000;
+  cursor: pointer;
+}
+.scene-preview:hover,
+.scene-preview:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.scene-preview__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  transform-origin: top left;
+  pointer-events: none;
+}
+.scene-preview__caption {
+  margin: 6px 0 10px;
+}
+/* O painel é uma coluna flex que rola: os blocos não podem encolher, senão o
+   formulário da campanha (coluna com wrap) se espalha em colunas. */
+.campaign-editor__panel > * {
+  flex-shrink: 0;
+}
+.campaign-editor .rule-form {
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+.campaign-editor .rule-form .row {
+  align-items: flex-end;
+}
 /* .rule-field input tem 70 px no resto do painel; aqui os campos ocupam a linha. */
 .campaign-editor .rule-field input:not([type='checkbox']):not([type='color']) {
   width: 100%;

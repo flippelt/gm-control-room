@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type {
   AudioLayer,
   Campaign,
@@ -8,10 +8,12 @@ import type {
   Shortcut,
   TextVariant,
 } from '@gmcr/shared'
+import { isCrtAllowed } from '@gmcr/shared'
 import { socket } from '../../lib/socket'
 import { useSession } from '../../store'
 import { PresetEditor } from '../tools/PresetEditor'
 import { useActiveSystem } from '../systems/useActiveSystem'
+import { ScenePreview } from './ScenePreview'
 import { systemSelectOptions } from '../systems/systemOptions'
 import {
   duplicateCampaignIdError,
@@ -94,15 +96,18 @@ function Block({
   title,
   sub,
   open,
+  name,
   children,
 }: {
   title: string
   sub: string
   open?: boolean
+  /** Para achar o bloco a partir da prévia (data-block). */
+  name?: string
   children: ReactNode
 }) {
   return (
-    <details className="panel-group" open={open}>
+    <details className="panel-group" open={open} data-block={name}>
       <summary>
         <span className="panel-group__title">{title}</span>
         <small className="panel-group__sub">{sub}</small>
@@ -388,13 +393,29 @@ function MetaTab({
 
 function SceneStep({
   scene,
+  campaign,
   onChange,
 }: {
   scene: Scene
+  campaign: Campaign
   onChange: (patch: Partial<Scene>) => void
 }) {
+  const root = useRef<HTMLDivElement>(null)
+  // Clique na miniatura abre o bloco Tela e põe o foco no primeiro campo.
+  const openTela = () => {
+    const block = root.current?.querySelector<HTMLDetailsElement>('details[data-block="tela"]')
+    if (!block) return
+    block.open = true
+    block.querySelector<HTMLElement>('select, textarea, input')?.focus()
+  }
   return (
-    <>
+    <div ref={root}>
+      <ScenePreview scene={scene} campaign={campaign} onPick={openTela} />
+      <p className="muted campaign-editor__hint scene-preview__caption">
+        {scene.treatment.kind === 'crt' && !isCrtAllowed(campaign)
+          ? '⚠ CRT bloqueado para este gênero/época: a cena não abre na mesa.'
+          : 'Na tela dos jogadores. Clique para editar a tela.'}
+      </p>
       <Block title="Nome" sub={scene.id || '—'}>
         <div className="row">
           <label className="rule-field" style={{ flex: 1 }}>
@@ -407,10 +428,10 @@ function SceneStep({
           </label>
         </div>
       </Block>
-      <Block title="Tela" sub={treatmentSummary(scene.treatment)}>
+      <Block title="Tela" sub={treatmentSummary(scene.treatment)} name="tela">
         <TreatmentEditor value={scene.treatment} onChange={(t) => onChange({ treatment: t })} />
       </Block>
-    </>
+    </div>
   )
 }
 
@@ -737,7 +758,7 @@ export function CampaignEditor({ open, onClose, campaign }: Props) {
               </div>
 
               {scene ? (
-                <SceneStep scene={scene} onChange={(p) => updateScene(step, p)} />
+                <SceneStep scene={scene} campaign={draft} onChange={(p) => updateScene(step, p)} />
               ) : (
                 <>
                   <Block
